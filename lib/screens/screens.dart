@@ -1,0 +1,1 @@
+export 'package:music_player_app/screens/home_screen.dart';
