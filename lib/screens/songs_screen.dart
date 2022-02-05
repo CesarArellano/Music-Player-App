@@ -5,14 +5,25 @@ import 'package:on_audio_query/on_audio_query.dart';
 
 import '../providers/music_player_provider.dart';
 
-class SongsScreen extends StatelessWidget {
+class SongsScreen extends StatefulWidget {
   
-  SongsScreen({Key? key}) : super(key: key);
+  const SongsScreen({Key? key}) : super(key: key);
 
+  @override
+  State<SongsScreen> createState() => _SongsScreenState();
+}
+
+class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClientMixin {
+
+  @override
+  bool get wantKeepAlive => true;
+  
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+    
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final songList = musicPlayerProvider.songList;
 
@@ -44,12 +55,11 @@ class SongsScreen extends StatelessWidget {
 
             },
             leading: QueryArtworkWidget(
-              id: songList[i].id,
+              id: song.id,
               type: ArtworkType.AUDIO,
             ),
           );
         } 
     );
   }
-
 }

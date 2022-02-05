@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:music_player_app/screens/albums_screens.dart';
-import 'package:music_player_app/screens/songs_screen.dart';
+import 'package:music_player_app/screens/screens.dart';
 class HomeScreen extends StatefulWidget {
 
   const HomeScreen({Key? key}) : super(key: key);
@@ -13,11 +12,11 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   
   TabController? _tabController;
-  
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -32,6 +31,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
+        // backgroundColor: Colors.transparent,
+        // elevation: 0.0,
         title: const Text('Music Player'),
         leading: IconButton(
           splashRadius: 22,
@@ -57,6 +58,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       tabs: const <Tab> [
         Tab(text: 'Songs'),
         Tab(text: 'Albums'),
+        Tab(text: 'Artists'),
+        Tab(text: 'Genres'),
       ] 
     );
   }
@@ -66,7 +69,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       controller: _tabController,
       children: <Widget>[
         SongsScreen(),
-        AlbumsScreen()
+        AlbumsScreen(),
+        ArtistScreen(),
+        GenresScreen(),
       ],
     );
   }

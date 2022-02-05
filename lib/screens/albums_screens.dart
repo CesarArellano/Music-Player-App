@@ -5,25 +5,33 @@ import 'package:audioplayers/audioplayers.dart';
 
 import '../providers/music_player_provider.dart';
 
-class AlbumsScreen extends StatelessWidget {
+class AlbumsScreen extends StatefulWidget {
+
+  const AlbumsScreen({Key? key}) : super(key: key);
+
+  @override
+  State<AlbumsScreen> createState() => _AlbumsScreenState();
+}
+
+class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClientMixin {
   
-  AlbumsScreen({Key? key}) : super(key: key);
-  
-  final AudioPlayer _audioPlayer = AudioPlayer();
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final albumList = musicPlayerProvider.albumList;
 
     return musicPlayerProvider.isLoading
       ? const Center ( child: CircularProgressIndicator() )
       : Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 5),
         child: GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            mainAxisExtent: 240,
+            mainAxisExtent: 235,
             mainAxisSpacing: 4,
             crossAxisSpacing: 4
           ),
@@ -39,6 +47,7 @@ class AlbumsScreen extends StatelessWidget {
                   QueryArtworkWidget(
                     id: album.id,
                     type: ArtworkType.ALBUM,
+                    format: ArtworkFormat.PNG,
                     artworkBorder: BorderRadius.zero,
                     artworkWidth: 200,
                     artworkHeight: 190,

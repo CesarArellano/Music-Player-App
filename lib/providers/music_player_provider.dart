@@ -7,8 +7,11 @@ class MusicPlayerProvider extends ChangeNotifier {
 
   String _songPlayed = '';
   bool _isLoading = false;
+
   List<SongModel> songList = [];
   List<AlbumModel> albumList = [];
+  List<GenreModel> genreList = [];
+  List<ArtistModel> artistList = [];
 
   MusicPlayerProvider() {
     getAllSongs();
@@ -33,8 +36,12 @@ class MusicPlayerProvider extends ChangeNotifier {
     if( ! await onAudioQuery.permissionsStatus() ) {
       await onAudioQuery.permissionsRequest();
     }
+    
     songList = await onAudioQuery.querySongs();
     albumList = await onAudioQuery.queryAlbums();
+    genreList = await onAudioQuery.queryGenres();
+    artistList = await onAudioQuery.queryArtists();
+
     _isLoading = false;
     notifyListeners();
   }
