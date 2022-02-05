@@ -1,7 +1,6 @@
-import 'dart:io';
+import 'package:flutter/material.dart';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -13,10 +12,11 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final AudioPlayer audioPlayer = AudioPlayer();
+  final AudioPlayer _audioPlayer = AudioPlayer();
   final OnAudioQuery onAudioQuery = OnAudioQuery();
-  bool _isLoading = false;
 
+  String songPlayed = '';
+  bool _isLoading = false;
   List<SongModel> songList = [];
 
   @override
@@ -42,21 +42,34 @@ class _HomeScreenState extends State<HomeScreen> {
         : ListView.builder(
           physics: const BouncingScrollPhysics(),
           itemCount: songList.length,
-          itemBuilder: ( _, int i ) => ListTile(
-            contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
-            title: Text(songList[i].title),
-            subtitle: Text(songList[i].artist ?? 'No Artist'),
-            onTap: () async {
-              final uri = '${ songList[i].uri }';
-              final file = File(uri);
-              print(file.path);
+          itemBuilder: ( _, int i ) {
+            final song = songList[i];
+            return ListTile(
+              contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
+              title: Text(song.title),
+              subtitle: Text(song.artist ?? 'No Artist'),
+              onTap: () {
 
-            },
-            leading: QueryArtworkWidget(
-              id: songList[i].id,
-              type: ArtworkType.AUDIO,
-            ),
-          )
+                final uri = song.data;
+
+                if( songPlayed != song.title ) {
+                  _audioPlayer.play('file://$uri', isLocal: true);
+                  songPlayed = song.title;
+                } else {
+                  if( _audioPlayer.state == PlayerState.PLAYING ) {
+                    _audioPlayer.pause();
+                  } else {
+                    _audioPlayer.play('file://$uri', isLocal: true);
+                  }
+                }
+
+              },
+              leading: QueryArtworkWidget(
+                id: songList[i].id,
+                type: ArtworkType.AUDIO,
+              ),
+            );
+          } 
         )
     );
   }
