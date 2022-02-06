@@ -39,8 +39,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        // backgroundColor: Colors.transparent,
-        // elevation: 0.0,
+        // // backgroundColor: Colors.transparent,
+        // // elevation: 0.0,
         title: const Text('Music Player'),
         leading: IconButton(
           splashRadius: 22,
@@ -79,19 +79,50 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  TabBarView getTabBarView() {
-    return TabBarView(
-      controller: _tabController,
-      children: const <Widget>[
-        SongsScreen(),
-        AlbumsScreen(),
-        ArtistScreen(),
-        PlaylistsScreen(),
-        GenresScreen(),
-      ],
+  Widget getTabBarView() {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: <Widget>[
+        const _CustomBackground(),
+        TabBarView(
+          controller: _tabController,
+          children: const <Widget>[
+            SongsScreen(),
+            AlbumsScreen(),
+            ArtistScreen(),
+            PlaylistsScreen(),
+            GenresScreen(),
+          ],
+        ),
+      ]
     );
   }
 
+}
+
+class _CustomBackground extends StatelessWidget {
+  const _CustomBackground({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: 0.9,
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.blue,
+              Colors.black,
+            ]
+          )
+        ),
+      ),
+    );
+  }
 }
 
 class _CurrentSongTile extends StatelessWidget {
@@ -108,6 +139,7 @@ class _CurrentSongTile extends StatelessWidget {
     final songPlayed = musicPlayerProvider.songPlayed;
     
     return ListTile(
+      tileColor: Colors.black87,
       leading: QueryArtworkWidget(
         id: songPlayed.id,
         type: ArtworkType.AUDIO,

@@ -26,23 +26,25 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> with AutomaticKeepAli
 
     return musicPlayerProvider.isLoading
       ? const Center ( child: CircularProgressIndicator() )
-      : ListView.builder(
-        physics: const BouncingScrollPhysics(),
-        itemCount: playlists.length,
-        itemBuilder: ( _, int i ) {
-          final playlist = playlists[i];
-          return ListTile(
-            contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
-            title: Text(playlist.playlist),
-            subtitle: Text(playlist.numOfSongs.toString()),
-            onTap: () {
-            },
-            leading: QueryArtworkWidget(
-              id: playlist.id,
-              type: ArtworkType.PLAYLIST,
-            ),
-          );
-        } 
-    );
+      : playlists.isNotEmpty 
+        ? ListView.builder(
+          physics: const BouncingScrollPhysics(),
+          itemCount: playlists.length,
+          itemBuilder: ( _, int i ) {
+            final playlist = playlists[i];
+            return ListTile(
+              contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
+              title: Text(playlist.playlist),
+              subtitle: Text(playlist.numOfSongs.toString()),
+              onTap: () {
+              },
+              leading: QueryArtworkWidget(
+                id: playlist.id,
+                type: ArtworkType.PLAYLIST,
+              ),
+            );
+          } 
+        )
+      : const Center( child: Text('No hay playlists', style: TextStyle(fontSize: 24),) );
   }
 }
