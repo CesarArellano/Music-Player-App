@@ -1,8 +1,11 @@
-import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
-import 'package:music_player_app/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:assets_audio_player/assets_audio_player.dart';
+import 'package:custom_page_transitions/custom_page_transitions.dart';
+
+import 'package:music_player_app/screens/screens.dart';
+import 'package:music_player_app/widgets/widgets.dart';
 
 import '../../providers/music_player_provider.dart';
 
@@ -40,6 +43,7 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
               title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
               subtitle: Text(song.artist ?? 'No Artist'),                
               leading: QueryArtworkWidget(
+                keepOldArtwork: true,
                 id: song.id,
                 type: ArtworkType.AUDIO,
               ),
@@ -53,14 +57,26 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
                   headPhoneStrategy: HeadPhoneStrategy.pauseOnUnplugPlayOnPlug,
                   showNotification: true,
                 );
+                musicPlayerProvider.audioPlayer.currentPosition.listen((duration) {
+                  musicPlayerProvider.current = duration;
+                });
                 musicPlayerProvider.songPlayed = song;
               } else {
                 if( musicPlayerProvider.audioPlayer.isPlaying.value ) {
-                  musicPlayerProvider.audioPlayer.pause();
-                } else {
+                  musicPlayerProvider.audioPlayer.stop();
                   musicPlayerProvider.audioPlayer.play();
                 }
               }
+              PageTransitions(
+                context: context, // BuildContext
+                child: const SongPlayedScreen(), // Widget
+                animation: AnimationType.slideUp, // AnimationType (package enum)
+                duration: const Duration( milliseconds:  300 ), // Duration
+                reverseDuration: const Duration( milliseconds:  300), // Duration
+                curve: Curves.easeOut, // bool
+                fullscreenDialog: false, // bool
+                replacement: false, // bool
+              );
             },
           );
         } 

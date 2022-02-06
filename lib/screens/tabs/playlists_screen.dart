@@ -39,6 +39,7 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> with AutomaticKeepAli
               onTap: () {
               },
               leading: QueryArtworkWidget(
+                keepOldArtwork: true,
                 id: playlist.id,
                 type: ArtworkType.PLAYLIST,
               ),

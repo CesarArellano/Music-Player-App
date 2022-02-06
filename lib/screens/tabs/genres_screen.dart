@@ -38,6 +38,7 @@ class _GenresScreenState extends State<GenresScreen> with AutomaticKeepAliveClie
               title: Text(genre.genre),
               subtitle: Text(genre.numOfSongs.toString()),
               leading: QueryArtworkWidget(
+                keepOldArtwork: true,
                 id: genre.id,
                 type: ArtworkType.GENRE,
               ),

@@ -1,3 +1,4 @@
+import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:music_player_app/providers/music_player_provider.dart';
 import 'package:music_player_app/widgets/widgets.dart';
@@ -39,15 +40,21 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
         centerTitle: true,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
-            
-            color: Color(0xFF003A7C),
-        )
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF003A7C),
+                Color(0xCC113763)
+              ]
+            ),
+          )
         ),
         title: Column(
           children: [
-            const Text('PLAYING FROM', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w400) ),
+            const Text('PLAYING FROM', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400) ),
             const SizedBox(height: 4),
-            Text(songPlayed.album ?? 'No Album', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+            Text(songPlayed.album ?? 'No Album', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
           ]
         ),
         leading: IconButton(
@@ -94,6 +101,7 @@ class _SongPlayedBody extends StatelessWidget {
           children: [
             SizedBox(height: size.height * 0.01),
             QueryArtworkWidget(
+              keepOldArtwork: true,
               id: songPlayed.id,
               type: ArtworkType.AUDIO,
               artworkBorder: BorderRadius.zero,
@@ -105,10 +113,12 @@ class _SongPlayedBody extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                IconButton(
+                FloatingActionButton(
+                  elevation: 0.0,
+                  highlightElevation: 0.0,
                   onPressed: () {},
-                  color: Colors.white,
-                  icon: const Icon( Icons.library_add_check_sharp ),
+                  backgroundColor: Colors.transparent,
+                  child: const Icon( Icons.library_add_check_sharp ),
                 ),
                 Column(
                   children: [
@@ -117,16 +127,59 @@ class _SongPlayedBody extends StatelessWidget {
                     Text(songPlayed.artist ?? 'No Artist', style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 12)),
                   ],
                 ),
-                IconButton(
+                FloatingActionButton(
+                  elevation: 0.0,
+                  highlightElevation: 0.0,
                   onPressed: () {},
-                  color: Colors.white,
-                  icon: const Icon( Icons.list ),
+                  backgroundColor: Colors.transparent,
+                  child: const Icon( Icons.list ),
                 ),
               ],
             ),
             SizedBox(height: size.height * 0.1),
             const _SongTimeline(),
-            SizedBox(height: size.height * 0.06),
+            SizedBox(height: size.height * 0.1),
+            _MusicControls(musicPlayerProvider: musicPlayerProvider, playAnimation: playAnimation)
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MusicControls extends StatelessWidget {
+  const _MusicControls({
+    Key? key,
+    required this.musicPlayerProvider,
+    required this.playAnimation,
+  }) : super(key: key);
+
+  final MusicPlayerProvider musicPlayerProvider;
+  final AnimationController? playAnimation;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        FloatingActionButton(
+          elevation: 0.0,
+          highlightElevation: 0.0,
+          onPressed: () {},
+          backgroundColor: Colors.transparent,
+          child: const Icon( Icons.repeat ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FloatingActionButton(
+              elevation: 0.0,
+              highlightElevation: 0.0,
+              onPressed: () {},
+              backgroundColor: Colors.transparent,
+              child: const Icon( Icons.fast_rewind),
+            ),
+            const SizedBox(width: 15),
             FloatingActionButton(
               backgroundColor: Colors.amber,
               onPressed: () {
@@ -144,10 +197,25 @@ class _SongPlayedBody extends StatelessWidget {
                 icon: AnimatedIcons.play_pause,
                 color: Colors.black,
               )
-            )
-          ],
+            ),
+            const SizedBox(width: 15),
+            FloatingActionButton(
+              elevation: 0.0,
+              highlightElevation: 0.0,
+              onPressed: () {},
+              backgroundColor: Colors.transparent,
+              child: const Icon( Icons.fast_forward ),
+            ),
+          ]
         ),
-      ),
+        FloatingActionButton(
+          elevation: 0.0,
+          highlightElevation: 0.0,
+          onPressed: () {},
+          backgroundColor: Colors.transparent,
+          child: const Icon( Icons.shuffle ),
+        ),
+      ],
     );
   }
 }
@@ -159,36 +227,17 @@ class _SongTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
+    final songPlayed = musicPlayerProvider.songPlayed;
 
-    return Column(
-      children: [
-        Stack(
-          children: [
-            Container(
-              width: size.width,
-              height: 3,
-              color: Colors.white.withOpacity(0.1)
-            ),
-            Positioned(
-              bottom: 0,
-              child: Container(
-                width: size.width * 0.4,
-                height: 3,
-                color: Colors.white.withOpacity(0.8)
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            Text('0:00'),
-            Text('3:54')
-          ],
-        )
-      ],
+    return ProgressBar(
+      progressBarColor: Colors.white,
+      thumbColor: Colors.amber,
+      progress: musicPlayerProvider.current,
+      total: Duration(milliseconds: songPlayed.duration!),
+      onSeek: (duration) {
+        musicPlayerProvider.audioPlayer.seek(duration);
+      },
     );
   }
 }

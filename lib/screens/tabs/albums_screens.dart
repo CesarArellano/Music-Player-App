@@ -45,6 +45,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   QueryArtworkWidget(
+                    keepOldArtwork: true,
                     id: album.id,
                     type: ArtworkType.ALBUM,
                     format: ArtworkFormat.PNG,

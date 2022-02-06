@@ -38,6 +38,7 @@ class _ArtistScreenState extends State<ArtistScreen> with AutomaticKeepAliveClie
               title: Text(artist.artist),
               subtitle: Text(artist.numberOfAlbums.toString()),
               leading: QueryArtworkWidget(
+                keepOldArtwork: true,
                 id: artist.id,
                 type: ArtworkType.ARTIST,
               ),

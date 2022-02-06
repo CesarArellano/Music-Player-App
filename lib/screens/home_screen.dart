@@ -52,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Color(0xCC174A85)
               ]
             ),
-        )
+          )
         ),
         title: const Text('Music Player'),
         leading: IconButton(

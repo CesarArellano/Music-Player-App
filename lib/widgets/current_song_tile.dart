@@ -26,6 +26,7 @@ class CurrentSongTile extends StatelessWidget {
       child: ListTile(
         tileColor: const Color(0xFF0E3158),
         leading: QueryArtworkWidget(
+          keepOldArtwork: true,
           id: songPlayed.id,
           type: ArtworkType.AUDIO,
           artworkBorder: BorderRadius.zero,
@@ -73,8 +74,8 @@ class CurrentSongTile extends StatelessWidget {
             context: context, // BuildContext
             child: const SongPlayedScreen(), // Widget
             animation: AnimationType.slideUp, // AnimationType (package enum)
-            duration: const Duration( milliseconds:  250 ), // Duration
-            reverseDuration: const Duration( milliseconds:  250), // Duration
+            duration: const Duration( milliseconds:  300 ), // Duration
+            reverseDuration: const Duration( milliseconds:  300), // Duration
             curve: Curves.easeOut, // bool
             fullscreenDialog: false, // bool
             replacement: false, // bool
