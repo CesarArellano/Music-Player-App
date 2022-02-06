@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:music_player_app/widgets/ripple_tile.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
@@ -31,17 +32,17 @@ class _ArtistScreenState extends State<ArtistScreen> with AutomaticKeepAliveClie
         itemCount: artistList.length,
         itemBuilder: ( _, int i ) {
           final artist = artistList[i];
-          return ListTile(
-            contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
-            title: Text(artist.artist),
-            subtitle: Text(artist.numberOfAlbums.toString()),
-            onTap: () {
-
-            },
-            leading: QueryArtworkWidget(
-              id: artist.id,
-              type: ArtworkType.ARTIST,
+          return RippleTile(
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
+              title: Text(artist.artist),
+              subtitle: Text(artist.numberOfAlbums.toString()),
+              leading: QueryArtworkWidget(
+                id: artist.id,
+                type: ArtworkType.ARTIST,
+              ),
             ),
+            onTap: () {},
           );
         } 
     );

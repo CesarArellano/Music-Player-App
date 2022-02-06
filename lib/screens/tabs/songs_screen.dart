@@ -1,5 +1,6 @@
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
+import 'package:music_player_app/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
@@ -33,14 +34,19 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
         itemCount: songList.length,
         itemBuilder: ( _, int i ) {
           final song = songList[i];
-          return ListTile(
-            contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
-            title: Text(song.title),
-            subtitle: Text(song.artist ?? 'No Artist'),
+          return RippleTile(
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
+              title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+              subtitle: Text(song.artist ?? 'No Artist'),                
+              leading: QueryArtworkWidget(
+                id: song.id,
+                type: ArtworkType.AUDIO,
+              ),
+            ),
             onTap: () {
-
               final path = song.data;
-
+              
               if( musicPlayerProvider.songPlayed.title != song.title ) {
                 musicPlayerProvider.audioPlayer.open(
                   Audio.file(path),
@@ -55,12 +61,7 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
                   musicPlayerProvider.audioPlayer.play();
                 }
               }
-
             },
-            leading: QueryArtworkWidget(
-              id: song.id,
-              type: ArtworkType.AUDIO,
-            ),
           );
         } 
     );

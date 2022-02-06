@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:music_player_app/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
@@ -31,16 +32,17 @@ class _GenresScreenState extends State<GenresScreen> with AutomaticKeepAliveClie
         itemCount: genreList.length,
         itemBuilder: ( _, int i ) {
           final genre = genreList[i];
-          return ListTile(
-            contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
-            title: Text(genre.genre),
-            subtitle: Text(genre.numOfSongs.toString()),
-            onTap: () {
-            },
-            leading: QueryArtworkWidget(
-              id: genre.id,
-              type: ArtworkType.GENRE,
+          return RippleTile(
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
+              title: Text(genre.genre),
+              subtitle: Text(genre.numOfSongs.toString()),
+              leading: QueryArtworkWidget(
+                id: genre.id,
+                type: ArtworkType.GENRE,
+              ),
             ),
+            onTap: () {},
           );
         } 
     );

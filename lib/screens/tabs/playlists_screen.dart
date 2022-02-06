@@ -45,6 +45,8 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> with AutomaticKeepAli
             );
           } 
         )
-      : const Center( child: Text('No hay playlists', style: TextStyle(fontSize: 24),) );
+      : const Center( 
+        child: Text('No Playlists', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))
+      );
   }
 }

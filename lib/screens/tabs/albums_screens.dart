@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:music_player_app/widgets/ripple_tile.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
@@ -25,7 +26,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
 
     return musicPlayerProvider.isLoading
       ? const Center ( child: CircularProgressIndicator() )
-      : Padding(
+      : Container(
+        color: const Color(0xFF144781),
         padding: const EdgeInsets.symmetric(horizontal: 5),
         child: GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -38,8 +40,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
           itemCount: albumList.length,
           itemBuilder: ( _, int i ) {
             final album = albumList[i];
-            return InkWell(
-              onTap: () {},
+            return RippleTile(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -64,6 +65,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
                   ),
                 ],
               ),
+              onTap: () {}
             );
           },
     ),
