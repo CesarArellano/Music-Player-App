@@ -40,10 +40,15 @@ class MusicActions {
       );
       musicPlayerProvider.audioPlayer.currentPosition.listen((duration) {
         audioControlProvider.current = duration;
-        if( duration.compareTo( Duration( milliseconds: musicPlayerProvider.songPlayed.duration! ))  == 0 ) {
-          audioControlProvider.currentIndex += 1;
-          musicPlayerProvider.songPlayed = musicPlayerProvider.songList[ audioControlProvider.currentIndex ];
-        }
+        musicPlayerProvider.audioPlayer.loopMode.listen((loopMode) {
+          if( loopMode == LoopMode.none ) {
+            if( duration.compareTo( Duration( milliseconds: musicPlayerProvider.songPlayed.duration!))  == 0 ) {
+              audioControlProvider.currentIndex += 1;
+              musicPlayerProvider.songPlayed = musicPlayerProvider.songList[ audioControlProvider.currentIndex ];
+            }
+          }
+        });
+        
       });
 
       musicPlayerProvider.songPlayed = song;

@@ -201,7 +201,7 @@ class _MusicControls extends StatelessWidget {
               if( !snapshot.hasData ) {
                 return const Icon( Icons.forward );
               }
-              return Icon( ( snapshot.data == LoopMode.none ) ? Icons.forward : Icons.repeat );
+              return Icon( ( snapshot.data == LoopMode.none ) ? Icons.forward : Icons.repeat_one );
             },
           ),
           onPressed: () async {
@@ -221,7 +221,7 @@ class _MusicControls extends StatelessWidget {
               backgroundColor: Colors.transparent,
               child: const Icon( Icons.fast_rewind),
               onPressed: () {
-                if( controlProvider.currentIndex > 0 ) {
+                if( musicPlayerProvider.audioPlayer.loopMode.value == LoopMode.none && controlProvider.currentIndex > 0 ) {
                   controlProvider.currentIndex -= 1;
                   musicPlayerProvider.songPlayed = musicPlayerProvider.songList[controlProvider.currentIndex];
                   musicPlayerProvider.audioPlayer.previous();
@@ -254,7 +254,7 @@ class _MusicControls extends StatelessWidget {
               backgroundColor: Colors.transparent,
               child: const Icon( Icons.fast_forward ),
               onPressed: () {
-                if( controlProvider.currentIndex <= musicPlayerProvider.songList.length - 2 ) {
+                if( musicPlayerProvider.audioPlayer.loopMode.value == LoopMode.none && controlProvider.currentIndex <= musicPlayerProvider.songList.length - 2 ) {
                   controlProvider.currentIndex += 1;
                   musicPlayerProvider.songPlayed = musicPlayerProvider.songList[controlProvider.currentIndex];
                   musicPlayerProvider.audioPlayer.next();
@@ -268,10 +268,18 @@ class _MusicControls extends StatelessWidget {
           elevation: 0.0,
           highlightElevation: 0.0,
           backgroundColor: Colors.transparent,
-          child: const Icon( Icons.shuffle ),
+          child: StreamBuilder(
+            stream: musicPlayerProvider.audioPlayer.isShuffling,
+            builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+              if( !snapshot.hasData ) {
+                return const Icon( Icons.shuffle, color: Colors.grey );
+              }
+            
+              return Icon( Icons.shuffle, color: ( snapshot.data! ) ? Colors.white : Colors.grey );
+            },
+          ),
           onPressed: () {
-            // musicPlayerProvider.audioPlayer.shuffle = true;
-            // musicPlayerProvider.audioPlayer.play();
+            // musicPlayerProvider.audioPlayer.toggleShuffle();
           },
         ),
       ],
