@@ -98,7 +98,7 @@ class _SongPlayedBody extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final songPlayed = musicPlayerProvider.songPlayed;
-
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: SingleChildScrollView(
@@ -108,11 +108,11 @@ class _SongPlayedBody extends StatelessWidget {
             QueryArtworkWidget(
               keepOldArtwork: true,
               id: songPlayed.id,
+              format: ArtworkFormat.JPEG,
               type: ArtworkType.AUDIO,
               artworkBorder: BorderRadius.zero,
               artworkWidth: double.infinity,
               artworkHeight: 350,
-              artworkQuality: FilterQuality.high,
             ),
             SizedBox(height: size.height * 0.04),
             SizedBox(
@@ -157,9 +157,34 @@ class _SongPlayedBody extends StatelessWidget {
                   FloatingActionButton(
                     elevation: 0.0,
                     highlightElevation: 0.0,
-                    onPressed: () {},
                     backgroundColor: Colors.transparent,
                     child: const Icon( Icons.list ),
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        builder: ( context ) => Container(
+                          color: const Color(0xCC174A85),
+                          height: MediaQuery.of(context).size.height * 0.5,
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: musicPlayerProvider.audioPlayer.playlist?.audios.length,
+                            itemBuilder: (_, int i) {
+                              final audio = musicPlayerProvider.audioPlayer.playlist?.audios[i];
+                              return Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: ListTile(
+                                  title: Text(audio!.metas.title!, maxLines: 1),
+                                  onTap: () {
+                                    musicPlayerProvider.audioPlayer.playlistPlayAtIndex(i);
+                                    musicPlayerProvider.songPlayed = musicPlayerProvider.songList[i];
+                                  },
+                                ),
+                              );
+                            }
+                          ),
+                        )
+                      );
+                    },
                   ),
                 ],
               ),
