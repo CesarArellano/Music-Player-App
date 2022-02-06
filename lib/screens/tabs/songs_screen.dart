@@ -29,26 +29,32 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
     return musicPlayerProvider.isLoading
       ? const Center ( child: CircularProgressIndicator( color: Colors.white,) )
       : songList.isNotEmpty
-        ? ListView.builder(
-          physics: const BouncingScrollPhysics(),
-          itemCount: songList.length,
-          itemBuilder: ( _, int i ) {
-            final song = songList[i];
-            return RippleTile(
-              child: ListTile(
-                contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
-                title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                subtitle: Text(song.artist ?? 'No Artist'),                
-                leading: QueryArtworkWidget(
-                  keepOldArtwork: true,
-                  id: song.id,
-                  type: ArtworkType.AUDIO,
+        ? RawScrollbar(
+          interactive: false,
+          thickness: 10,
+          thumbColor: Colors.amber,
+          minThumbLength: 40.0,
+          child: ListView.builder(
+            physics: const BouncingScrollPhysics(),
+            itemCount: songList.length,
+            itemBuilder: ( _, int i ) {
+              final song = songList[i];
+              return RippleTile(
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
+                  title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  subtitle: Text(song.artist ?? 'No Artist'),                
+                  leading: QueryArtworkWidget(
+                    keepOldArtwork: true,
+                    id: song.id,
+                    type: ArtworkType.AUDIO,
+                  ),
                 ),
+                onTap: () => MusicActions.songPlayAndPause(context, song),
+              );
+            } 
               ),
-              onTap: () => MusicActions.songPlayAndPause(context, song),
-            );
-          } 
-      )
+        )
       : const Center( 
         child: Text('No Songs', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))
       );

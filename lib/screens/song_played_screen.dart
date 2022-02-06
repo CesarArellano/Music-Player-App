@@ -1,10 +1,14 @@
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:marquee/marquee.dart';
 import 'package:music_player_app/providers/audio_control_provider.dart';
 import 'package:music_player_app/providers/music_player_provider.dart';
 import 'package:music_player_app/widgets/widgets.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
+
+import '../providers/audio_control_provider.dart';
 
 class SongPlayedScreen extends StatefulWidget {
   
@@ -110,40 +114,60 @@ class _SongPlayedBody extends StatelessWidget {
               artworkHeight: 350,
               artworkQuality: FilterQuality.high,
             ),
-            SizedBox(height: size.height * 0.06),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                FloatingActionButton(
-                  elevation: 0.0,
-                  highlightElevation: 0.0,
-                  onPressed: () {},
-                  backgroundColor: Colors.transparent,
-                  child: const Icon( Icons.library_add_check_sharp ),
-                ),
-                SizedBox(
-                  width: size.width * 0.6,
-                  child: Column(
-                    children: [
-                      Text(songPlayed.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                      const SizedBox(height: 6),
-                      Text(songPlayed.artist ?? 'No Artist', style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 12)),
-                    ],
+            SizedBox(height: size.height * 0.04),
+            SizedBox(
+              height: size.height * 0.07,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  FloatingActionButton(
+                    elevation: 0.0,
+                    highlightElevation: 0.0,
+                    onPressed: () {},
+                    backgroundColor: Colors.transparent,
+                    child: const Icon( Icons.library_add_check_sharp ),
                   ),
-                ),
-                FloatingActionButton(
-                  elevation: 0.0,
-                  highlightElevation: 0.0,
-                  onPressed: () {},
-                  backgroundColor: Colors.transparent,
-                  child: const Icon( Icons.list ),
-                ),
-              ],
+                  SizedBox(
+                    width: size.width * 0.55,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Flexible (
+                          child: ( songPlayed.title.length > 20 )
+                          ? Marquee(
+                            velocity: 50.0,
+                            text: songPlayed.title,
+                            blankSpace: 30,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          )
+                          : Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(height: 10),
+                              Text( songPlayed.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16) ),
+                              const SizedBox(height: 15)
+                            ],
+                          )
+                        ),
+                        Text(songPlayed.artist ?? 'No Artist', style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                  FloatingActionButton(
+                    elevation: 0.0,
+                    highlightElevation: 0.0,
+                    onPressed: () {},
+                    backgroundColor: Colors.transparent,
+                    child: const Icon( Icons.list ),
+                  ),
+                ],
+              ),
             ),
             SizedBox(height: size.height * 0.1),
             const _SongTimeline(),
             SizedBox(height: size.height * 0.1),
-            _MusicControls(musicPlayerProvider: musicPlayerProvider, playAnimation: playAnimation)
+            _MusicControls(playAnimation: playAnimation)
           ],
         ),
       ),
@@ -154,24 +178,39 @@ class _SongPlayedBody extends StatelessWidget {
 class _MusicControls extends StatelessWidget {
   const _MusicControls({
     Key? key,
-    required this.musicPlayerProvider,
     required this.playAnimation,
   }) : super(key: key);
 
-  final MusicPlayerProvider musicPlayerProvider;
   final AnimationController? playAnimation;
 
   @override
   Widget build(BuildContext context) {
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
+    final controlProvider = Provider.of<AudioControlProvider>(context, listen: false);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         FloatingActionButton(
           elevation: 0.0,
           highlightElevation: 0.0,
-          onPressed: () {},
           backgroundColor: Colors.transparent,
-          child: const Icon( Icons.repeat ),
+          child: StreamBuilder(
+            stream: musicPlayerProvider.audioPlayer.loopMode,
+            builder: (BuildContext context, AsyncSnapshot<LoopMode> snapshot) {  
+              if( !snapshot.hasData ) {
+                return const Icon( Icons.forward );
+              }
+              return Icon( ( snapshot.data == LoopMode.none ) ? Icons.forward : Icons.repeat );
+            },
+          ),
+          onPressed: () async {
+            await musicPlayerProvider.audioPlayer.setLoopMode( 
+              musicPlayerProvider.audioPlayer.loopMode.value == LoopMode.none
+              ? LoopMode.single
+              : LoopMode.none
+            );
+          },
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -179,9 +218,15 @@ class _MusicControls extends StatelessWidget {
             FloatingActionButton(
               elevation: 0.0,
               highlightElevation: 0.0,
-              onPressed: () {},
               backgroundColor: Colors.transparent,
               child: const Icon( Icons.fast_rewind),
+              onPressed: () {
+                if( controlProvider.currentIndex > 0 ) {
+                  controlProvider.currentIndex -= 1;
+                  musicPlayerProvider.songPlayed = musicPlayerProvider.songList[controlProvider.currentIndex];
+                  musicPlayerProvider.audioPlayer.previous();
+                }
+              },
             ),
             const SizedBox(width: 15),
             FloatingActionButton(
@@ -206,18 +251,28 @@ class _MusicControls extends StatelessWidget {
             FloatingActionButton(
               elevation: 0.0,
               highlightElevation: 0.0,
-              onPressed: () {},
               backgroundColor: Colors.transparent,
               child: const Icon( Icons.fast_forward ),
+              onPressed: () {
+                if( controlProvider.currentIndex <= musicPlayerProvider.songList.length - 2 ) {
+                  controlProvider.currentIndex += 1;
+                  musicPlayerProvider.songPlayed = musicPlayerProvider.songList[controlProvider.currentIndex];
+                  musicPlayerProvider.audioPlayer.next();
+                }
+              },
+              
             ),
           ]
         ),
         FloatingActionButton(
           elevation: 0.0,
           highlightElevation: 0.0,
-          onPressed: () {},
           backgroundColor: Colors.transparent,
           child: const Icon( Icons.shuffle ),
+          onPressed: () {
+            // musicPlayerProvider.audioPlayer.shuffle = true;
+            // musicPlayerProvider.audioPlayer.play();
+          },
         ),
       ],
     );
