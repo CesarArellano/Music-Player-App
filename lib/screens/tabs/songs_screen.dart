@@ -1,9 +1,9 @@
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
-import '../providers/music_player_provider.dart';
+import '../../providers/music_player_provider.dart';
 
 class SongsScreen extends StatefulWidget {
   
@@ -17,8 +17,7 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
 
   @override
   bool get wantKeepAlive => true;
-  
-  final AudioPlayer _audioPlayer = AudioPlayer();
+
 
   @override
   Widget build(BuildContext context) {
@@ -40,16 +39,20 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
             subtitle: Text(song.artist ?? 'No Artist'),
             onTap: () {
 
-              final uri = song.data;
+              final path = song.data;
 
-              if( musicPlayerProvider.songPlayed != song.title ) {
-                _audioPlayer.play('file://$uri', isLocal: true);
-                musicPlayerProvider.songPlayed = song.title;
+              if( musicPlayerProvider.songPlayed.title != song.title ) {
+                musicPlayerProvider.audioPlayer.open(
+                  Audio.file(path),
+                  headPhoneStrategy: HeadPhoneStrategy.pauseOnUnplugPlayOnPlug,
+                  showNotification: true,
+                );
+                musicPlayerProvider.songPlayed = song;
               } else {
-                if( _audioPlayer.state == PlayerState.PLAYING ) {
-                  _audioPlayer.pause();
+                if( musicPlayerProvider.audioPlayer.isPlaying.value ) {
+                  musicPlayerProvider.audioPlayer.pause();
                 } else {
-                  _audioPlayer.play('file://$uri', isLocal: true);
+                  musicPlayerProvider.audioPlayer.play();
                 }
               }
 

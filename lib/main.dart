@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:music_player_app/providers/music_player_provider.dart';
-
-import 'package:music_player_app/routes/app_router.dart';
-import 'package:music_player_app/theme/app_theme.dart';
 import 'package:provider/provider.dart';
+
+import 'package:music_player_app/providers/music_player_provider.dart';
+import 'package:music_player_app/theme/app_theme.dart';
+import 'package:music_player_app/routes/app_router.dart';
 
 void main() => runApp(const MyApp());
 

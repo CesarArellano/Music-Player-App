@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
-import '../providers/music_player_provider.dart';
+import '../../providers/music_player_provider.dart';
 
 class ArtistScreen extends StatefulWidget {
   
@@ -17,8 +16,6 @@ class _ArtistScreenState extends State<ArtistScreen> with AutomaticKeepAliveClie
 
   @override
   bool get wantKeepAlive => true;
-
-  final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
   Widget build(BuildContext context) {

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 
+import 'package:music_player_app/providers/music_player_provider.dart';
 import 'package:music_player_app/screens/screens.dart';
 class HomeScreen extends StatefulWidget {
 
@@ -9,25 +12,30 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   
   TabController? _tabController;
+  AnimationController? _playAnimation;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
+    _playAnimation =  AnimationController(duration: const Duration(milliseconds: 200), vsync: this);
+    _playAnimation?.forward();
   }
 
   @override
   void dispose() {
-    _tabController?.dispose();
     super.dispose();
-
+    _playAnimation?.dispose();
+    _tabController?.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -49,16 +57,23 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         bottom: getTabBar(),
       ),
       body: getTabBarView(),
+      bottomNavigationBar: musicPlayerProvider.isLoading
+      ? null
+      : musicPlayerProvider.songPlayed.title.isEmpty 
+        ? null
+        : _CurrentSongTile(playAnimation: _playAnimation)
     );
   }
 
   TabBar getTabBar() {
     return TabBar(
+      isScrollable: true,
       controller: _tabController,
       tabs: const <Tab> [
         Tab(text: 'Songs'),
         Tab(text: 'Albums'),
         Tab(text: 'Artists'),
+        Tab(text: 'Playlists'),
         Tab(text: 'Genres'),
       ] 
     );
@@ -67,13 +82,65 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   TabBarView getTabBarView() {
     return TabBarView(
       controller: _tabController,
-      children: <Widget>[
+      children: const <Widget>[
         SongsScreen(),
         AlbumsScreen(),
         ArtistScreen(),
+        PlaylistsScreen(),
         GenresScreen(),
       ],
     );
   }
 
+}
+
+class _CurrentSongTile extends StatelessWidget {
+  const _CurrentSongTile({
+    Key? key,
+    required this.playAnimation,
+  }) : super(key: key);
+
+  final AnimationController? playAnimation;
+
+  @override
+  Widget build(BuildContext context) {
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
+    final songPlayed = musicPlayerProvider.songPlayed;
+    
+    return ListTile(
+      leading: QueryArtworkWidget(
+        id: songPlayed.id,
+        type: ArtworkType.AUDIO,
+        artworkBorder: BorderRadius.zero,
+        artworkQuality: FilterQuality.high,
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            onPressed: () {
+              final isPlaying = musicPlayerProvider.audioPlayer.isPlaying.value;
+              if( isPlaying ) {
+                playAnimation?.reverse();
+                musicPlayerProvider.audioPlayer.pause();
+              } else {
+                playAnimation?.forward();
+                musicPlayerProvider.audioPlayer.play();
+              }
+            },
+            icon: AnimatedIcon( 
+              progress: playAnimation!,
+              icon: AnimatedIcons.play_pause,
+              color: Colors.blue,
+            )
+          )
+        ],
+      ),
+      title: Text(songPlayed.title, maxLines: 1, overflow: TextOverflow.ellipsis,),
+      subtitle: Text(songPlayed.artist ?? 'No artist'),
+      onTap: (){
+
+      },
+    );
+  }
 }

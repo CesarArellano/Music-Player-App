@@ -1,17 +1,20 @@
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 class MusicPlayerProvider extends ChangeNotifier {
 
+  final AssetsAudioPlayer audioPlayer = AssetsAudioPlayer();
   final OnAudioQuery onAudioQuery = OnAudioQuery();
 
-  String _songPlayed = '';
+  SongModel _songPlayed = SongModel({ 'title': '' });
   bool _isLoading = false;
 
   List<SongModel> songList = [];
   List<AlbumModel> albumList = [];
   List<GenreModel> genreList = [];
   List<ArtistModel> artistList = [];
+  List<PlaylistModel> playLists = [];
 
   MusicPlayerProvider() {
     getAllSongs();
@@ -24,9 +27,9 @@ class MusicPlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  String get songPlayed => _songPlayed;
+  SongModel get songPlayed => _songPlayed;
 
-  set songPlayed( String value ) {
+  set songPlayed( SongModel value ) {
     _songPlayed = value;
     notifyListeners();
   }
@@ -41,6 +44,7 @@ class MusicPlayerProvider extends ChangeNotifier {
     albumList = await onAudioQuery.queryAlbums();
     genreList = await onAudioQuery.queryGenres();
     artistList = await onAudioQuery.queryArtists();
+    playLists = await onAudioQuery.queryPlaylists();
 
     _isLoading = false;
     notifyListeners();

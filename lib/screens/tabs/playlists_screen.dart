@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
-import '../providers/music_player_provider.dart';
+import '../../providers/music_player_provider.dart';
 
-class GenresScreen extends StatefulWidget {
+class PlaylistsScreen extends StatefulWidget {
   
-  const GenresScreen({Key? key}) : super(key: key);
+  const PlaylistsScreen({Key? key}) : super(key: key);
 
   @override
-  State<GenresScreen> createState() => _GenresScreenState();
+  State<PlaylistsScreen> createState() => _PlaylistsScreenState();
 }
 
-class _GenresScreenState extends State<GenresScreen> with AutomaticKeepAliveClientMixin {
+class _PlaylistsScreenState extends State<PlaylistsScreen> with AutomaticKeepAliveClientMixin {
   
   @override
   bool get wantKeepAlive => true;
@@ -23,24 +22,24 @@ class _GenresScreenState extends State<GenresScreen> with AutomaticKeepAliveClie
     super.build(context);
     
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
-    final genreList = musicPlayerProvider.genreList;
+    final playlists = musicPlayerProvider.playLists;
 
     return musicPlayerProvider.isLoading
       ? const Center ( child: CircularProgressIndicator() )
       : ListView.builder(
         physics: const BouncingScrollPhysics(),
-        itemCount: genreList.length,
+        itemCount: playlists.length,
         itemBuilder: ( _, int i ) {
-          final genre = genreList[i];
+          final playlist = playlists[i];
           return ListTile(
             contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
-            title: Text(genre.genre),
-            subtitle: Text(genre.numOfSongs.toString()),
+            title: Text(playlist.playlist),
+            subtitle: Text(playlist.numOfSongs.toString()),
             onTap: () {
             },
             leading: QueryArtworkWidget(
-              id: genre.id,
-              type: ArtworkType.GENRE,
+              id: playlist.id,
+              type: ArtworkType.PLAYLIST,
             ),
           );
         } 

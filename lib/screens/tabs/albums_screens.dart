@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:audioplayers/audioplayers.dart';
 
-import '../providers/music_player_provider.dart';
+import '../../providers/music_player_provider.dart';
 
 class AlbumsScreen extends StatefulWidget {
 
