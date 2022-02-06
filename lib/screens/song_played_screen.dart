@@ -162,23 +162,24 @@ class _SongPlayedBody extends StatelessWidget {
                     onPressed: () {
                       showModalBottomSheet(
                         context: context,
-                        builder: ( context ) => Container(
-                          color: const Color(0xCC174A85),
+                        builder: ( ctx ) => SizedBox(
                           height: MediaQuery.of(context).size.height * 0.5,
                           child: ListView.builder(
+                            physics: const BouncingScrollPhysics(),
                             shrinkWrap: true,
                             itemCount: musicPlayerProvider.audioPlayer.playlist?.audios.length,
                             itemBuilder: (_, int i) {
                               final audio = musicPlayerProvider.audioPlayer.playlist?.audios[i];
-                              return Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: ListTile(
-                                  title: Text(audio!.metas.title!, maxLines: 1),
-                                  onTap: () {
-                                    musicPlayerProvider.audioPlayer.playlistPlayAtIndex(i);
-                                    musicPlayerProvider.songPlayed = musicPlayerProvider.songList[i];
-                                  },
-                                ),
+                              return ListTile(
+                                tileColor: const Color(0xCC174A85),
+                                leading: const Icon( Icons.music_note, color: Colors.white, ),
+                                title: Text(audio!.metas.title!, maxLines: 1),
+                                subtitle: Text(audio.metas.artist!, maxLines: 1),
+                                onTap: () {
+                                  musicPlayerProvider.audioPlayer.playlistPlayAtIndex(i);
+                                  musicPlayerProvider.songPlayed = musicPlayerProvider.songList[i];
+                                  Navigator.pop(ctx);
+                                },
                               );
                             }
                           ),
