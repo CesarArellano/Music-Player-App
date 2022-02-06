@@ -1,5 +1,6 @@
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:music_player_app/providers/audio_control_provider.dart';
 import 'package:music_player_app/providers/music_player_provider.dart';
 import 'package:music_player_app/widgets/widgets.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -120,12 +121,15 @@ class _SongPlayedBody extends StatelessWidget {
                   backgroundColor: Colors.transparent,
                   child: const Icon( Icons.library_add_check_sharp ),
                 ),
-                Column(
-                  children: [
-                    Text(songPlayed.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    const SizedBox(height: 6),
-                    Text(songPlayed.artist ?? 'No Artist', style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 12)),
-                  ],
+                SizedBox(
+                  width: size.width * 0.6,
+                  child: Column(
+                    children: [
+                      Text(songPlayed.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      const SizedBox(height: 6),
+                      Text(songPlayed.artist ?? 'No Artist', style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 12)),
+                    ],
+                  ),
                 ),
                 FloatingActionButton(
                   elevation: 0.0,
@@ -227,13 +231,17 @@ class _SongTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
+    final audioControlProvider = Provider.of<AudioControlProvider>(context);
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final songPlayed = musicPlayerProvider.songPlayed;
 
     return ProgressBar(
+      thumbGlowRadius: 15.0,
+      thumbRadius: 8.0,
+      barHeight: 3.0,
       progressBarColor: Colors.white,
       thumbColor: Colors.amber,
-      progress: musicPlayerProvider.current,
+      progress: audioControlProvider.current,
       total: Duration(milliseconds: songPlayed.duration!),
       onSeek: (duration) {
         musicPlayerProvider.audioPlayer.seek(duration);

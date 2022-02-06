@@ -27,25 +27,29 @@ class _ArtistScreenState extends State<ArtistScreen> with AutomaticKeepAliveClie
 
     return musicPlayerProvider.isLoading
       ? const Center ( child: CircularProgressIndicator() )
-      : ListView.builder(
-        physics: const BouncingScrollPhysics(),
-        itemCount: artistList.length,
-        itemBuilder: ( _, int i ) {
-          final artist = artistList[i];
-          return RippleTile(
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
-              title: Text(artist.artist),
-              subtitle: Text(artist.numberOfAlbums.toString()),
-              leading: QueryArtworkWidget(
-                keepOldArtwork: true,
-                id: artist.id,
-                type: ArtworkType.ARTIST,
+      : artistList.isNotEmpty
+        ? ListView.builder(
+          physics: const BouncingScrollPhysics(),
+          itemCount: artistList.length,
+          itemBuilder: ( _, int i ) {
+            final artist = artistList[i];
+            return RippleTile(
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
+                title: Text(artist.artist),
+                subtitle: Text(artist.numberOfAlbums.toString()),
+                leading: QueryArtworkWidget(
+                  keepOldArtwork: true,
+                  id: artist.id,
+                  type: ArtworkType.ARTIST,
+                ),
               ),
-            ),
-            onTap: () {},
-          );
-        } 
-    );
+              onTap: () {},
+            );
+          } 
+        )
+        : const Center( 
+          child: Text('No Artists', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))
+        );
   }
 }

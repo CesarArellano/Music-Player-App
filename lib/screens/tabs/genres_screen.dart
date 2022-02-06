@@ -27,25 +27,29 @@ class _GenresScreenState extends State<GenresScreen> with AutomaticKeepAliveClie
 
     return musicPlayerProvider.isLoading
       ? const Center ( child: CircularProgressIndicator() )
-      : ListView.builder(
-        physics: const BouncingScrollPhysics(),
-        itemCount: genreList.length,
-        itemBuilder: ( _, int i ) {
-          final genre = genreList[i];
-          return RippleTile(
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
-              title: Text(genre.genre),
-              subtitle: Text(genre.numOfSongs.toString()),
-              leading: QueryArtworkWidget(
-                keepOldArtwork: true,
-                id: genre.id,
-                type: ArtworkType.GENRE,
+      : genreList.isNotEmpty
+        ? ListView.builder(
+          physics: const BouncingScrollPhysics(),
+          itemCount: genreList.length,
+          itemBuilder: ( _, int i ) {
+            final genre = genreList[i];
+            return RippleTile(
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
+                title: Text(genre.genre),
+                subtitle: Text(genre.numOfSongs.toString()),
+                leading: QueryArtworkWidget(
+                  keepOldArtwork: true,
+                  id: genre.id,
+                  type: ArtworkType.GENRE,
+                ),
               ),
-            ),
-            onTap: () {},
-          );
-        } 
-    );
+              onTap: () {},
+            );
+          } 
+        )
+        : const Center( 
+          child: Text('No Genres', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))
+        );
   }
 }

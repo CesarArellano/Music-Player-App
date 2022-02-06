@@ -7,7 +7,6 @@ class MusicPlayerProvider extends ChangeNotifier {
   final AssetsAudioPlayer audioPlayer = AssetsAudioPlayer();
   final OnAudioQuery onAudioQuery = OnAudioQuery();
 
-  Duration _current = const Duration(milliseconds: 0);
   SongModel _songPlayed = SongModel({ 'title': '' });
   bool _isLoading = false;
 
@@ -17,6 +16,13 @@ class MusicPlayerProvider extends ChangeNotifier {
   List<ArtistModel> artistList = [];
   List<PlaylistModel> playLists = [];
 
+
+  @override
+  void dispose() {
+    super.dispose();
+    audioPlayer.dispose();
+  }
+  
   MusicPlayerProvider() {
     getAllSongs();
   }
@@ -32,13 +38,6 @@ class MusicPlayerProvider extends ChangeNotifier {
 
   set songPlayed( SongModel value ) {
     _songPlayed = value;
-    notifyListeners();
-  }
-
-  Duration get current => _current;
-  
-  set current(Duration value) {
-    _current= value;
     notifyListeners();
   }
 

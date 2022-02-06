@@ -7,9 +7,9 @@
     
     <application
         android:usesCleartextTraffic="true"
-        android:label="music_player_app"
+        android:label="Music Player"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"
             android:exported="true"

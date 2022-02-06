@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:on_audio_query/on_audio_query.dart' show SongModel, QueryArtworkWidget, ArtworkType;
 
 import 'package:music_player_app/widgets/widgets.dart';
 import 'package:music_player_app/providers/music_player_provider.dart';
+
+import '../helpers/music_actions.dart';
 
 class MusicSearchDelegate extends SearchDelegate {
 
@@ -95,6 +96,7 @@ class MusicSearchDelegate extends SearchDelegate {
       child: ListTile(
         contentPadding: const EdgeInsets.all(8),
         leading: QueryArtworkWidget(
+          keepOldArtwork: true,
           id: song.id,
           type: ArtworkType.AUDIO,
         ),
@@ -102,26 +104,7 @@ class MusicSearchDelegate extends SearchDelegate {
         subtitle: Text(song.artist ?? 'No Artist', maxLines: 1, overflow: TextOverflow.ellipsis),
         // onTap: () => Navigator.pushNamed(context, 'details', arguments: song),
       ),
-      onTap: (){
-        final path = song.data;
-        
-        if( musicPlayerProvider.songPlayed.title != song.title ) {
-          musicPlayerProvider.audioPlayer.open(
-            Audio.file(path),
-            headPhoneStrategy: HeadPhoneStrategy.pauseOnUnplugPlayOnPlug,
-            showNotification: true,
-          );
-          musicPlayerProvider.songPlayed = song;
-        } else {
-          if( musicPlayerProvider.audioPlayer.isPlaying.value ) {
-            musicPlayerProvider.audioPlayer.pause();
-          } else {
-            musicPlayerProvider.audioPlayer.play();
-          }
-        }
-
-        close(context, null);
-      },
+      onTap: () =>  MusicActions.songPlayAndPause(context, song),
     );
   } 
 }

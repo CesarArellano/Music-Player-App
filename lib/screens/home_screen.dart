@@ -101,6 +101,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       children: [
         const CustomBackground(),
         TabBarView(
+          physics: const BouncingScrollPhysics(),
           controller: _tabController,
           children: const <Widget>[
             SongsScreen(),
