@@ -1,4 +1,6 @@
+import 'package:custom_page_transitions/custom_page_transitions.dart';
 import 'package:flutter/material.dart';
+import 'package:music_player_app/screens/song_played_screen.dart';
 import 'package:on_audio_query/on_audio_query.dart' show ArtworkType, QueryArtworkWidget;
 import 'package:provider/provider.dart';
 
@@ -67,7 +69,16 @@ class CurrentSongTile extends StatelessWidget {
           style: const TextStyle(fontSize: 12)
         ),
         onTap: () {
-
+          PageTransitions(
+            context: context, // BuildContext
+            child: const SongPlayedScreen(), // Widget
+            animation: AnimationType.slideUp, // AnimationType (package enum)
+            duration: const Duration( milliseconds:  250 ), // Duration
+            reverseDuration: const Duration( milliseconds:  250), // Duration
+            curve: Curves.easeOut, // bool
+            fullscreenDialog: false, // bool
+            replacement: false, // bool
+          );
         },
       ),
     );

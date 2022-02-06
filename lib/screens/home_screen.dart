@@ -99,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget getTabBarView() {
     return Stack(
       children: [
-        const _CustomBackground(),
+        const CustomBackground(),
         TabBarView(
           controller: _tabController,
           children: const <Widget>[
@@ -114,26 +114,4 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-}
-
-class _CustomBackground extends StatelessWidget {
-  const _CustomBackground({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color.fromRGBO(23, 74, 133, 1),
-            Color.fromARGB(255, 15, 51, 92),
-          ]
-        )
-      ),
-    );
-  }
 }
