@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:music_player_app/search/search_delegate.dart';
 import 'package:provider/provider.dart';
 
 import 'package:music_player_app/providers/music_player_provider.dart';
@@ -63,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           IconButton(
             splashRadius: 20,
             icon: const Icon(Icons.search),
-            onPressed: () {},
+            onPressed: () => showSearch(context: context, delegate: MusicSearchDelegate() ),
           ),
         ],
         bottom: getTabBar(),
