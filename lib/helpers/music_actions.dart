@@ -8,13 +8,22 @@ import 'package:music_player_app/providers/music_player_provider.dart';
 import '../providers/audio_control_provider.dart';
 import '../screens/song_played_screen.dart';
 
+enum TypePlaylist {
+  songs,
+  album,
+}
 class MusicActions {
 
-  static void songPlayAndPause(BuildContext context, SongModel song) async {
+  static void songPlayAndPause(BuildContext context, SongModel song, TypePlaylist type, { albumId = 0 }) async {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
 
-    final index = musicPlayerProvider.songList.indexWhere((songOfList) => songOfList.id == song.id );
+
+    musicPlayerProvider.currentPlaylist = ( type == TypePlaylist.songs )
+      ? musicPlayerProvider.songList
+      : musicPlayerProvider.albumCollection[albumId]!;
+
+    final index = musicPlayerProvider.currentPlaylist.indexWhere((songOfList) => songOfList.id == song.id );
     audioControlProvider.currentIndex = index;
 
     if( musicPlayerProvider.songPlayed.title != song.title ) {
@@ -22,7 +31,7 @@ class MusicActions {
       musicPlayerProvider.audioPlayer.open(
         Playlist(
           audios: [
-            ...musicPlayerProvider.songList.map((song) => Audio.file(
+            ...musicPlayerProvider.currentPlaylist.map((song) => Audio.file(
               song.data,
               metas: Metas(
                 album: song.album,
@@ -33,7 +42,7 @@ class MusicActions {
               )
             ))
           ],
-          startIndex: index
+          startIndex: index,
         ),
         headPhoneStrategy: HeadPhoneStrategy.pauseOnUnplugPlayOnPlug,
         showNotification: true,
@@ -44,7 +53,7 @@ class MusicActions {
           if( loopMode == LoopMode.none ) {
             if( duration.compareTo( Duration( milliseconds: musicPlayerProvider.songPlayed.duration!))  == 0 ) {
               audioControlProvider.currentIndex += 1;
-              musicPlayerProvider.songPlayed = musicPlayerProvider.songList[ audioControlProvider.currentIndex ];
+              musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ audioControlProvider.currentIndex ];
             }
           }
         });

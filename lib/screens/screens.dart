@@ -6,3 +6,4 @@ export 'package:music_player_app/screens/tabs/genres_screen.dart';
 export 'package:music_player_app/screens/tabs/songs_screen.dart';
 export 'package:music_player_app/screens/tabs/playlists_screen.dart';
 export 'package:music_player_app/screens/song_played_screen.dart';
+export 'package:music_player_app/screens/album_selected_screen.dart';

@@ -104,7 +104,7 @@ class MusicSearchDelegate extends SearchDelegate {
         subtitle: Text(song.artist ?? 'No Artist', maxLines: 1, overflow: TextOverflow.ellipsis),
         // onTap: () => Navigator.pushNamed(context, 'details', arguments: song),
       ),
-      onTap: () =>  MusicActions.songPlayAndPause(context, song),
+      onTap: () =>  MusicActions.songPlayAndPause(context, song, TypePlaylist.songs),
     );
   } 
 }

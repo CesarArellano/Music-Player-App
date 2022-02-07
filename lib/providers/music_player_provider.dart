@@ -9,6 +9,9 @@ class MusicPlayerProvider extends ChangeNotifier {
 
   SongModel _songPlayed = SongModel({ 'title': '' });
   bool _isLoading = false;
+  bool _isShuffling = false;
+
+  Map<int, List<SongModel>> albumCollection = {};
 
   List<SongModel> songList = [];
   List<AlbumModel> albumList = [];
@@ -16,6 +19,7 @@ class MusicPlayerProvider extends ChangeNotifier {
   List<ArtistModel> artistList = [];
   List<PlaylistModel> playLists = [];
 
+  List<SongModel> currentPlaylist = [];
 
   @override
   void dispose() {
@@ -31,6 +35,13 @@ class MusicPlayerProvider extends ChangeNotifier {
 
   set isLoading( bool value ) {
     _isLoading = value;
+    notifyListeners();
+  }
+
+  bool get isShuffling => _isShuffling;
+
+  set isShuffling( bool value ) {
+    _isShuffling = value;
     notifyListeners();
   }
 
@@ -60,6 +71,16 @@ class MusicPlayerProvider extends ChangeNotifier {
   Future<List<SongModel>> searchSongByQuery(String query) async {
     List<dynamic> songList = await onAudioQuery.queryWithFilters(query, WithFiltersType.AUDIOS );
     return songList.toSongModel();
+  }
+
+  Future<void> searchByAlbumId(int albumId) async {
+    
+    if( albumCollection.containsKey(albumId) ) return;
+
+    _isLoading = true;
+    albumCollection[albumId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.ALBUM_ID, albumId );
+    _isLoading = false;
+    notifyListeners();
   }
 
 }

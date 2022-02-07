@@ -50,7 +50,7 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
                     type: ArtworkType.AUDIO,
                   ),
                 ),
-                onTap: () => MusicActions.songPlayAndPause(context, song),
+                onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.songs),
               );
             } 
               ),

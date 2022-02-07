@@ -71,7 +71,35 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
           IconButton(
             splashRadius: 20,
             icon: const Icon(Icons.drag_indicator),
-            onPressed: (){},
+            onPressed: (){
+              showModalBottomSheet(
+                context: context,
+                builder: ( ctx ) => Container(
+                color: const Color(0xCC174A85),
+                  height: MediaQuery.of(context).size.height * 0.5,
+                  child: ListView.builder(
+                    physics: const BouncingScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: musicPlayerProvider.audioPlayer.playlist?.audios.length,
+                    itemBuilder: (_, int i) {
+                      final audioControlProvider = Provider.of<AudioControlProvider>(context);
+                      final audio = musicPlayerProvider.audioPlayer.playlist?.audios[i];
+                      return ListTile(
+                        leading: const Icon( Icons.music_note, color: Colors.white, ),
+                        title: Text(audio!.metas.title!, maxLines: 1),
+                        subtitle: Text(audio.metas.artist!, maxLines: 1),
+                        onTap: () {
+                          musicPlayerProvider.audioPlayer.playlistPlayAtIndex(i);
+                          audioControlProvider.currentIndex = i;
+                          musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[i];
+                          Navigator.pop(ctx);
+                        },
+                      );
+                    }
+                  ),
+                )
+              );
+            },
           ),
         ],
       ),
@@ -117,76 +145,27 @@ class _SongPlayedBody extends StatelessWidget {
             SizedBox(height: size.height * 0.04),
             SizedBox(
               height: size.height * 0.07,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  FloatingActionButton(
-                    elevation: 0.0,
-                    highlightElevation: 0.0,
-                    onPressed: () {},
-                    backgroundColor: Colors.transparent,
-                    child: const Icon( Icons.library_add_check_sharp ),
-                  ),
-                  SizedBox(
-                    width: size.width * 0.55,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                  Flexible (
+                    child: ( songPlayed.title.length > 30 )
+                    ? Marquee(
+                      velocity: 50.0,
+                      text: songPlayed.title,
+                      blankSpace: 30,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    )
+                    : Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Flexible (
-                          child: ( songPlayed.title.length > 20 )
-                          ? Marquee(
-                            velocity: 50.0,
-                            text: songPlayed.title,
-                            blankSpace: 30,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                          )
-                          : Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const SizedBox(height: 10),
-                              Text( songPlayed.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16) ),
-                              const SizedBox(height: 15)
-                            ],
-                          )
-                        ),
-                        Text(songPlayed.artist ?? 'No Artist', style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 12)),
+                        const SizedBox(height: 10),
+                        Text( songPlayed.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18) ),
+                        const SizedBox(height: 9)
                       ],
-                    ),
+                    )
                   ),
-                  FloatingActionButton(
-                    elevation: 0.0,
-                    highlightElevation: 0.0,
-                    backgroundColor: Colors.transparent,
-                    child: const Icon( Icons.list ),
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        builder: ( ctx ) => SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.5,
-                          child: ListView.builder(
-                            physics: const BouncingScrollPhysics(),
-                            shrinkWrap: true,
-                            itemCount: musicPlayerProvider.audioPlayer.playlist?.audios.length,
-                            itemBuilder: (_, int i) {
-                              final audio = musicPlayerProvider.audioPlayer.playlist?.audios[i];
-                              return ListTile(
-                                tileColor: const Color(0xCC174A85),
-                                leading: const Icon( Icons.music_note, color: Colors.white, ),
-                                title: Text(audio!.metas.title!, maxLines: 1),
-                                subtitle: Text(audio.metas.artist!, maxLines: 1),
-                                onTap: () {
-                                  musicPlayerProvider.audioPlayer.playlistPlayAtIndex(i);
-                                  musicPlayerProvider.songPlayed = musicPlayerProvider.songList[i];
-                                  Navigator.pop(ctx);
-                                },
-                              );
-                            }
-                          ),
-                        )
-                      );
-                    },
-                  ),
+                  Text(songPlayed.artist ?? 'No Artist', style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 16, color: Colors.white54)),
                 ],
               ),
             ),
@@ -249,7 +228,7 @@ class _MusicControls extends StatelessWidget {
               onPressed: () {
                 if( musicPlayerProvider.audioPlayer.loopMode.value == LoopMode.none && controlProvider.currentIndex > 0 ) {
                   controlProvider.currentIndex -= 1;
-                  musicPlayerProvider.songPlayed = musicPlayerProvider.songList[controlProvider.currentIndex];
+                  musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[controlProvider.currentIndex];
                   musicPlayerProvider.audioPlayer.previous();
                 }
               },
@@ -280,9 +259,9 @@ class _MusicControls extends StatelessWidget {
               backgroundColor: Colors.transparent,
               child: const Icon( Icons.fast_forward ),
               onPressed: () {
-                if( musicPlayerProvider.audioPlayer.loopMode.value == LoopMode.none && controlProvider.currentIndex <= musicPlayerProvider.songList.length - 2 ) {
+                if( musicPlayerProvider.audioPlayer.loopMode.value == LoopMode.none && controlProvider.currentIndex <= musicPlayerProvider.currentPlaylist.length - 2 ) {
                   controlProvider.currentIndex += 1;
-                  musicPlayerProvider.songPlayed = musicPlayerProvider.songList[controlProvider.currentIndex];
+                  musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[controlProvider.currentIndex];
                   musicPlayerProvider.audioPlayer.next();
                 }
               },
@@ -306,6 +285,20 @@ class _MusicControls extends StatelessWidget {
           ),
           onPressed: () {
             // musicPlayerProvider.audioPlayer.toggleShuffle();
+            // musicPlayerProvider.currentPlaylist = [];
+
+            // List<SongModel> tempList = [];
+
+            // for( var song in musicPlayerProvider.audioPlayer.playlist!.audios ) {
+            //   final index = musicPlayerProvider.songList.indexWhere((songStored) => songStored.data == song.path );
+            //   tempList.add( musicPlayerProvider.songList[index] );
+            // }
+
+            // musicPlayerProvider.currentPlaylist = tempList;
+            // final currentIndex = musicPlayerProvider.currentPlaylist.indexWhere((songStored) => songStored.data ==  musicPlayerProvider.audioPlayer.current.value!.audio.assetAudioPath);
+            // controlProvider.currentIndex = currentIndex;
+            // musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[currentIndex];
+            // print( musicPlayerProvider.songPlayed.title);
           },
         ),
       ],

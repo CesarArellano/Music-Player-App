@@ -1,10 +1,139 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 
-class AlbumSelectedScreen extends StatelessWidget {
-  const AlbumSelectedScreen({Key? key}) : super(key: key);
+import 'package:music_player_app/helpers/music_actions.dart';
+import 'package:music_player_app/providers/music_player_provider.dart';
+import 'package:music_player_app/widgets/widgets.dart';
+
+import '../providers/music_player_provider.dart';
+import '../search/search_delegate.dart';
+
+class AlbumSelectedScreen extends StatefulWidget {
+  const AlbumSelectedScreen({
+    Key? key,
+    required this.albumSelected
+  }) : super(key: key);
+
+  final AlbumModel albumSelected;
+
+  @override
+  State<AlbumSelectedScreen> createState() => _AlbumSelectedScreenState();
+}
+
+class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
+
+  @override
+  void initState() {
+    super.initState();
+    getSongs();
+  }
+
+  void getSongs() async {
+    await Provider.of<MusicPlayerProvider>(context, listen: false).searchByAlbumId( widget.albumSelected.id );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 0.0,
+        centerTitle: true,
+        title: const Text('Album Details'),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF003A7C),
+                Color(0xCC174A85)
+              ]
+            ),
+          )
+        ),
+        actions: <Widget>[
+          IconButton(
+            splashRadius: 20,
+            icon: const Icon(Icons.search),
+            onPressed: () => showSearch(context: context, delegate: MusicSearchDelegate() ),
+          ),
+        ],
+      ),
+      body: musicPlayerProvider.isLoading
+        ? const Center( child: CircularProgressIndicator(color: Colors.black) )
+        : Stack(
+          children: [
+            const CustomBackground(),
+            SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  
+                  Padding(
+                    padding: const EdgeInsets.all(15.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: 
+                      [
+                        QueryArtworkWidget(
+                          id: widget.albumSelected.id,
+                          type: ArtworkType.ALBUM,
+                          artworkBorder: BorderRadius.zero,
+                          artworkWidth: 150,
+                          artworkHeight: 150,
+                        ),
+                        const SizedBox(width: 10),
+                        Flexible(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(widget.albumSelected.album, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+                              const SizedBox(height: 10),
+                              Text(widget.albumSelected.artist ?? 'No Artist', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400)),
+                              const SizedBox(height: 5),
+                              Text("${ widget.albumSelected.numOfSongs } ${ (widget.albumSelected.numOfSongs > 1) ? 'songs' : 'song' }"),
+                            ],
+                          ),
+                        )
+                      ]
+                    ),
+                  ),
+                  const Divider(color: Colors.white54, height: 15),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: musicPlayerProvider.albumCollection[widget.albumSelected.id]!.length,
+                    itemBuilder: (_, int i) {
+                      final song = musicPlayerProvider.albumCollection[widget.albumSelected.id]![i];
+                      return RippleTile(
+                        child: ListTile(
+                          leading: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(width: 5),
+                              Text('${ i + 1 }'),
+                              SizedBox(width: ( i + 1 >= 10) ? 18 : 25 ),
+                              QueryArtworkWidget(id:widget.albumSelected.id, type: ArtworkType.ALBUM, artworkBorder: BorderRadius.zero ),
+                            ],
+                          ),
+                          title: Text(song.title),
+                          subtitle: Text(song.artist ?? 'No Artist')
+                        ),
+                        onTap: () {
+                          MusicActions.songPlayAndPause(context, song, TypePlaylist.album, albumId: widget.albumSelected.id );
+                        },
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 5),
+                ],
+              ),
+            )
+          ],
+        )
+    );
   }
 }
