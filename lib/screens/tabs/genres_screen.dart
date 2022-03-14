@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:music_player_app/widgets/widgets.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+
+import 'package:music_player_app/screens/genre_selected_screen.dart';
+import 'package:music_player_app/widgets/artwork_image.dart';
+import 'package:music_player_app/widgets/widgets.dart';
 
 import '../../providers/music_player_provider.dart';
 
@@ -35,16 +39,20 @@ class _GenresScreenState extends State<GenresScreen> with AutomaticKeepAliveClie
             final genre = genreList[i];
             return RippleTile(
               child: ListTile(
-                contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
+                contentPadding: const EdgeInsets.symmetric( horizontal: 15 ),
                 title: Text(genre.genre),
-                subtitle: Text(genre.numOfSongs.toString()),
-                leading: QueryArtworkWidget(
-                  keepOldArtwork: true,
-                  id: genre.id,
+                subtitle: Text("${ genre.numOfSongs } ${ ( genre.numOfSongs > 1) ? 'Songs' : 'Song' }"),
+                leading: ArtworkImage(
+                  artworkId: genre.id,
                   type: ArtworkType.GENRE,
+                  width: 50,
+                  height: 50,
+                  radius: BorderRadius.circular(2.5),
                 ),
               ),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(context, CupertinoPageRoute(builder: (_) => GenreSelectedScreen( genreSelected: genre ) ));
+              },
             );
           } 
         )

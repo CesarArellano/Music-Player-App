@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:music_player_app/widgets/artwork_image.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
@@ -38,10 +39,12 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> with AutomaticKeepAli
               subtitle: Text(playlist.numOfSongs.toString()),
               onTap: () {
               },
-              leading: QueryArtworkWidget(
-                keepOldArtwork: true,
-                id: playlist.id,
+              leading: ArtworkImage(
+                artworkId: playlist.id,
                 type: ArtworkType.PLAYLIST,
+                width: 40,
+                height: 40,
+                radius: BorderRadius.circular(2.5),
               ),
             );
           } 

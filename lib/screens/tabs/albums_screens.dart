@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:music_player_app/screens/screens.dart';
+import 'package:music_player_app/widgets/artwork_image.dart';
 import 'package:music_player_app/widgets/ripple_tile.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -47,15 +48,9 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  QueryArtworkWidget(
-                    keepOldArtwork: true,
-                    id: album.id,
+                  ArtworkImage(
+                    artworkId: album.id,
                     type: ArtworkType.ALBUM,
-                    format: ArtworkFormat.PNG,
-                    artworkBorder: BorderRadius.zero,
-                    artworkWidth: 200,
-                    artworkHeight: 190,
-                    artworkQuality: FilterQuality.high,
                   ),
                   const SizedBox(height: 6),
                   Padding(

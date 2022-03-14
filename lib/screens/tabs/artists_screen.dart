@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:music_player_app/widgets/ripple_tile.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+
+import 'package:music_player_app/screens/artist_selected_screen.dart';
+import 'package:music_player_app/widgets/artwork_image.dart';
+import 'package:music_player_app/widgets/ripple_tile.dart';
 
 import '../../providers/music_player_provider.dart';
 
@@ -35,16 +39,21 @@ class _ArtistScreenState extends State<ArtistScreen> with AutomaticKeepAliveClie
             final artist = artistList[i];
             return RippleTile(
               child: ListTile(
-                contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
+                contentPadding: const EdgeInsets.symmetric( horizontal: 15 ),
                 title: Text(artist.artist),
                 subtitle: Text(artist.numberOfAlbums.toString()),
-                leading: QueryArtworkWidget(
-                  keepOldArtwork: true,
-                  id: artist.id,
+                leading: ArtworkImage(
+                  artworkId: artist.id,
                   type: ArtworkType.ARTIST,
+                  width: 60,
+                  height: 60,
+                  size: 300,
+                  radius: BorderRadius.circular(4),
                 ),
               ),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(context, CupertinoPageRoute(builder: (_) => ArtistSelectedScreen( artistSelected: artist) ));
+              },
             );
           } 
         )

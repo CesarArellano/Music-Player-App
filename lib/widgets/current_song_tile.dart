@@ -1,7 +1,8 @@
 import 'package:custom_page_transitions/custom_page_transitions.dart';
 import 'package:flutter/material.dart';
 import 'package:music_player_app/screens/song_played_screen.dart';
-import 'package:on_audio_query/on_audio_query.dart' show ArtworkType, QueryArtworkWidget;
+import 'package:music_player_app/widgets/artwork_image.dart';
+import 'package:on_audio_query/on_audio_query.dart' show ArtworkType;
 import 'package:provider/provider.dart';
 
 import '../providers/music_player_provider.dart';
@@ -25,14 +26,13 @@ class CurrentSongTile extends StatelessWidget {
       ),
       child: ListTile(
         tileColor: const Color(0xFF0E3158),
-        leading: QueryArtworkWidget(
-          keepOldArtwork: true,
-          id: songPlayed.id,
+        leading: ArtworkImage(
+          artworkId: songPlayed.id,
           type: ArtworkType.AUDIO,
-          artworkBorder: BorderRadius.zero,
-          artworkQuality: FilterQuality.high,
-          artworkHeight: 40,
-          artworkWidth: 40,
+          height: 40,
+          width: 40,
+          size: 200,
+          radius: BorderRadius.circular(2.5),
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,

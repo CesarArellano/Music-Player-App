@@ -10,19 +10,19 @@ import 'package:music_player_app/widgets/widgets.dart';
 import '../providers/music_player_provider.dart';
 import '../search/search_delegate.dart';
 
-class AlbumSelectedScreen extends StatefulWidget {
-  const AlbumSelectedScreen({
+class GenreSelectedScreen extends StatefulWidget {
+  const GenreSelectedScreen({
     Key? key,
-    required this.albumSelected
+    required this.genreSelected
   }) : super(key: key);
 
-  final AlbumModel albumSelected;
+  final GenreModel genreSelected;
 
   @override
-  State<AlbumSelectedScreen> createState() => _AlbumSelectedScreenState();
+  State<GenreSelectedScreen> createState() => _GenreSelectedScreenState();
 }
 
-class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
+class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
 
   @override
   void initState() {
@@ -31,7 +31,7 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
   }
 
   void getSongs() async {
-    await Provider.of<MusicPlayerProvider>(context, listen: false).searchByAlbumId( widget.albumSelected.id );
+    await Provider.of<MusicPlayerProvider>(context, listen: false).searchByGenreId( widget.genreSelected.id );
   }
 
   @override
@@ -41,7 +41,7 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
       appBar: AppBar(
         elevation: 0.0,
         centerTitle: true,
-        title: const Text('Album Details'),
+        title: const Text('Genre Details'),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -80,8 +80,8 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                       children: 
                       [
                         ArtworkImage(
-                          artworkId: widget.albumSelected.id,
-                          type: ArtworkType.ALBUM,
+                          artworkId: widget.genreSelected.id,
+                          type: ArtworkType.GENRE,
                           width: 150,
                           height: 150,
                         ),
@@ -90,11 +90,15 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(widget.albumSelected.album, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+                              Text(
+                                widget.genreSelected.genre,
+                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                              ),
                               const SizedBox(height: 10),
-                              Text(widget.albumSelected.artist ?? 'No Artist', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400)),
-                              const SizedBox(height: 5),
-                              Text("${ widget.albumSelected.numOfSongs } ${ (widget.albumSelected.numOfSongs > 1) ? 'songs' : 'song' }"),
+                              Text(
+                                "${ widget.genreSelected.numOfSongs } ${ ( widget.genreSelected.numOfSongs > 1) ? 'Songs' : 'Song' }",
+                                style: const TextStyle(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.w400)
+                              ),
                             ],
                           ),
                         )
@@ -105,30 +109,22 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: musicPlayerProvider.albumCollection[widget.albumSelected.id]!.length,
+                    itemCount: musicPlayerProvider.genreCollection[widget.genreSelected.id]!.length,
                     itemBuilder: (_, int i) {
-                      final song = musicPlayerProvider.albumCollection[widget.albumSelected.id]![i];
+                      final song = musicPlayerProvider.genreCollection[widget.genreSelected.id]![i];
                       return RippleTile(
                         child: ListTile(
-                          leading: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const SizedBox(width: 5),
-                              Text('${ i + 1 }'),
-                              SizedBox(width: ( i + 1 >= 10) ? 18 : 25 ),
-                              ArtworkImage(
-                                artworkId: widget.albumSelected.id,
-                                type: ArtworkType.ALBUM,
-                                width: 50,
-                                height: 50,
-                              ),
-                            ],
+                          leading: ArtworkImage(
+                            artworkId: song.albumId ?? 1,
+                            type: ArtworkType.ALBUM,
+                            width: 50,
+                            height: 50,
                           ),
                           title: Text(song.title),
                           subtitle: Text(song.artist ?? 'No Artist')
                         ),
                         onTap: () {
-                          MusicActions.songPlayAndPause(context, song, TypePlaylist.album, id: widget.albumSelected.id );
+                          MusicActions.songPlayAndPause(context, song, TypePlaylist.genre, id: widget.genreSelected.id );
                         },
                       );
                     },

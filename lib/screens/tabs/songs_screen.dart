@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:music_player_app/widgets/artwork_image.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:music_player_app/widgets/widgets.dart';
@@ -41,13 +42,16 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
               final song = songList[i];
               return RippleTile(
                 child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 15),
                   title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
                   subtitle: Text(song.artist ?? 'No Artist'),                
-                  leading: QueryArtworkWidget(
-                    keepOldArtwork: true,
-                    id: song.id,
+                  leading: ArtworkImage(
+                    artworkId: song.id,
                     type: ArtworkType.AUDIO,
+                    width: 50,
+                    height: 50,
+                    size: 350,
+                    radius: BorderRadius.circular(2.5),
                   ),
                 ),
                 onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.songs),

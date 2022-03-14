@@ -18,8 +18,8 @@ class MusicSearchDelegate extends SearchDelegate {
       hintColor: Colors.white,
       appBarTheme: const AppBarTheme(
         backgroundColor: Color(0xFF003A7C),
-      )
-      
+      ),
+      scaffoldBackgroundColor: const Color(0xFF003A7C),
     );
   }
 
@@ -59,35 +59,29 @@ class MusicSearchDelegate extends SearchDelegate {
     }
     
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
-    return Container(
-      color: const Color(0xFF003A7C),
-      child: FutureBuilder(
-        future: musicPlayerProvider.searchSongByQuery(query),
-        builder: ( _, AsyncSnapshot<List<SongModel>> asyncSnapshot) {
-          if( !asyncSnapshot.hasData) {
-            return _emptyContainer();
-          }
-          final songs = asyncSnapshot.data;
-          return ListView.builder(
-            physics: const BouncingScrollPhysics(),
-            itemCount: songs!.length,
-            itemBuilder: (_, int i) => _songItem(context, songs[i], musicPlayerProvider)
-          );
+    return FutureBuilder(
+      future: musicPlayerProvider.searchSongByQuery(query),
+      builder: ( _, AsyncSnapshot<List<SongModel>> asyncSnapshot) {
+        if( !asyncSnapshot.hasData) {
+          return _emptyContainer();
         }
-      ),
+        final songs = asyncSnapshot.data;
+        return ListView.builder(
+          physics: const BouncingScrollPhysics(),
+          itemCount: songs!.length,
+          itemBuilder: (_, int i) => _songItem(context, songs[i], musicPlayerProvider)
+        );
+      }
     );
   }
 
   Widget _emptyContainer() {
-    return Container(
-      color: const Color(0xFF003A7C),
-      child: const Center(
-        child: Icon(
-          Icons.music_note,
-          size: 130,
-          color: Colors.white,
-        )
-      ),
+    return const Center(
+      child: Icon(
+        Icons.music_note,
+        size: 130,
+        color: Colors.white,
+      )
     );
   }
 

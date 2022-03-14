@@ -12,6 +12,8 @@ class MusicPlayerProvider extends ChangeNotifier {
   bool _isShuffling = false;
 
   Map<int, List<SongModel>> albumCollection = {};
+  Map<int, List<SongModel>> artistCollection = {};
+  Map<int, List<SongModel>> genreCollection = {};
 
   List<SongModel> songList = [];
   List<AlbumModel> albumList = [];
@@ -79,6 +81,26 @@ class MusicPlayerProvider extends ChangeNotifier {
 
     _isLoading = true;
     albumCollection[albumId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.ALBUM_ID, albumId );
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> searchByArtistId(int artistId) async {
+    
+    if( artistCollection.containsKey(artistId) ) return;
+
+    _isLoading = true;
+    artistCollection[artistId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.ARTIST_ID, artistId );
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> searchByGenreId(int genreId) async {
+    
+    if( genreCollection.containsKey(genreId) ) return;
+
+    _isLoading = true;
+    genreCollection[genreId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.GENRE_ID, genreId );
     _isLoading = false;
     notifyListeners();
   }

@@ -1,12 +1,14 @@
-import 'package:assets_audio_player/assets_audio_player.dart';
-import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
-import 'package:music_player_app/providers/audio_control_provider.dart';
-import 'package:music_player_app/providers/music_player_provider.dart';
-import 'package:music_player_app/widgets/widgets.dart';
+import 'package:assets_audio_player/assets_audio_player.dart';
+import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
+
+import 'package:music_player_app/providers/audio_control_provider.dart';
+import 'package:music_player_app/providers/music_player_provider.dart';
+import 'package:music_player_app/widgets/artwork_image.dart';
+import 'package:music_player_app/widgets/widgets.dart';
 
 import '../providers/audio_control_provider.dart';
 
@@ -71,32 +73,29 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
           IconButton(
             splashRadius: 20,
             icon: const Icon(Icons.drag_indicator),
-            onPressed: (){
+            onPressed: () {
               showModalBottomSheet(
+                backgroundColor: const Color(0xFF0E3158),
                 context: context,
-                builder: ( ctx ) => Container(
-                color: const Color(0xCC174A85),
-                  height: MediaQuery.of(context).size.height * 0.5,
-                  child: ListView.builder(
-                    physics: const BouncingScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: musicPlayerProvider.audioPlayer.playlist?.audios.length,
-                    itemBuilder: (_, int i) {
-                      final audioControlProvider = Provider.of<AudioControlProvider>(context);
-                      final audio = musicPlayerProvider.audioPlayer.playlist?.audios[i];
-                      return ListTile(
-                        leading: const Icon( Icons.music_note, color: Colors.white, ),
-                        title: Text(audio!.metas.title!, maxLines: 1),
-                        subtitle: Text(audio.metas.artist!, maxLines: 1),
-                        onTap: () {
-                          musicPlayerProvider.audioPlayer.playlistPlayAtIndex(i);
-                          audioControlProvider.currentIndex = i;
-                          musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[i];
-                          Navigator.pop(ctx);
-                        },
-                      );
-                    }
-                  ),
+                builder: ( ctx ) => ListView.builder(
+                  physics: const BouncingScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: musicPlayerProvider.audioPlayer.playlist?.audios.length,
+                  itemBuilder: (_, int i) {
+                    final audioControlProvider = Provider.of<AudioControlProvider>(context);
+                    final audio = musicPlayerProvider.audioPlayer.playlist?.audios[i];
+                    return ListTile(
+                      leading: const Icon( Icons.music_note, color: Colors.white, ),
+                      title: Text(audio!.metas.title!, maxLines: 1),
+                      subtitle: Text(audio.metas.artist!, maxLines: 1),
+                      onTap: () {
+                        musicPlayerProvider.audioPlayer.playlistPlayAtIndex(i);
+                        audioControlProvider.currentIndex = i;
+                        musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[i];
+                        Navigator.pop(ctx);
+                      },
+                    );
+                  }
                 )
               );
             },
@@ -133,14 +132,11 @@ class _SongPlayedBody extends StatelessWidget {
         child: Column(
           children: [
             SizedBox(height: size.height * 0.01),
-            QueryArtworkWidget(
-              keepOldArtwork: true,
-              id: songPlayed.id,
-              format: ArtworkFormat.JPEG,
+            ArtworkImage(
+              artworkId: songPlayed.id,
               type: ArtworkType.AUDIO,
-              artworkBorder: BorderRadius.zero,
-              artworkWidth: double.infinity,
-              artworkHeight: 350,
+              width: double.infinity,
+              height: 350,
             ),
             SizedBox(height: size.height * 0.04),
             SizedBox(

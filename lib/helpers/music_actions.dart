@@ -11,17 +11,23 @@ import '../screens/song_played_screen.dart';
 enum TypePlaylist {
   songs,
   album,
+  artist,
+  genre
 }
 class MusicActions {
 
-  static void songPlayAndPause(BuildContext context, SongModel song, TypePlaylist type, { albumId = 0 }) async {
+  static void songPlayAndPause(BuildContext context, SongModel song, TypePlaylist type, { id = 0 }) async {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
 
 
     musicPlayerProvider.currentPlaylist = ( type == TypePlaylist.songs )
       ? musicPlayerProvider.songList
-      : musicPlayerProvider.albumCollection[albumId]!;
+      : ( type == TypePlaylist.album)
+        ? musicPlayerProvider.albumCollection[id]!
+        : ( type == TypePlaylist.artist) 
+          ? musicPlayerProvider.artistCollection[id]!
+          : musicPlayerProvider.genreCollection[id]!;
 
     final index = musicPlayerProvider.currentPlaylist.indexWhere((songOfList) => songOfList.id == song.id );
     audioControlProvider.currentIndex = index;
