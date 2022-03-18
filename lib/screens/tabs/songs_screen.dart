@@ -50,7 +50,7 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
                     type: ArtworkType.AUDIO,
                     width: 50,
                     height: 50,
-                    size: 350,
+                    size: 250,
                     radius: BorderRadius.circular(2.5),
                   ),
                 ),

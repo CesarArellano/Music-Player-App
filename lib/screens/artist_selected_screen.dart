@@ -84,6 +84,7 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
                           type: ArtworkType.ARTIST,
                           width: 150,
                           height: 150,
+                          size: 600,
                         ),
                         const SizedBox(width: 10),
                         Flexible(
@@ -119,6 +120,7 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
                             type: ArtworkType.ALBUM,
                             width: 50,
                             height: 50,
+                            size: 250,
                           ),
                           title: Text(song.title),
                           subtitle: Text(song.artist ?? 'No Artist')

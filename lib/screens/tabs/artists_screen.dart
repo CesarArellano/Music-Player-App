@@ -47,7 +47,7 @@ class _ArtistScreenState extends State<ArtistScreen> with AutomaticKeepAliveClie
                   type: ArtworkType.ARTIST,
                   width: 60,
                   height: 60,
-                  size: 300,
+                  size: 250,
                   radius: BorderRadius.circular(4),
                 ),
               ),

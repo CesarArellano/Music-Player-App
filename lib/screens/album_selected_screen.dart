@@ -84,6 +84,7 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                           type: ArtworkType.ALBUM,
                           width: 150,
                           height: 150,
+                          size: 600
                         ),
                         const SizedBox(width: 10),
                         Flexible(
@@ -121,6 +122,7 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                                 type: ArtworkType.ALBUM,
                                 width: 50,
                                 height: 50,
+                                size: 250,
                               ),
                             ],
                           ),

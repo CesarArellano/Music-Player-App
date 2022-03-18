@@ -7,7 +7,7 @@ class ArtworkImage extends StatelessWidget {
   const ArtworkImage({
     Key? key,
     required this.artworkId,
-    this.size = 800,
+    this.size = 700,
     this.width = 200,
     this.height = 190,
     this.radius = BorderRadius.zero,

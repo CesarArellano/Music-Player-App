@@ -45,6 +45,7 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> with AutomaticKeepAli
                 width: 40,
                 height: 40,
                 radius: BorderRadius.circular(2.5),
+                size: 250,
               ),
             );
           } 

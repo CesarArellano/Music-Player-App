@@ -48,6 +48,7 @@ class _GenresScreenState extends State<GenresScreen> with AutomaticKeepAliveClie
                   width: 50,
                   height: 50,
                   radius: BorderRadius.circular(2.5),
+                  size: 250,
                 ),
               ),
               onTap: () {

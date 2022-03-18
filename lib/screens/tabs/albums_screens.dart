@@ -51,6 +51,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
                   ArtworkImage(
                     artworkId: album.id,
                     type: ArtworkType.ALBUM,
+                    size: 600,
                   ),
                   const SizedBox(height: 6),
                   Padding(
