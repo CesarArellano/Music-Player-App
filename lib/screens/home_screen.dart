@@ -56,13 +56,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         title: const Text('Music Player'),
         leading: IconButton(
           splashRadius: 22,
-          icon: const Icon(Icons.menu),
+          icon: const Icon(Icons.menu, color: Colors.white),
           onPressed: () {},
         ),
         actions: <Widget>[
           IconButton(
             splashRadius: 20,
-            icon: const Icon(Icons.search),
+            icon: const Icon(Icons.search, color: Colors.white),
             onPressed: () => showSearch(context: context, delegate: MusicSearchDelegate() ),
           ),
         ],
