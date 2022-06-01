@@ -9,13 +9,31 @@ import '../providers/music_player_provider.dart';
 import '../screens/song_played_screen.dart';
 import 'artwork_image.dart';
 
-class CurrentSongTile extends StatelessWidget {
+class CurrentSongTile extends StatefulWidget {
   const CurrentSongTile({
     Key? key,
-    required this.playAnimation,
   }) : super(key: key);
 
-  final AnimationController? playAnimation;
+  @override
+  State<CurrentSongTile> createState() => _CurrentSongTileState();
+}
+
+class _CurrentSongTileState extends State<CurrentSongTile> with SingleTickerProviderStateMixin {
+
+  late AnimationController _playAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _playAnimation =  AnimationController(duration: const Duration(milliseconds: 200), vsync: this);
+    _playAnimation.forward();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _playAnimation.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,16 +62,16 @@ class CurrentSongTile extends StatelessWidget {
               onPressed: () {
                 final isPlaying = audioPlayer.isPlaying.value;
                 if( isPlaying ) {
-                  playAnimation?.reverse();
+                  _playAnimation.reverse();
                   audioPlayer.pause();
                 } else {
-                  playAnimation?.forward();
+                  _playAnimation.forward();
                   audioPlayer.play();
                 }
               },
               splashRadius: 24,
               icon: AnimatedIcon( 
-                progress: playAnimation!,
+                progress: _playAnimation,
                 icon: AnimatedIcons.play_pause,
                 color: Colors.amber,
               )

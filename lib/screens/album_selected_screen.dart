@@ -66,11 +66,9 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
           children: [
             const CustomBackground(),
             SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  
                   Padding(
                     padding: const EdgeInsets.all(15.0),
                     child: Row(
@@ -138,7 +136,10 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
               ),
             )
           ],
-        )
+      ),
+      bottomNavigationBar: (musicPlayerProvider.isLoading || musicPlayerProvider.songPlayed.title.isEmpty)
+          ? null
+          : const CurrentSongTile()
     );
   }
 }

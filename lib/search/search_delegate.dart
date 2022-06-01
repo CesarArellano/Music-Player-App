@@ -67,7 +67,6 @@ class MusicSearchDelegate extends SearchDelegate {
         }
         final songs = asyncSnapshot.data;
         return ListView.builder(
-          physics: const BouncingScrollPhysics(),
           itemCount: songs!.length,
           itemBuilder: (_, int i) => _songItem(context, songs[i], musicPlayerProvider)
         );

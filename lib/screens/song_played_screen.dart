@@ -52,7 +52,7 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
               end: Alignment.bottomCenter,
               colors: [
                 Color(0xFF003A7C),
-                Color(0xCC113763)
+                Color(0xCC174A85)
               ]
             ),
           )
@@ -78,7 +78,6 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
                 backgroundColor: const Color(0xFF0E3158),
                 context: context,
                 builder: ( ctx ) => ListView.builder(
-                  physics: const BouncingScrollPhysics(),
                   shrinkWrap: true,
                   itemCount: audioPlayer.playlist?.audios.length,
                   itemBuilder: (_, int i) {

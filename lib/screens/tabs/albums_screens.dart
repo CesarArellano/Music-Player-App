@@ -39,7 +39,6 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
             mainAxisSpacing: 4,
             crossAxisSpacing: 4
           ),
-          physics: const BouncingScrollPhysics(),
           itemCount: albumList.length,
           itemBuilder: ( _, int i ) {
             final album = albumList[i];

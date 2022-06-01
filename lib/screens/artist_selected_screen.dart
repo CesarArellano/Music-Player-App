@@ -66,7 +66,6 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
           children: [
             const CustomBackground(),
             SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -134,7 +133,10 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
               ),
             )
           ],
-        )
+        ),
+      bottomNavigationBar: (musicPlayerProvider.isLoading || musicPlayerProvider.songPlayed.title.isEmpty)
+          ? null
+          : const CurrentSongTile()
     );
   }
 }

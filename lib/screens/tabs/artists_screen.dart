@@ -33,7 +33,6 @@ class _ArtistScreenState extends State<ArtistScreen> with AutomaticKeepAliveClie
       ? const Center ( child: CircularProgressIndicator() )
       : artistList.isNotEmpty
         ? ListView.builder(
-          physics: const BouncingScrollPhysics(),
           itemCount: artistList.length,
           itemBuilder: ( _, int i ) {
             final artist = artistList[i];

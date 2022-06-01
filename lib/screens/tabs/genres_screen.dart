@@ -33,7 +33,6 @@ class _GenresScreenState extends State<GenresScreen> with AutomaticKeepAliveClie
       ? const Center ( child: CircularProgressIndicator() )
       : genreList.isNotEmpty
         ? ListView.builder(
-          physics: const BouncingScrollPhysics(),
           itemCount: genreList.length,
           itemBuilder: ( _, int i ) {
             final genre = genreList[i];

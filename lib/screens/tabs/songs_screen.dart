@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:music_player_app/widgets/artwork_image.dart';
-import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:music_player_app/widgets/widgets.dart';
+import 'package:provider/provider.dart';
+
 import '../../helpers/music_actions.dart';
 import '../../providers/music_player_provider.dart';
+import '../../widgets/artwork_image.dart';
+import '../../widgets/widgets.dart';
 
 class SongsScreen extends StatefulWidget {
   
@@ -16,6 +17,7 @@ class SongsScreen extends StatefulWidget {
 
 class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClientMixin {
 
+  final ScrollController _scrollController = ScrollController();
   @override
   bool get wantKeepAlive => true;
 
@@ -30,35 +32,29 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
     return musicPlayerProvider.isLoading
       ? const Center ( child: CircularProgressIndicator( color: Colors.white,) )
       : songList.isNotEmpty
-        ? RawScrollbar(
-          interactive: false,
-          thickness: 10,
-          thumbColor: Colors.amber,
-          minThumbLength: 40.0,
-          child: ListView.builder(
-            physics: const BouncingScrollPhysics(),
-            itemCount: songList.length,
-            itemBuilder: ( _, int i ) {
-              final song = songList[i];
-              return RippleTile(
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 15),
-                  title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                  subtitle: Text(song.artist ?? 'No Artist'),                
-                  leading: ArtworkImage(
-                    artworkId: song.id,
-                    type: ArtworkType.AUDIO,
-                    width: 50,
-                    height: 50,
-                    size: 250,
-                    radius: BorderRadius.circular(2.5),
-                  ),
+        ? ListView.builder(
+          controller: _scrollController,
+          itemCount: songList.length,
+          itemBuilder: ( _, int i ) {
+            final song = songList[i];
+            return RippleTile(
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 15),
+                title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                subtitle: Text(song.artist ?? 'No Artist'),                
+                leading: ArtworkImage(
+                  artworkId: song.id,
+                  type: ArtworkType.AUDIO,
+                  width: 50,
+                  height: 50,
+                  size: 250,
+                  radius: BorderRadius.circular(2.5),
                 ),
-                onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.songs),
-              );
-            } 
               ),
-        )
+              onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.songs),
+            );
+          } 
+            )
       : const Center( 
         child: Text('No Songs', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))
       );

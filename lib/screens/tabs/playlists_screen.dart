@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:music_player_app/audio_player_handler.dart';
 import 'package:music_player_app/widgets/artwork_image.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
+import '../../helpers/custom_snackbar.dart';
 import '../../providers/music_player_provider.dart';
 
 class PlaylistsScreen extends StatefulWidget {
@@ -21,7 +23,7 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> with AutomaticKeepAli
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    
+    final onAudioQuery = audioPlayerHandler<OnAudioQuery>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final playlists = musicPlayerProvider.playLists;
 
@@ -29,7 +31,6 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> with AutomaticKeepAli
       ? const Center ( child: CircularProgressIndicator() )
       : playlists.isNotEmpty 
         ? ListView.builder(
-          physics: const BouncingScrollPhysics(),
           itemCount: playlists.length,
           itemBuilder: ( _, int i ) {
             final playlist = playlists[i];
@@ -37,6 +38,16 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> with AutomaticKeepAli
               contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
               title: Text(playlist.playlist),
               subtitle: Text(playlist.numOfSongs.toString()),
+              onLongPress: () async {
+                final resp = await onAudioQuery.removePlaylist(playlist.id);
+                if( resp ) {
+                  showSnackbar(
+                    context: context,
+                    message: '¡La playlist ${ playlist.playlist } eliminada con éxito!'
+                  );
+                  musicPlayerProvider.refreshPlaylist();
+                }
+              },
               onTap: () {
               },
               leading: ArtworkImage(

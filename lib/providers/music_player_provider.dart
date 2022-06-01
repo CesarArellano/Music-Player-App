@@ -62,6 +62,13 @@ class MusicPlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> refreshPlaylist() async {
+    _isLoading = true;
+    playLists = await onAudioQuery.queryPlaylists();
+    _isLoading = false;
+    notifyListeners();
+  }
+
   Future<List<SongModel>> searchSongByQuery(String query) async {
     List<dynamic> songList = await onAudioQuery.queryWithFilters(query, WithFiltersType.AUDIOS );
     return songList.toSongModel();
