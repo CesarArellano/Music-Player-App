@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:music_player_app/widgets/artwork_image.dart';
-import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:provider/provider.dart';
 
-import 'package:music_player_app/helpers/music_actions.dart';
-import 'package:music_player_app/providers/music_player_provider.dart';
-import 'package:music_player_app/widgets/widgets.dart';
-
+import '../helpers/music_actions.dart';
 import '../providers/music_player_provider.dart';
 import '../search/search_delegate.dart';
+import '../widgets/artwork_image.dart';
+import '../widgets/widgets.dart';
 
 class GenreSelectedScreen extends StatefulWidget {
   const GenreSelectedScreen({

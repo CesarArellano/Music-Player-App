@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:music_player_app/search/search_delegate.dart';
 import 'package:provider/provider.dart';
 
-import 'package:music_player_app/providers/music_player_provider.dart';
-import 'package:music_player_app/screens/screens.dart';
+import '../providers/music_player_provider.dart';
+import '../search/search_delegate.dart';
 import '../widgets/widgets.dart';
+import 'screens.dart';
 
 class HomeScreen extends StatefulWidget {
 

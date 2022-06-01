@@ -1,11 +1,13 @@
-import 'package:custom_page_transitions/custom_page_transitions.dart';
 import 'package:flutter/material.dart';
-import 'package:music_player_app/screens/song_played_screen.dart';
-import 'package:music_player_app/widgets/artwork_image.dart';
+import 'package:assets_audio_player/assets_audio_player.dart';
+import 'package:custom_page_transitions/custom_page_transitions.dart';
 import 'package:on_audio_query/on_audio_query.dart' show ArtworkType;
 import 'package:provider/provider.dart';
 
+import '../audio_player_handler.dart';
 import '../providers/music_player_provider.dart';
+import '../screens/song_played_screen.dart';
+import 'artwork_image.dart';
 
 class CurrentSongTile extends StatelessWidget {
   const CurrentSongTile({
@@ -17,6 +19,7 @@ class CurrentSongTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final songPlayed = musicPlayerProvider.songPlayed;
     
@@ -39,13 +42,13 @@ class CurrentSongTile extends StatelessWidget {
           children: [
             IconButton(
               onPressed: () {
-                final isPlaying = musicPlayerProvider.audioPlayer.isPlaying.value;
+                final isPlaying = audioPlayer.isPlaying.value;
                 if( isPlaying ) {
                   playAnimation?.reverse();
-                  musicPlayerProvider.audioPlayer.pause();
+                  audioPlayer.pause();
                 } else {
                   playAnimation?.forward();
-                  musicPlayerProvider.audioPlayer.play();
+                  audioPlayer.play();
                 }
               },
               splashRadius: 24,

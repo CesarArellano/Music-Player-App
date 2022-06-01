@@ -1,10 +1,8 @@
-import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 class MusicPlayerProvider extends ChangeNotifier {
 
-  final AssetsAudioPlayer audioPlayer = AssetsAudioPlayer();
   final OnAudioQuery onAudioQuery = OnAudioQuery();
 
   SongModel _songPlayed = SongModel({ 'title': '' });
@@ -22,12 +20,6 @@ class MusicPlayerProvider extends ChangeNotifier {
   List<PlaylistModel> playLists = [];
 
   List<SongModel> currentPlaylist = [];
-
-  @override
-  void dispose() {
-    super.dispose();
-    audioPlayer.dispose();
-  }
   
   MusicPlayerProvider() {
     getAllSongs();

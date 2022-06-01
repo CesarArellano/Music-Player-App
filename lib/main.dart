@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:music_player_app/providers/audio_control_provider.dart';
 import 'package:provider/provider.dart';
 
-import 'package:music_player_app/providers/music_player_provider.dart';
-import 'package:music_player_app/theme/app_theme.dart';
-import 'package:music_player_app/routes/app_router.dart';
+import 'audio_player_handler.dart';
+import 'providers/audio_control_provider.dart';
+import 'providers/music_player_provider.dart';
+import 'routes/app_router.dart';
+import 'theme/app_theme.dart';
 
-void main() => runApp(const MyApp());
+void main() {
+  setupAudioPlayerHandler();
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
   

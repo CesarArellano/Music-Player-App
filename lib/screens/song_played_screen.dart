@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:marquee/marquee.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
+import 'package:marquee/marquee.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
-import 'package:music_player_app/providers/audio_control_provider.dart';
-import 'package:music_player_app/providers/music_player_provider.dart';
-import 'package:music_player_app/widgets/artwork_image.dart';
-import 'package:music_player_app/widgets/widgets.dart';
-
+import '../audio_player_handler.dart';
 import '../providers/audio_control_provider.dart';
+import '../providers/music_player_provider.dart';
+import '../widgets/artwork_image.dart';
+import '../widgets/widgets.dart';
 
 class SongPlayedScreen extends StatefulWidget {
   
@@ -38,6 +37,7 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
+    final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final songPlayed = musicPlayerProvider.songPlayed;
 
@@ -80,16 +80,16 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
                 builder: ( ctx ) => ListView.builder(
                   physics: const BouncingScrollPhysics(),
                   shrinkWrap: true,
-                  itemCount: musicPlayerProvider.audioPlayer.playlist?.audios.length,
+                  itemCount: audioPlayer.playlist?.audios.length,
                   itemBuilder: (_, int i) {
                     final audioControlProvider = Provider.of<AudioControlProvider>(context);
-                    final audio = musicPlayerProvider.audioPlayer.playlist?.audios[i];
+                    final audio = audioPlayer.playlist?.audios[i];
                     return ListTile(
                       leading: const Icon( Icons.music_note, color: Colors.white, ),
                       title: Text(audio!.metas.title!, maxLines: 1),
                       subtitle: Text(audio.metas.artist!, maxLines: 1),
                       onTap: () {
-                        musicPlayerProvider.audioPlayer.playlistPlayAtIndex(i);
+                        audioPlayer.playlistPlayAtIndex(i);
                         audioControlProvider.currentIndex = i;
                         musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[i];
                         Navigator.pop(ctx);
@@ -186,6 +186,7 @@ class _MusicControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final controlProvider = Provider.of<AudioControlProvider>(context, listen: false);
 
@@ -197,7 +198,7 @@ class _MusicControls extends StatelessWidget {
           highlightElevation: 0.0,
           backgroundColor: Colors.transparent,
           child: StreamBuilder(
-            stream: musicPlayerProvider.audioPlayer.loopMode,
+            stream: audioPlayer.loopMode,
             builder: (BuildContext context, AsyncSnapshot<LoopMode> snapshot) {  
               if( !snapshot.hasData ) {
                 return const Icon( Icons.forward );
@@ -206,8 +207,8 @@ class _MusicControls extends StatelessWidget {
             },
           ),
           onPressed: () async {
-            await musicPlayerProvider.audioPlayer.setLoopMode( 
-              musicPlayerProvider.audioPlayer.loopMode.value == LoopMode.none
+            await audioPlayer.setLoopMode( 
+              audioPlayer.loopMode.value == LoopMode.none
               ? LoopMode.single
               : LoopMode.none
             );
@@ -216,30 +217,34 @@ class _MusicControls extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            FloatingActionButton(
-              elevation: 0.0,
-              highlightElevation: 0.0,
-              backgroundColor: Colors.transparent,
-              child: const Icon( Icons.fast_rewind),
-              onPressed: () {
-                if( musicPlayerProvider.audioPlayer.loopMode.value == LoopMode.none && controlProvider.currentIndex > 0 ) {
-                  controlProvider.currentIndex -= 1;
-                  musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[controlProvider.currentIndex];
-                  musicPlayerProvider.audioPlayer.previous();
-                }
-              },
+            InkWell(
+              onLongPress: () =>  audioPlayer.seekBy( const Duration(seconds: -10) ),
+              child: FloatingActionButton(
+                elevation: 0.0,
+                highlightElevation: 0.0,
+                backgroundColor: Colors.transparent,
+                child: const Icon( Icons.fast_rewind),
+                onPressed: () {
+                  if( audioPlayer.loopMode.value == LoopMode.none && controlProvider.currentIndex > 0 ) {
+                    controlProvider.currentIndex -= 1;
+                    musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[controlProvider.currentIndex];
+                    audioPlayer.previous();
+                  }
+                },
+                
+              ),
             ),
             const SizedBox(width: 15),
             FloatingActionButton(
               backgroundColor: Colors.amber,
               onPressed: () {
-                final isPlaying = musicPlayerProvider.audioPlayer.isPlaying.value;
+                final isPlaying = audioPlayer.isPlaying.value;
                 if( isPlaying ) {
                   playAnimation?.reverse();
-                  musicPlayerProvider.audioPlayer.pause();
+                  audioPlayer.pause();
                 } else {
                   playAnimation?.forward();
-                  musicPlayerProvider.audioPlayer.play();
+                  audioPlayer.play();
                 }
               },
               child: AnimatedIcon( 
@@ -249,19 +254,22 @@ class _MusicControls extends StatelessWidget {
               )
             ),
             const SizedBox(width: 15),
-            FloatingActionButton(
-              elevation: 0.0,
-              highlightElevation: 0.0,
-              backgroundColor: Colors.transparent,
-              child: const Icon( Icons.fast_forward ),
-              onPressed: () {
-                if( musicPlayerProvider.audioPlayer.loopMode.value == LoopMode.none && controlProvider.currentIndex <= musicPlayerProvider.currentPlaylist.length - 2 ) {
-                  controlProvider.currentIndex += 1;
-                  musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[controlProvider.currentIndex];
-                  musicPlayerProvider.audioPlayer.next();
-                }
-              },
-              
+            InkWell(
+              onLongPress: () =>  audioPlayer.seekBy( const Duration(seconds: 10) ),
+              child: FloatingActionButton(
+                elevation: 0.0,
+                highlightElevation: 0.0,
+                backgroundColor: Colors.transparent,
+                child: const Icon( Icons.fast_forward ),
+                onPressed: () {
+                  if( audioPlayer.loopMode.value == LoopMode.none && controlProvider.currentIndex <= musicPlayerProvider.currentPlaylist.length - 2 ) {
+                    controlProvider.currentIndex += 1;
+                    musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[controlProvider.currentIndex];
+                    audioPlayer.next();
+                  }
+                },
+                
+              ),
             ),
           ]
         ),
@@ -270,7 +278,7 @@ class _MusicControls extends StatelessWidget {
           highlightElevation: 0.0,
           backgroundColor: Colors.transparent,
           child: StreamBuilder(
-            stream: musicPlayerProvider.audioPlayer.isShuffling,
+            stream: audioPlayer.isShuffling,
             builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
               if( !snapshot.hasData ) {
                 return const Icon( Icons.shuffle, color: Colors.grey );
@@ -309,6 +317,7 @@ class _SongTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
     final audioControlProvider = Provider.of<AudioControlProvider>(context);
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final songPlayed = musicPlayerProvider.songPlayed;
@@ -322,7 +331,7 @@ class _SongTimeline extends StatelessWidget {
       progress: audioControlProvider.current,
       total: Duration(milliseconds: songPlayed.duration!),
       onSeek: (duration) {
-        musicPlayerProvider.audioPlayer.seek(duration);
+        audioPlayer.seek(duration);
       },
     );
   }

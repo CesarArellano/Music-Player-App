@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart' show SongModel, QueryArtworkWidget, ArtworkType;
-
-import 'package:music_player_app/widgets/widgets.dart';
-import 'package:music_player_app/providers/music_player_provider.dart';
+import 'package:provider/provider.dart';
 
 import '../helpers/music_actions.dart';
+import '../providers/music_player_provider.dart';
+import '../widgets/widgets.dart';
 
 class MusicSearchDelegate extends SearchDelegate {
 

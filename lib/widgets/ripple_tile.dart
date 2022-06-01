@@ -19,7 +19,6 @@ class RippleTile extends StatelessWidget {
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              splashColor: Colors.white10,
               onTap: onTap,
             )
           ),

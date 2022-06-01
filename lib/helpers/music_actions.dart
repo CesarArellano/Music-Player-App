@@ -1,11 +1,14 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:on_audio_query/on_audio_query.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:custom_page_transitions/custom_page_transitions.dart';
-import 'package:music_player_app/providers/music_player_provider.dart';
+import 'package:on_audio_query/on_audio_query.dart';
+import 'package:provider/provider.dart';
 
+import '../audio_player_handler.dart';
 import '../providers/audio_control_provider.dart';
+import '../providers/music_player_provider.dart';
 import '../screens/song_played_screen.dart';
 
 enum TypePlaylist {
@@ -17,6 +20,7 @@ enum TypePlaylist {
 class MusicActions {
 
   static void songPlayAndPause(BuildContext context, SongModel song, TypePlaylist type, { id = 0 }) async {
+    final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
 
@@ -33,8 +37,8 @@ class MusicActions {
     audioControlProvider.currentIndex = index;
 
     if( musicPlayerProvider.songPlayed.title != song.title ) {
-      musicPlayerProvider.audioPlayer.stop();
-      musicPlayerProvider.audioPlayer.open(
+      audioPlayer.stop();
+      audioPlayer.open(
         Playlist(
           audios: [
             ...musicPlayerProvider.currentPlaylist.map((song) => Audio.file(
@@ -53,9 +57,9 @@ class MusicActions {
         headPhoneStrategy: HeadPhoneStrategy.pauseOnUnplugPlayOnPlug,
         showNotification: true,
       );
-      musicPlayerProvider.audioPlayer.currentPosition.listen((duration) {
+      audioPlayer.currentPosition.listen((duration) {
         audioControlProvider.current = duration;
-        musicPlayerProvider.audioPlayer.loopMode.listen((loopMode) {
+        audioPlayer.loopMode.listen((loopMode) {
           if( loopMode == LoopMode.none ) {
             if( duration.compareTo( Duration( milliseconds: musicPlayerProvider.songPlayed.duration!))  == 0 ) {
               audioControlProvider.currentIndex += 1;
@@ -68,10 +72,8 @@ class MusicActions {
 
       musicPlayerProvider.songPlayed = song;
     } else {
-      if( musicPlayerProvider.audioPlayer.isPlaying.value ) {
-        musicPlayerProvider.audioPlayer.stop();
-        musicPlayerProvider.audioPlayer.play();
-      }
+      log('Hello');
+      audioPlayer.seek( const Duration( seconds: 0 ));
     }
 
     PageTransitions(
