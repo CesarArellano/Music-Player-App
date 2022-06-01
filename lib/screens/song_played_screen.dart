@@ -160,7 +160,14 @@ class _SongPlayedBody extends StatelessWidget {
                       ],
                     )
                   ),
-                  Text(songPlayed.artist ?? 'No Artist', style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 16, color: Colors.white54)),
+                  if( (songPlayed.artist ?? '').length > 30 )
+                    const SizedBox(height: 10,),
+                  Text(
+                    songPlayed.artist ?? 'No Artist',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 16, color: Colors.white54)
+                  ),
                 ],
               ),
             ),
