@@ -327,7 +327,7 @@ class _SongTimeline extends StatelessWidget {
       barHeight: 3.0,
       progressBarColor: Colors.white,
       thumbColor: Colors.amber,
-      progress: audioControlProvider.current,
+      progress: audioControlProvider.currentDuration,
       total: Duration(milliseconds: songPlayed.duration!),
       onSeek: (duration) {
         audioPlayer.seek(duration);

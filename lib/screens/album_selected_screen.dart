@@ -21,6 +21,7 @@ class AlbumSelectedScreen extends StatefulWidget {
 }
 
 class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
+  bool isLoadingAlbum = false;
 
   @override
   void initState() {
@@ -29,7 +30,9 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
   }
 
   void getSongs() async {
+    setState(() => isLoadingAlbum = true);
     await Provider.of<MusicPlayerProvider>(context, listen: false).searchByAlbumId( widget.albumSelected.id );
+    setState(() => isLoadingAlbum = false);
   }
 
   @override
@@ -60,8 +63,8 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
           ),
         ],
       ),
-      body: musicPlayerProvider.isLoading
-        ? const Center( child: CircularProgressIndicator(color: Colors.black) )
+      body: isLoadingAlbum
+        ? const Center( child: CircularProgressIndicator() )
         : Stack(
           children: [
             const CustomBackground(),

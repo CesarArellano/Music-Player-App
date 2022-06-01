@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
@@ -34,7 +33,6 @@ class MusicActions {
           : musicPlayerProvider.genreCollection[id]!;
 
     final index = musicPlayerProvider.currentPlaylist.indexWhere((songOfList) => songOfList.id == song.id );
-    audioControlProvider.currentIndex = index;
 
     if( musicPlayerProvider.songPlayed.title != song.title ) {
       audioPlayer.stop();
@@ -57,34 +55,30 @@ class MusicActions {
         headPhoneStrategy: HeadPhoneStrategy.pauseOnUnplugPlayOnPlug,
         showNotification: true,
       );
+      
       audioPlayer.currentPosition.listen((duration) {
-        audioControlProvider.current = duration;
-        audioPlayer.loopMode.listen((loopMode) {
-          if( loopMode == LoopMode.none ) {
-            if( duration.compareTo( Duration( milliseconds: musicPlayerProvider.songPlayed.duration!))  == 0 ) {
-              audioControlProvider.currentIndex += 1;
-              musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ audioControlProvider.currentIndex ];
-            }
-          }
-        });
+        audioControlProvider.currentDuration = duration;
+      });
+
+      audioPlayer.playlistAudioFinished.listen((playing) {
+        if( musicPlayerProvider.songPlayed.title == song.title || !playing.hasNext ) return;
         
+        audioControlProvider.currentIndex = playing.playlist.nextIndex ?? audioControlProvider.currentIndex + 1;
+        musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ audioControlProvider.currentIndex ];
       });
 
       musicPlayerProvider.songPlayed = song;
     } else {
-      log('Hello');
       audioPlayer.seek( const Duration( seconds: 0 ));
     }
 
     PageTransitions(
-      context: context, // BuildContext
-      child: const SongPlayedScreen(), // Widget
-      animation: AnimationType.slideUp, // AnimationType (package enum)
-      duration: const Duration( milliseconds:  300 ), // Duration
-      reverseDuration: const Duration( milliseconds:  300), // Duration
-      curve: Curves.easeOut, // bool
-      fullscreenDialog: false, // bool
-      replacement: false, // bool
+      context: context,
+      child: const SongPlayedScreen(),
+      animation: AnimationType.slideUp,
+      duration: const Duration( milliseconds:  300 ),
+      reverseDuration: const Duration( milliseconds:  300),
+      curve: Curves.easeOut,
     );
   }
 }
