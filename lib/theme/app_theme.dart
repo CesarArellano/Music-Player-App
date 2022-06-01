@@ -5,17 +5,16 @@ class AppTheme {
     useMaterial3: true,
     splashFactory: InkSparkle.splashFactory,
     textTheme: Typography().white,
-    appBarTheme: const AppBarTheme(
-      titleTextStyle: TextStyle(color: Colors.white, fontSize: 18)
-    )
+    colorScheme: const ColorScheme.dark(
+      primary: Colors.white,
+      onPrimary: Colors.white,
+    ),
   );
 
   static ThemeData darkTheme = ThemeData.dark().copyWith(
     useMaterial3: true,
     splashFactory: InkSparkle.splashFactory,
     textTheme: Typography().white,
-    appBarTheme: const AppBarTheme(
-      titleTextStyle: TextStyle(color: Colors.white)
-    )
+    brightness: Brightness.dark
   );
 }

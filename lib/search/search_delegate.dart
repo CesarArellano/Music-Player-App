@@ -12,7 +12,8 @@ class MusicSearchDelegate extends SearchDelegate {
   @override
   ThemeData appBarTheme(BuildContext context) {
     return Theme.of(context).copyWith(
-      colorScheme: ThemeData().colorScheme.copyWith(
+      useMaterial3: true,
+      colorScheme: const ColorScheme.dark(
         primary: Colors.white
       ),
       hintColor: Colors.white,
