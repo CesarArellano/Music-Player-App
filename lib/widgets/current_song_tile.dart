@@ -55,28 +55,45 @@ class _CurrentSongTileState extends State<CurrentSongTile> with SingleTickerProv
           size: 200,
           radius: BorderRadius.circular(2.5),
         ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              onPressed: () {
-                final isPlaying = audioPlayer.isPlaying.value;
-                if( isPlaying ) {
-                  _playAnimation.reverse();
-                  audioPlayer.pause();
-                } else {
-                  _playAnimation.forward();
-                  audioPlayer.play();
-                }
-              },
-              splashRadius: 24,
-              icon: AnimatedIcon( 
-                progress: _playAnimation,
-                icon: AnimatedIcons.play_pause,
-                color: Colors.amber,
-              )
-            )
-          ],
+        trailing: StreamBuilder<bool>(
+          stream: audioPlayer.isPlaying,
+          builder: (context, snapshot) {
+            if( snapshot.hasData ) {
+              _playAnimation.reverse();
+            }
+
+            final isPlaying = snapshot.data ?? false;
+            
+            if( isPlaying ) {
+              _playAnimation.forward();
+            } else {
+              _playAnimation.reverse();
+            }
+            
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  onPressed: () {
+                    final isPlaying = audioPlayer.isPlaying.value;
+                    if( isPlaying ) {
+                      _playAnimation.reverse();
+                      audioPlayer.pause();
+                    } else {
+                      _playAnimation.forward();
+                      audioPlayer.play();
+                    }
+                  },
+                  splashRadius: 24,
+                  icon: AnimatedIcon( 
+                    progress: _playAnimation,
+                    icon: AnimatedIcons.play_pause,
+                    color: Colors.amber,
+                  )
+                )
+              ],
+            );
+          }
         ),
         title: Text(
           songPlayed.title,

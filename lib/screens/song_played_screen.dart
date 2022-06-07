@@ -241,23 +241,39 @@ class _MusicControls extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 15),
-            FloatingActionButton(
-              backgroundColor: Colors.amber,
-              onPressed: () {
-                final isPlaying = audioPlayer.isPlaying.value;
-                if( isPlaying ) {
+            StreamBuilder<bool>(
+              stream: audioPlayer.isPlaying,
+              builder: (context, snapshot) {
+                if( snapshot.hasData ) {
                   playAnimation?.reverse();
-                  audioPlayer.pause();
-                } else {
-                  playAnimation?.forward();
-                  audioPlayer.play();
                 }
-              },
-              child: AnimatedIcon( 
-                progress: playAnimation!,
-                icon: AnimatedIcons.play_pause,
-                color: Colors.black,
-              )
+
+                final isPlaying = snapshot.data ?? false;
+                
+                if( isPlaying ) {
+                  playAnimation?.forward();
+                } else {
+                  playAnimation?.reverse();
+                }
+                
+                return FloatingActionButton(
+                  backgroundColor: Colors.amber,
+                  onPressed: () {
+                    if( isPlaying ) {
+                      playAnimation?.reverse();
+                      audioPlayer.pause();
+                    } else {
+                      playAnimation?.forward();
+                      audioPlayer.play();
+                    }
+                  },
+                  child: AnimatedIcon( 
+                    progress: playAnimation!,
+                    icon: AnimatedIcons.play_pause,
+                    color: Colors.black,
+                  )
+                );
+              }
             ),
             const SizedBox(width: 15),
             InkWell(
