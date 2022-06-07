@@ -58,10 +58,6 @@ class _CurrentSongTileState extends State<CurrentSongTile> with SingleTickerProv
         trailing: StreamBuilder<bool>(
           stream: audioPlayer.isPlaying,
           builder: (context, snapshot) {
-            if( snapshot.hasData ) {
-              _playAnimation.reverse();
-            }
-
             final isPlaying = snapshot.data ?? false;
             
             if( isPlaying ) {

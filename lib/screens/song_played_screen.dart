@@ -244,9 +244,6 @@ class _MusicControls extends StatelessWidget {
             StreamBuilder<bool>(
               stream: audioPlayer.isPlaying,
               builder: (context, snapshot) {
-                if( snapshot.hasData ) {
-                  playAnimation?.reverse();
-                }
 
                 final isPlaying = snapshot.data ?? false;
                 
