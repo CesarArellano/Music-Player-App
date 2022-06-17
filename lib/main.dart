@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'audio_player_handler.dart';
 import 'providers/audio_control_provider.dart';
 import 'providers/music_player_provider.dart';
+import 'providers/ui_provider.dart';
 import 'routes/app_router.dart';
 import 'theme/app_theme.dart';
 
@@ -21,7 +22,8 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider( create: ( _ ) => MusicPlayerProvider(), lazy: false ),
-        ChangeNotifierProvider( create: ( _ ) => AudioControlProvider() ),
+        ChangeNotifierProvider( create: ( _ ) => AudioControlProvider(), lazy: false),
+        ChangeNotifierProvider( create: ( _ ) => UIProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:music_player_app/theme/app_theme.dart';
 import 'package:on_audio_query/on_audio_query.dart' show SongModel, QueryArtworkWidget, ArtworkType;
 import 'package:provider/provider.dart';
 
@@ -17,9 +18,9 @@ class MusicSearchDelegate extends SearchDelegate {
       ),
       hintColor: Colors.white,
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF003A7C),
+        backgroundColor: Color(0xFF001F42),
       ),
-      scaffoldBackgroundColor: const Color(0xFF003A7C),
+      scaffoldBackgroundColor: AppTheme.primaryColor
     );
   }
 

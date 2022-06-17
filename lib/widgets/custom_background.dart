@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:music_player_app/theme/app_theme.dart';
 
 class CustomBackground extends StatelessWidget {
   const CustomBackground({
@@ -13,8 +14,8 @@ class CustomBackground extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color.fromRGBO(23, 74, 133, 1),
-            Color.fromARGB(255, 15, 51, 92),
+            Color(0xFF00254F),
+            AppTheme.primaryColor
           ]
         )
       ),

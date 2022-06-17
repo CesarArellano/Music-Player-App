@@ -1,11 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
+import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
 import '../audio_player_handler.dart';
+import '../helpers/music_actions.dart';
 import '../providers/audio_control_provider.dart';
 import '../providers/music_player_provider.dart';
 import '../widgets/artwork_image.dart';
@@ -37,7 +38,6 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final songPlayed = musicPlayerProvider.songPlayed;
 
@@ -45,18 +45,7 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
       appBar: AppBar(
         elevation: 0.0,
         centerTitle: true,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFF003A7C),
-                Color(0xCC174A85)
-              ]
-            ),
-          )
-        ),
+        backgroundColor: const Color(0xFF001F42),
         title: Column(
           children: [
             const Text('PLAYING FROM', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400) ),
@@ -73,31 +62,7 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
           IconButton(
             splashRadius: 20,
             icon: const Icon(Icons.drag_indicator),
-            onPressed: () {
-              showModalBottomSheet(
-                backgroundColor: const Color(0xFF0E3158),
-                context: context,
-                builder: ( ctx ) => ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: audioPlayer.playlist?.audios.length,
-                  itemBuilder: (_, int i) {
-                    final audioControlProvider = Provider.of<AudioControlProvider>(context);
-                    final audio = audioPlayer.playlist?.audios[i];
-                    return ListTile(
-                      leading: const Icon( Icons.music_note, color: Colors.white, ),
-                      title: Text(audio!.metas.title!, maxLines: 1),
-                      subtitle: Text(audio.metas.artist!, maxLines: 1),
-                      onTap: () {
-                        audioPlayer.playlistPlayAtIndex(i);
-                        audioControlProvider.currentIndex = i;
-                        musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[i];
-                        Navigator.pop(ctx);
-                      },
-                    );
-                  }
-                )
-              );
-            },
+            onPressed: () => MusicActions.showCurrentPlayList(context),
           ),
         ],
       ),

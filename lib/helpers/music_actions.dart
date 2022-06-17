@@ -1,7 +1,7 @@
 
-import 'package:flutter/material.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:custom_page_transitions/custom_page_transitions.dart';
+import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
@@ -9,6 +9,7 @@ import '../audio_player_handler.dart';
 import '../providers/audio_control_provider.dart';
 import '../providers/music_player_provider.dart';
 import '../screens/song_played_screen.dart';
+import '../theme/app_theme.dart';
 
 enum TypePlaylist {
   songs,
@@ -79,6 +80,37 @@ class MusicActions {
       duration: const Duration( milliseconds:  300 ),
       reverseDuration: const Duration( milliseconds:  300),
       curve: Curves.easeOut,
+    );
+  }
+
+  static void showCurrentPlayList(BuildContext context, ){
+    final audioPlayer = audioPlayerHandler.get<AssetsAudioPlayer>();
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
+    final currentSong = audioPlayer.getCurrentAudioTitle;
+    showModalBottomSheet(
+
+      backgroundColor: AppTheme.primaryColor,
+      context: context,
+      builder: ( ctx ) => ListView.builder(
+        shrinkWrap: true,
+        itemCount: audioPlayer.playlist?.audios.length,
+        itemBuilder: (_, int i) {
+          final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
+          final audio = audioPlayer.playlist?.audios[i];
+          final currentColor = ( currentSong == audio?.metas.title ) ? AppTheme.accentColor : Colors.white;
+          return ListTile(
+            leading: Icon( Icons.music_note, color: currentColor ),
+            title: Text(audio!.metas.title!, maxLines: 1, style: TextStyle(color: currentColor)),
+            subtitle: Text(audio.metas.artist!, maxLines: 1, style: TextStyle(color: currentColor)),
+            onTap: () {
+              audioPlayer.playlistPlayAtIndex(i);
+              audioControlProvider.currentIndex = i;
+              musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[i];
+              Navigator.pop(ctx);
+            },            
+          );
+        }
+      )
     );
   }
 }
