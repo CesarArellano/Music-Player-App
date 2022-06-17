@@ -38,14 +38,16 @@ class _ArtistScreenState extends State<ArtistScreen> with AutomaticKeepAliveClie
             final artist = artistList[i];
             return RippleTile(
               child: ListTile(
-                contentPadding: const EdgeInsets.symmetric( horizontal: 15 ),
-                title: Text(artist.artist),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                title: Text(artist.artist, maxLines: 1, overflow: TextOverflow.ellipsis,),
                 subtitle: Text(artist.numberOfAlbums.toString()),
+                isThreeLine: true,
+                visualDensity: const VisualDensity(vertical: 4),
                 leading: ArtworkImage(
                   artworkId: artist.id,
                   type: ArtworkType.ARTIST,
-                  width: 60,
-                  height: 60,
+                  width: 80,
+                  height: 80,
                   size: 250,
                   radius: BorderRadius.circular(4),
                 ),

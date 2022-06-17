@@ -32,7 +32,7 @@ class ArtworkImage extends StatelessWidget {
       artworkWidth: width,
       artworkHeight: height,
       size: size,
-      artworkFit: BoxFit.fitHeight,
+      artworkFit: BoxFit.contain,
       nullArtworkWidget: Image.asset(
         'assets/images/artwork_not_available.jpg',
         width: height,

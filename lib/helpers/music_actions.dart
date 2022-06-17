@@ -113,4 +113,16 @@ class MusicActions {
       )
     );
   }
+
+  static Future<ImageProvider<Object>?> getSpecificArtwork(BuildContext context) async {
+    final songPlayed = Provider.of<MusicPlayerProvider>(context, listen: false).songPlayed;
+    final OnAudioQuery onAudioQuery = audioPlayerHandler.get();
+    final foundArtwork = await onAudioQuery.queryArtwork(songPlayed.id, ArtworkType.AUDIO);
+    
+    if (foundArtwork != null ) {
+      return MemoryImage(foundArtwork);
+    }
+    
+    return const AssetImage('assets/images/background.jpg');
+  }
 }

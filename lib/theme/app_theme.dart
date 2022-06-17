@@ -13,8 +13,8 @@ class AppTheme {
       backgroundColor: accentColor
     ), 
     colorScheme: const ColorScheme.dark(
-      primary: Colors.white54,
-      onPrimary: Colors.white54,
+      primary: Colors.white,
+      onPrimary: Colors.white,
     ).copyWith(secondary: accentColor),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: const Color(0xFF001F42),

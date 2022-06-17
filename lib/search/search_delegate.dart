@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:music_player_app/theme/app_theme.dart';
-import 'package:on_audio_query/on_audio_query.dart' show SongModel, QueryArtworkWidget, ArtworkType;
+import 'package:on_audio_query/on_audio_query.dart' show SongModel, ArtworkType;
 import 'package:provider/provider.dart';
 
 import '../helpers/music_actions.dart';
 import '../providers/music_player_provider.dart';
+import '../widgets/artwork_image.dart';
 import '../widgets/widgets.dart';
 
 class MusicSearchDelegate extends SearchDelegate {
@@ -89,10 +90,13 @@ class MusicSearchDelegate extends SearchDelegate {
     return RippleTile(
       child: ListTile(
         contentPadding: const EdgeInsets.all(8),
-        leading: QueryArtworkWidget(
-          keepOldArtwork: true,
-          id: song.id,
+        leading: ArtworkImage(
+          artworkId: song.id,
           type: ArtworkType.AUDIO,
+          width: 60,
+          height: 60,
+          size: 250,
+          radius: BorderRadius.circular(4),
         ),
         title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
         subtitle: Text(song.artist ?? 'No Artist', maxLines: 1, overflow: TextOverflow.ellipsis),
