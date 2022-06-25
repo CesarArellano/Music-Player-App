@@ -48,7 +48,6 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        elevation: 0.0,
         centerTitle: true,
         backgroundColor: Colors.transparent,
         title: Column(
@@ -73,27 +72,37 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
       ),
       body: Stack(
         children: [
-          Transform.scale(
-            scale: 1.1,
-            child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  fit: BoxFit.cover,
-                  image: imageFile.existsSync()
-                    ? Image.file(
-                      imageFile,
-                      errorBuilder: (_, __, ___) => Image.asset('assets/images/background.jpg')
-                    ).image
-                    : Image.asset('assets/images/background.jpg').image
-                )                    
-              ),
-              child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
-                  child: Container(
-                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.65), backgroundBlendMode: BlendMode.darken),
+          FutureBuilder<ImageProvider<Object>?>(
+            future: MusicActions.getSpecificArtwork(context),
+            builder: (context, snapshot) {
+
+              if( snapshot.hasData ) {
+                artwork = snapshot.data;
+              }
+
+              return Transform.scale(
+                scale: 1.1,
+                child: Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      fit: BoxFit.cover,
+                      image: artwork == null || imageFile.existsSync()
+                        ? Image.file(
+                          imageFile,
+                          errorBuilder: (_, __, ___) => Image.asset('assets/images/background.jpg')
+                        ).image
+                        : Image(image: artwork!).image
+                    )                    
                   ),
+                  child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
+                      child: Container(
+                        decoration: BoxDecoration(color: Colors.black.withOpacity(0.65), backgroundBlendMode: BlendMode.darken),
+                      ),
+                    ),
                 ),
-            ),
+              );
+            }
           ),
           _SongPlayedBody( playAnimation: _playAnimation ),
         ]

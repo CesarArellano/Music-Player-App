@@ -33,10 +33,14 @@ class ArtworkImage extends StatelessWidget {
       artworkHeight: height,
       size: size,
       artworkFit: BoxFit.contain,
-      nullArtworkWidget: Image.asset(
-        'assets/images/artwork_not_available.jpg',
+      nullArtworkWidget: Container(
+        decoration: BoxDecoration(
+          color: Colors.white24,
+          borderRadius: BorderRadius.circular(2.5)
+        ),
         width: height,
         height: height,
+        child:  Icon(Icons.music_note_rounded, color: Colors.white54, size: height * 0.5),
       ),
     );
   }

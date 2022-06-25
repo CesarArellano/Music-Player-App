@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
@@ -37,21 +39,8 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        elevation: 0.0,
         centerTitle: true,
         title: const Text('Genre Details'),
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFF003A7C),
-                Color(0xCC174A85)
-              ]
-            ),
-          )
-        ),
         actions: <Widget>[
           IconButton(
             splashRadius: 20,
@@ -110,15 +99,22 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
                     itemCount: musicPlayerProvider.genreCollection[widget.genreSelected.id]!.length,
                     itemBuilder: (_, int i) {
                       final song = musicPlayerProvider.genreCollection[widget.genreSelected.id]![i];
+                      final imageFile = File(song.uri ?? '');
                       return RippleTile(
                         child: ListTile(
-                          leading: ArtworkImage(
-                            artworkId: song.albumId ?? 1,
-                            type: ArtworkType.ALBUM,
-                            width: 50,
-                            height: 50,
-                            size: 250,
-                          ),
+                          leading: imageFile.existsSync()
+                            ? Image.file(
+                              imageFile,
+                              width: 50,
+                              height: 50,
+                            )
+                            : ArtworkImage(
+                              artworkId: song.albumId ?? 1,
+                              type: ArtworkType.ALBUM,
+                              width: 50,
+                              height: 50,
+                              size: 250,
+                            ),
                           title: Text(song.title),
                           subtitle: Text(song.artist ?? 'No Artist')
                         ),

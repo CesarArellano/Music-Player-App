@@ -1,4 +1,6 @@
 
+
+
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:custom_page_transitions/custom_page_transitions.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +25,6 @@ class MusicActions {
     final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
-
 
     musicPlayerProvider.currentPlaylist = ( type == TypePlaylist.songs )
       ? musicPlayerProvider.songList
@@ -78,8 +79,8 @@ class MusicActions {
       context: context,
       child: const SongPlayedScreen(),
       animation: AnimationType.slideUp,
-      duration: const Duration( milliseconds:  300 ),
-      reverseDuration: const Duration( milliseconds:  300),
+      duration: const Duration( milliseconds:  250 ),
+      reverseDuration: const Duration( milliseconds:  250),
       curve: Curves.easeOut,
     );
   }
@@ -113,6 +114,20 @@ class MusicActions {
         }
       )
     );
+  }
+
+  static String? getArtworkPath(String uri) {
+    if( uri.isEmpty ) return null;
+    
+    final pathSegments = uri.split('/');
+    String finalPath = '';
+    
+    for(int i = 0; i < pathSegments.length; i++) {
+      if( i + 1 == pathSegments.length ) break;
+      finalPath += '/${ pathSegments[i] }';
+    }
+    
+    return '$finalPath/cover.jpg';   
   }
 
   static Future<ImageProvider<Object>?> getSpecificArtwork(BuildContext context) async {

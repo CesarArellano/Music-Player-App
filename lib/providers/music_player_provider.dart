@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:music_player_app/helpers/music_actions.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 class MusicPlayerProvider extends ChangeNotifier {
@@ -53,18 +54,9 @@ class MusicPlayerProvider extends ChangeNotifier {
     }
     
     songList = await onAudioQuery.querySongs();
-    songList = songList.map((e) {
-      final usefulPath = e.data;
-      final pathSegments = usefulPath.split('/');
-      String finalPath = '';
-      
-      for(int i = 0; i < pathSegments.length; i++) {
-        if( i + 1 == pathSegments.length ) break;
-        finalPath += '/${ pathSegments[i] }';
-      }
-
-      return e.copyWith(uri: '$finalPath/cover.jpg');
-    }).toList();
+    songList = songList.map(
+      (e) => e.copyWith(uri: MusicActions.getArtworkPath(e.data))
+    ).toList();
 
     // albumList = await onAudioQuery.queryAlbums();
     genreList = await onAudioQuery.queryGenres();
@@ -103,9 +95,13 @@ class MusicPlayerProvider extends ChangeNotifier {
         toQuery: {
           MediaColumns.Audio.ALBUM_ID: [albumId.toString()]
         },
-        albumSortType: AlbumSortType.NUM_OF_SONGS, 
+        albumSortType: AlbumSortType.NUM_OF_SONGS  
       ),
     );
+
+    albumCollection[albumId] = albumCollection[albumId]!.map(
+      (e) => e.copyWith(uri: MusicActions.getArtworkPath(e.data))
+    ).toList();
 
     _isLoading = false;
     notifyListeners();
@@ -124,6 +120,11 @@ class MusicPlayerProvider extends ChangeNotifier {
         artistSortType: ArtistSortType.NUM_OF_ALBUMS
       ),
     );
+
+    artistCollection[artistId] = artistCollection[artistId]!.map(
+      (e) => e.copyWith(uri: MusicActions.getArtworkPath(e.data))
+    ).toList();
+
     _isLoading = false;
     notifyListeners();
   }
@@ -140,6 +141,10 @@ class MusicPlayerProvider extends ChangeNotifier {
         }
       ),
     );
+
+    genreCollection[genreId] = genreCollection[genreId]!.map(
+      (e) => e.copyWith(uri: MusicActions.getArtworkPath(e.data))
+    ).toList();
     _isLoading = false;
     notifyListeners();
   }

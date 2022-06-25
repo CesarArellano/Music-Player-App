@@ -37,21 +37,8 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        elevation: 0.0,
         centerTitle: true,
         title: const Text('Album Details'),
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFF003A7C),
-                Color(0xCC174A85)
-              ]
-            ),
-          )
-        ),
         actions: <Widget>[
           IconButton(
             splashRadius: 20,

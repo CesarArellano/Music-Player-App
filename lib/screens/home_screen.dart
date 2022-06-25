@@ -25,8 +25,6 @@ class HomeScreen extends StatelessWidget {
       length: 5,
       child: Scaffold(
         appBar: AppBar(
-          elevation: 0.0,
-          backgroundColor: const Color(0xFF001F42),
           title: const Text('Focus Music Player'),
           actions: <Widget>[
             IconButton(

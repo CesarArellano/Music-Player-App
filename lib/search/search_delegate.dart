@@ -89,14 +89,14 @@ class MusicSearchDelegate extends SearchDelegate {
   Widget _songItem(BuildContext context, AudioModel song, MusicPlayerProvider musicPlayerProvider ) {
     return RippleTile(
       child: ListTile(
-        contentPadding: const EdgeInsets.all(8),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 10),
         leading: ArtworkImage(
           artworkId: song.id,
           type: ArtworkType.AUDIO,
           width: 60,
           height: 60,
           size: 250,
-          radius: BorderRadius.circular(4),
+          radius: BorderRadius.circular(2.5),
         ),
         title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
         subtitle: Text(song.artist ?? 'No Artist', maxLines: 1, overflow: TextOverflow.ellipsis),

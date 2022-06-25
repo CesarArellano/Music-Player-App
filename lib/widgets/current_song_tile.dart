@@ -140,8 +140,8 @@ class _SelectorSongTitle extends StatelessWidget {
               context: context, // BuildContext
               child: const SongPlayedScreen(), // Widget
               animation: AnimationType.slideUp, // AnimationType (package enum)
-              duration: const Duration( milliseconds:  300 ), // Duration
-              reverseDuration: const Duration( milliseconds:  300), // Duration
+              duration: const Duration( milliseconds:  250 ), // Duration
+              reverseDuration: const Duration( milliseconds:  250), // Duration
               curve: Curves.easeOut, // bool
               fullscreenDialog: false, // bool
               replacement: false, // bool

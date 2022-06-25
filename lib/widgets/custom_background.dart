@@ -9,16 +9,7 @@ class CustomBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF00254F),
-            AppTheme.primaryColor
-          ]
-        )
-      ),
+      color: AppTheme.primaryColor,
     );
   }
 }

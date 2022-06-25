@@ -12,6 +12,10 @@ class AppTheme {
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: accentColor
     ), 
+    appBarTheme: const AppBarTheme(
+      elevation: 0.0,
+      backgroundColor: Color(0xFF001F42),
+    ),
     colorScheme: const ColorScheme.dark(
       primary: Colors.white,
       onPrimary: Colors.white,
