@@ -2,7 +2,6 @@ import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:custom_page_transitions/custom_page_transitions.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart' show ArtworkType;
-import 'package:on_audio_query_platform_interface/details/on_audio_query_helper.dart';
 import 'package:provider/provider.dart';
 
 import '../audio_player_handler.dart';

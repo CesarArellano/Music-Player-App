@@ -1,13 +1,14 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:provider/provider.dart';
-import 'package:on_audio_query/on_audio_query.dart';
-
-import 'package:music_player_app/screens/artist_selected_screen.dart';
-import 'package:music_player_app/widgets/artwork_image.dart';
+import 'package:flutter/material.dart';
+import 'package:music_player_app/helpers/null_extension.dart';
 import 'package:music_player_app/widgets/ripple_tile.dart';
+import 'package:on_audio_query/on_audio_query.dart';
+import 'package:provider/provider.dart';
+
 
 import '../../providers/music_player_provider.dart';
+import '../../widgets/artwork_image.dart';
+import '../artist_selected_screen.dart';
 
 class ArtistScreen extends StatefulWidget {
   
@@ -36,25 +37,47 @@ class _ArtistScreenState extends State<ArtistScreen> with AutomaticKeepAliveClie
           itemCount: artistList.length,
           itemBuilder: ( _, int i ) {
             final artist = artistList[i];
-            return RippleTile(
-              child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-                title: Text(artist.artist, maxLines: 1, overflow: TextOverflow.ellipsis,),
-                subtitle: Text(artist.numberOfAlbums.toString()),
-                isThreeLine: true,
-                visualDensity: const VisualDensity(vertical: 4),
-                leading: ArtworkImage(
-                  artworkId: artist.id,
-                  type: ArtworkType.ARTIST,
-                  width: 80,
-                  height: 80,
-                  size: 250,
-                  radius: BorderRadius.circular(4),
+            return SizedBox(
+              width: double.infinity,
+              child: RippleTile(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      ArtworkImage(
+                        artworkId: artist.id,
+                        type: ArtworkType.ARTIST,
+                        width: 85,
+                        height: 85,
+                        size: 250,
+                        radius: BorderRadius.circular(4),
+                      ),
+                      const SizedBox(width: 20),
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              artist.artist,
+                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '${ artist.numberOfAlbums } ${ artist.numberOfAlbums.value() > 1 ? 'Albums' : 'Album' } • ${ artist.numberOfTracks } Songs',
+                              style: const TextStyle(color: Colors.white54, fontSize: 13),
+                            )
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
                 ),
+                onTap: () {
+                  Navigator.push(context, CupertinoPageRoute(builder: (_) => ArtistSelectedScreen( artistSelected: artist) ));
+                },
               ),
-              onTap: () {
-                Navigator.push(context, CupertinoPageRoute(builder: (_) => ArtistSelectedScreen( artistSelected: artist) ));
-              },
             );
           } 
         )

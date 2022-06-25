@@ -19,7 +19,7 @@ enum TypePlaylist {
 }
 class MusicActions {
 
-  static void songPlayAndPause(BuildContext context, SongModel song, TypePlaylist type, { id = 0 }) async {
+  static void songPlayAndPause(BuildContext context, AudioModel song, TypePlaylist type, { id = 0 }) async {
     final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
@@ -47,7 +47,8 @@ class MusicActions {
                 artist: song.artist,
                 title: song.title,
                 id: song.id.toString(),
-                image: const MetasImage.asset('assets/images/background.jpg'),
+                image: MetasImage.file(song.uri ?? ''),
+                onImageLoadFail: const MetasImage.asset('assets/images/background.jpg') 
               )
             ))
           ],
@@ -119,8 +120,8 @@ class MusicActions {
     final OnAudioQuery onAudioQuery = audioPlayerHandler.get();
     final foundArtwork = await onAudioQuery.queryArtwork(songPlayed.id, ArtworkType.AUDIO);
     
-    if (foundArtwork != null ) {
-      return MemoryImage(foundArtwork);
+    if (foundArtwork?.artwork != null ) {
+      return MemoryImage(foundArtwork!.artwork!);
     }
     
     return const AssetImage('assets/images/background.jpg');

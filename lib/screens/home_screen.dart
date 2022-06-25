@@ -120,7 +120,7 @@ class HomeScreen extends StatelessWidget {
 
             final onAudioQuery = audioPlayerHandler<OnAudioQuery>();
             final createPlaylistResp = await onAudioQuery.createPlaylist(namePlaylist);
-            if( createPlaylistResp ) {
+            if( createPlaylistResp != null ) {
               showSnackbar(
                 context: context,
                 message: '¡La playlist $namePlaylist fue agregada con éxito!'

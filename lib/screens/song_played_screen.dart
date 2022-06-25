@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:assets_audio_player/assets_audio_player.dart';
@@ -42,7 +43,8 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
   Widget build(BuildContext context) {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final songPlayed = musicPlayerProvider.songPlayed;
-
+    final imageFile = File(songPlayed.uri ?? '');
+      
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -71,34 +73,27 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
       ),
       body: Stack(
         children: [
-          FutureBuilder(
-            future: MusicActions.getSpecificArtwork(context),
-            builder: (_, AsyncSnapshot<ImageProvider<Object>?> snapshot) {
-
-              if( snapshot.hasData) {
-                artwork = snapshot.data;
-              }
-
-              return Transform.scale(
-                scale: 1.1,
-                child: Container(
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      fit: BoxFit.cover,
-                      image: artwork ?? Image.asset('assets/images/background.jpg').image,
-                      
-                    )
-                    
+          Transform.scale(
+            scale: 1.1,
+            child: Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  fit: BoxFit.cover,
+                  image: imageFile.existsSync()
+                    ? Image.file(
+                      imageFile,
+                      errorBuilder: (_, __, ___) => Image.asset('assets/images/background.jpg')
+                    ).image
+                    : Image.asset('assets/images/background.jpg').image
+                )                    
+              ),
+              child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
+                  child: Container(
+                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.65), backgroundBlendMode: BlendMode.darken),
                   ),
-                  child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
-                      child: Container(
-                        decoration: BoxDecoration(color: Colors.black.withOpacity(0.65), backgroundBlendMode: BlendMode.darken),
-                      ),
-                    ),
                 ),
-              );
-            }
+            ),
           ),
           _SongPlayedBody( playAnimation: _playAnimation ),
         ]
@@ -120,7 +115,8 @@ class _SongPlayedBody extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final songPlayed = musicPlayerProvider.songPlayed;
-    
+    final imageFile = File(songPlayed.uri ?? '');
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: SafeArea(
@@ -160,11 +156,16 @@ class _SongPlayedBody extends StatelessWidget {
               //   ),
               // ),
               SizedBox(height: size.height * 0.04),
-              ArtworkImage(
-                artworkId: songPlayed.id,
-                type: ArtworkType.AUDIO,
+              Image.file(
+                imageFile,
                 width: double.infinity,
                 height: 350,
+                errorBuilder: (_,__,___) => ArtworkImage(
+                  artworkId: songPlayed.id,
+                  type: ArtworkType.AUDIO,
+                  width: double.infinity,
+                  height: 350,
+                ),
               ),
               SizedBox(height: size.height * 0.04),
               SizedBox(

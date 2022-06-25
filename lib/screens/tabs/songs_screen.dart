@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
@@ -37,12 +39,22 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
           itemCount: songList.length,
           itemBuilder: ( _, int i ) {
             final song = songList[i];
+            final imageFile = File(song.uri ?? '');
             return RippleTile(
               child: ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 15),
                 title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
                 subtitle: Text(song.artist ?? 'No Artist'),                
-                leading: ArtworkImage(
+                leading: imageFile.existsSync() 
+                ? ClipRRect(
+                  borderRadius: BorderRadius.circular(2.5),
+                  child: Image.file(
+                    imageFile,
+                    width: 50,
+                    height: 50,
+                  ),
+                )
+                : ArtworkImage(
                   artworkId: song.id,
                   type: ArtworkType.AUDIO,
                   width: 50,
