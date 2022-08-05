@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
+import '../helpers/music_actions.dart';
+
 class MusicPlayerProvider extends ChangeNotifier {
 
   final OnAudioQuery onAudioQuery = OnAudioQuery();
@@ -53,12 +55,9 @@ class MusicPlayerProvider extends ChangeNotifier {
     }
     
     songList = await onAudioQuery.querySongs();
-    // songList = songList.map(
-    //   (e) {
-    //     e.uri = MusicActions.getArtworkPath(e.data) ?? '';
-    //     return e;
-    //   }
-    // ).toList();
+    songList = songList.map(
+      (e) => e.copyWith(uri: MusicActions.getArtworkPath(e.data) ?? '')
+    ).toList();
 
     albumList = await onAudioQuery.queryAlbums();
     genreList = await onAudioQuery.queryGenres();
@@ -88,10 +87,9 @@ class MusicPlayerProvider extends ChangeNotifier {
     _isLoading = true;
     albumCollection[albumId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.ALBUM_ID, albumId );
 
-    // albumCollection[albumId] = albumCollection[albumId]!.map( (e) {
-    //   e.uri = MusicActions.getArtworkPath(e.data) ?? '';
-    //   return e;
-    // }).toList();
+    albumCollection[albumId] = albumCollection[albumId]!.map( 
+      (e) => e.copyWith(uri: MusicActions.getArtworkPath(e.data) ?? '')
+    ).toList();
 
     _isLoading = false;
     notifyListeners();
@@ -104,10 +102,9 @@ class MusicPlayerProvider extends ChangeNotifier {
     _isLoading = true;
     artistCollection[artistId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.ARTIST_ID, artistId );
 
-    // artistCollection[artistId] = artistCollection[artistId]!.map( (e) {
-    //   e.uri = MusicActions.getArtworkPath(e.data) ?? '';
-    //   return e;
-    // }).toList();
+    artistCollection[artistId] = artistCollection[artistId]!.map(
+      (e) => e.copyWith(uri: MusicActions.getArtworkPath(e.data) ?? '')
+    ).toList();
 
     _isLoading = false;
     notifyListeners();
@@ -120,10 +117,9 @@ class MusicPlayerProvider extends ChangeNotifier {
     _isLoading = true;
     genreCollection[genreId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.GENRE_ID, genreId );
 
-    // genreCollection[genreId] = genreCollection[genreId]!.map( (e) {
-    //   e.uri = MusicActions.getArtworkPath(e.data) ?? '';
-    //   return e;
-    // }).toList();
+    genreCollection[genreId] = genreCollection[genreId]!.map(
+      (e) => e.copyWith(uri: MusicActions.getArtworkPath(e.data) ?? '')
+    ).toList();
     _isLoading = false;
     notifyListeners();
   }
