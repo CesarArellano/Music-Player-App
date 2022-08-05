@@ -114,8 +114,9 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
                               width: 50,
                               height: 50,
                               size: 250,
+                              radius: BorderRadius.circular(2.5),
                             ),
-                          title: Text(song.title),
+                          title: Text(song.title ?? ''),
                           subtitle: Text(song.artist ?? 'No Artist')
                         ),
                         onTap: () {
@@ -130,7 +131,7 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
             )
           ],
         ),
-      bottomNavigationBar: (musicPlayerProvider.isLoading || musicPlayerProvider.songPlayed.title.isEmpty)
+      bottomNavigationBar: (musicPlayerProvider.isLoading || ( musicPlayerProvider.songPlayed.title ?? '').isEmpty)
           ? null
           : const CurrentSongTile()
     );

@@ -97,7 +97,7 @@ class _SelectorSongTitle extends StatelessWidget {
                 children: [
                   IconButton(
                     onPressed: () {
-                      final isPlaying = audioPlayer.isPlaying.valueWrapper?.value ?? false;
+                      final isPlaying = audioPlayer.isPlaying.value;
                       if( isPlaying ) {
                         _playAnimation.reverse();
                         audioPlayer.pause();
@@ -124,7 +124,7 @@ class _SelectorSongTitle extends StatelessWidget {
             }
           ),
           title: Text(
-            songPlayed.title,
+            songPlayed.title ?? '',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)

@@ -6,7 +6,8 @@ class AppTheme {
   static const Color accentColor = Colors.amber;
 
   static ThemeData lightTheme = ThemeData.light().copyWith(
-    splashFactory: InkRipple.splashFactory,
+    useMaterial3: true,
+    splashFactory: InkSparkle.constantTurbulenceSeedSplashFactory,
     textTheme: Typography.whiteCupertino,
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: accentColor
@@ -29,7 +30,8 @@ class AppTheme {
   );
 
   static ThemeData darkTheme = ThemeData.dark().copyWith(
-    splashFactory: InkRipple.splashFactory,
+    useMaterial3: true,
+    splashFactory: InkSparkle.constantTurbulenceSeedSplashFactory,
     textTheme: Typography().white,
     brightness: Brightness.dark
   );

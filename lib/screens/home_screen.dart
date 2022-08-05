@@ -124,7 +124,7 @@ class HomeScreen extends StatelessWidget {
             musicPlayerProvider.refreshPlaylist();
           }
         ),
-        bottomNavigationBar: (musicPlayerProvider.isLoading || musicPlayerProvider.songPlayed.title.isEmpty)
+        bottomNavigationBar: (musicPlayerProvider.isLoading || ( musicPlayerProvider.songPlayed.title ?? '').isEmpty)
           ? const CustomBottomNavigationBar()
           : const CurrentSongTile()
       ),

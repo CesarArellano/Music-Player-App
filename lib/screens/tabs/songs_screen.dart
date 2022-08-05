@@ -43,7 +43,7 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
             return RippleTile(
               child: ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 15),
-                title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                title: Text(song.title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis),
                 subtitle: Text(song.artist ?? 'No Artist'),                
                 leading: imageFile.existsSync() 
                 ? ClipRRect(

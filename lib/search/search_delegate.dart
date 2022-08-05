@@ -98,7 +98,7 @@ class MusicSearchDelegate extends SearchDelegate {
           size: 250,
           radius: BorderRadius.circular(2.5),
         ),
-        title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+        title: Text(song.title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis),
         subtitle: Text(song.artist ?? 'No Artist', maxLines: 1, overflow: TextOverflow.ellipsis),
         // onTap: () => Navigator.pushNamed(context, 'details', arguments: song),
       ),

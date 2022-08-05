@@ -183,10 +183,10 @@ class _SongPlayedBody extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Flexible (
-                      child: ( songPlayed.title.length > 30 )
+                      child: ( (songPlayed.title ?? '').length > 30 )
                       ? Marquee(
                         velocity: 50.0,
-                        text: songPlayed.title,
+                        text: songPlayed.title ?? '',
                         blankSpace: 30,
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                       )
@@ -194,7 +194,7 @@ class _SongPlayedBody extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const SizedBox(height: 10),
-                          Text( songPlayed.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18) ),
+                          Text( songPlayed.title ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18) ),
                           const SizedBox(height: 9)
                         ],
                       )

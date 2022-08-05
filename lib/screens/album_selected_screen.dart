@@ -67,7 +67,8 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                           type: ArtworkType.ALBUM,
                           width: 150,
                           height: 150,
-                          size: 600
+                          size: 600,
+                          radius: BorderRadius.circular(2.5),
                         ),
                         const SizedBox(width: 10),
                         Flexible(
@@ -106,10 +107,11 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                                 width: 50,
                                 height: 50,
                                 size: 250,
+                                radius: BorderRadius.circular(2.5),
                               ),
                             ],
                           ),
-                          title: Text(song.title),
+                          title: Text(song.title ?? ''),
                           subtitle: Text(song.artist ?? 'No Artist')
                         ),
                         onTap: () {
@@ -124,7 +126,7 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
             )
           ],
       ),
-      bottomNavigationBar: (musicPlayerProvider.isLoading || musicPlayerProvider.songPlayed.title.isEmpty)
+      bottomNavigationBar: (musicPlayerProvider.isLoading || ( musicPlayerProvider.songPlayed.title ?? '').isEmpty)
           ? null
           : const CurrentSongTile()
     );
