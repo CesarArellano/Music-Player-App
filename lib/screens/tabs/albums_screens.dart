@@ -1,11 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:music_player_app/screens/screens.dart';
-import 'package:music_player_app/widgets/artwork_image.dart';
-import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:provider/provider.dart';
 
 import '../../providers/music_player_provider.dart';
+import '../../widgets/artwork_image.dart';
+import '../../widgets/widgets.dart';
+import '../screens.dart';
 
 class AlbumsScreen extends StatefulWidget {
 
@@ -42,34 +43,32 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
           itemBuilder: ( _, int i ) {
             final album = albumList[i];
             
-            return Material(
-              child: InkWell(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ArtworkImage(
-                      artworkId: album.id,
-                      type: ArtworkType.ALBUM,
-                      size: 600,
-                      radius: BorderRadius.circular(2.5),
-                    ),
-                    const SizedBox(height: 6),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 4),
-                      child: Text(album.album, maxLines: 1, overflow: TextOverflow.ellipsis,),
-                    ),
-                    const SizedBox(height: 2),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 4),
-                      child: Text("${ album.numOfSongs } ${ (album.numOfSongs > 1) ? 'songs' : 'song' }"),
-                    ),
-                  ],
-                ),
-                onTap: () {
-                  Navigator.push(context, CupertinoPageRoute(builder: (_) => AlbumSelectedScreen( albumSelected: album) ));
-                }
+            return RippleTile(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ArtworkImage(
+                    artworkId: album.id,
+                    type: ArtworkType.ALBUM,
+                    size: 600,
+                    radius: BorderRadius.circular(2.5),
+                  ),
+                  const SizedBox(height: 6),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Text(album.album, maxLines: 1, overflow: TextOverflow.ellipsis,),
+                  ),
+                  const SizedBox(height: 2),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Text("${ album.numOfSongs } ${ (album.numOfSongs > 1) ? 'songs' : 'song' }"),
+                  ),
+                ],
               ),
+              onTap: () {
+                Navigator.push(context, CupertinoPageRoute(builder: (_) => AlbumSelectedScreen( albumSelected: album) ));
+              }
             );
           },
       ),

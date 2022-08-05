@@ -48,7 +48,7 @@ class MusicActions {
                 artist: song.artist,
                 title: song.title,
                 id: song.id.toString(),
-                image: MetasImage.file(song.uri ?? ''),
+                image: MetasImage.file(MusicActions.getArtworkPath(song.data) ?? ''),
                 onImageLoadFail: const MetasImage.asset('assets/images/background.jpg') 
               )
             ))

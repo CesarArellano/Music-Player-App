@@ -99,7 +99,8 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
                     itemCount: musicPlayerProvider.artistCollection[widget.artistSelected.id]!.length,
                     itemBuilder: (_, int i) {
                       final song = musicPlayerProvider.artistCollection[widget.artistSelected.id]![i];
-                      final imageFile = File(song.uri ?? '');
+                      final imageFile = File(MusicActions.getArtworkPath(song.data) ?? '');
+                      
                       return RippleTile(
                         child: ListTile(
                           leading: imageFile.existsSync()

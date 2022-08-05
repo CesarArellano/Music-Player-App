@@ -39,7 +39,8 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
           itemCount: songList.length,
           itemBuilder: ( _, int i ) {
             final song = songList[i];
-            final imageFile = File(song.uri ?? '');
+                                  final imageFile = File(MusicActions.getArtworkPath(song.data) ?? '');
+
             return RippleTile(
               child: ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 15),

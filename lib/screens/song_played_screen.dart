@@ -43,7 +43,7 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
   Widget build(BuildContext context) {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final songPlayed = musicPlayerProvider.songPlayed;
-    final imageFile = File(songPlayed.uri ?? '');
+    final imageFile = File(MusicActions.getArtworkPath(songPlayed.data) ?? '');
       
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -124,7 +124,7 @@ class _SongPlayedBody extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final songPlayed = musicPlayerProvider.songPlayed;
-    final imageFile = File(songPlayed.uri ?? '');
+    final imageFile = File(MusicActions.getArtworkPath(songPlayed.data) ?? '');
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
