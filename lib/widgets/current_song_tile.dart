@@ -97,7 +97,7 @@ class _SelectorSongTitle extends StatelessWidget {
                 children: [
                   IconButton(
                     onPressed: () {
-                      final isPlaying = audioPlayer.isPlaying.value;
+                      final isPlaying = audioPlayer.isPlaying.valueWrapper?.value ?? false;
                       if( isPlaying ) {
                         _playAnimation.reverse();
                         audioPlayer.pause();

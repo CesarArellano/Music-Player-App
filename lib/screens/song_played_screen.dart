@@ -254,7 +254,7 @@ class _MusicControls extends StatelessWidget {
           ),
           onPressed: () async {
             await audioPlayer.setLoopMode( 
-              audioPlayer.loopMode.value == LoopMode.none
+              audioPlayer.currentLoopMode == LoopMode.none
               ? LoopMode.single
               : LoopMode.none
             );
@@ -271,7 +271,7 @@ class _MusicControls extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 child: const Icon( Icons.fast_rewind),
                 onPressed: () {
-                  if( audioPlayer.loopMode.value == LoopMode.none && controlProvider.currentIndex > 0 ) {
+                  if( audioPlayer.currentLoopMode == LoopMode.none && controlProvider.currentIndex > 0 ) {
                     controlProvider.currentIndex -= 1;
                     musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[controlProvider.currentIndex];
                     audioPlayer.previous();
@@ -321,7 +321,7 @@ class _MusicControls extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 child: const Icon( Icons.fast_forward ),
                 onPressed: () {
-                  if( audioPlayer.loopMode.value == LoopMode.none && controlProvider.currentIndex <= musicPlayerProvider.currentPlaylist.length - 2 ) {
+                  if( audioPlayer.currentLoopMode == LoopMode.none && controlProvider.currentIndex <= musicPlayerProvider.currentPlaylist.length - 2 ) {
                     controlProvider.currentIndex += 1;
                     musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[controlProvider.currentIndex];
                     audioPlayer.next();
