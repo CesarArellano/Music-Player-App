@@ -12,12 +12,18 @@ class RippleTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: child,
-      )
+    return Stack(
+      children: [
+        child,
+        Positioned.fill(
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onTap,
+            )
+          ),
+        )
+      ],
     );
   }
 }
