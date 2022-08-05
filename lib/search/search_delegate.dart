@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:music_player_app/theme/app_theme.dart';
-import 'package:on_audio_query/on_audio_query.dart' show ArtworkType, AudioModel;
+import 'package:on_audio_query/on_audio_query.dart' show ArtworkType, SongModel;
 import 'package:provider/provider.dart';
 
 import '../helpers/music_actions.dart';
@@ -13,7 +13,7 @@ class MusicSearchDelegate extends SearchDelegate {
   @override
   ThemeData appBarTheme(BuildContext context) {
     return Theme.of(context).copyWith(
-      useMaterial3: true,
+      // useMaterial3: true,
       colorScheme: const ColorScheme.dark(
         primary: Colors.white
       ),
@@ -63,7 +63,7 @@ class MusicSearchDelegate extends SearchDelegate {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     return FutureBuilder(
       future: musicPlayerProvider.searchSongByQuery(query),
-      builder: ( _, AsyncSnapshot<List<AudioModel>> asyncSnapshot) {
+      builder: ( _, AsyncSnapshot<List<SongModel>> asyncSnapshot) {
         if( !asyncSnapshot.hasData) {
           return _emptyContainer();
         }
@@ -86,7 +86,7 @@ class MusicSearchDelegate extends SearchDelegate {
     );
   }
 
-  Widget _songItem(BuildContext context, AudioModel song, MusicPlayerProvider musicPlayerProvider ) {
+  Widget _songItem(BuildContext context, SongModel song, MusicPlayerProvider musicPlayerProvider ) {
     return RippleTile(
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 10),

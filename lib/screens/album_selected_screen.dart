@@ -29,7 +29,7 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
   }
 
   void getSongs() async {
-    await Provider.of<MusicPlayerProvider>(this.context, listen: false).searchByAlbumId( widget.albumSelected.id );
+    await Provider.of<MusicPlayerProvider>(context, listen: false).searchByAlbumId( widget.albumSelected.id );
   }
 
   @override

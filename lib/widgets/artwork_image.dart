@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:on_audio_query/on_audio_query.dart' show ArtworkFormatType, ArtworkType, QueryArtworkWidget;
+import 'package:on_audio_query/on_audio_query.dart' show ArtworkFormat, ArtworkType, QueryArtworkWidget;
 class ArtworkImage extends StatelessWidget {
   const ArtworkImage({
     Key? key,
@@ -10,12 +10,12 @@ class ArtworkImage extends StatelessWidget {
     this.height = 190,
     this.radius = BorderRadius.zero,
     this.type = ArtworkType.AUDIO,
-    this.formatType = ArtworkFormatType.JPEG,
+    this.formatType = ArtworkFormat.JPEG,
   }) : super(key: key);
 
   final int artworkId;
   final ArtworkType type;
-  final ArtworkFormatType formatType;
+  final ArtworkFormat formatType;
   final double width;
   final double height;
   final int size;
@@ -27,7 +27,7 @@ class ArtworkImage extends StatelessWidget {
       keepOldArtwork: true,
       id: artworkId,
       type: type,
-      formatType: formatType,
+      format: formatType,
       artworkBorder: radius,
       artworkWidth: width,
       artworkHeight: height,

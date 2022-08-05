@@ -21,7 +21,7 @@ enum TypePlaylist {
 }
 class MusicActions {
 
-  static void songPlayAndPause(BuildContext context, AudioModel song, TypePlaylist type, { id = 0 }) async {
+  static void songPlayAndPause(BuildContext context, SongModel song, TypePlaylist type, { id = 0 }) async {
     final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
@@ -135,8 +135,8 @@ class MusicActions {
     final OnAudioQuery onAudioQuery = audioPlayerHandler.get();
     final foundArtwork = await onAudioQuery.queryArtwork(songPlayed.id, ArtworkType.AUDIO);
     
-    if (foundArtwork?.artwork != null ) {
-      return MemoryImage(foundArtwork!.artwork!);
+    if (foundArtwork != null ) {
+      return MemoryImage(foundArtwork);
     }
     
     return const AssetImage('assets/images/background.jpg');

@@ -31,7 +31,7 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
   }
 
   void getSongs() async {
-    await Provider.of<MusicPlayerProvider>(this.context, listen: false).searchByGenreId( widget.genreSelected.id );
+    await Provider.of<MusicPlayerProvider>(context, listen: false).searchByGenreId( widget.genreSelected.id );
   }
 
   @override

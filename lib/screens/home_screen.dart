@@ -34,7 +34,6 @@ class HomeScreen extends StatelessWidget {
               tooltip: 'Search music',
             ),
             PopupMenuButton(
-              splashRadius: 20,
               icon: const Icon(Icons.more_vert),
               tooltip: 'More options',
               itemBuilder: (_) => [
@@ -117,14 +116,12 @@ class HomeScreen extends StatelessWidget {
             if( !dialogResp ) return;
 
             final onAudioQuery = audioPlayerHandler<OnAudioQuery>();
-            final createPlaylistResp = await onAudioQuery.createPlaylist(namePlaylist);
-            if( createPlaylistResp != null ) {
-              showSnackbar(
-                context: context,
-                message: '¡La playlist $namePlaylist fue agregada con éxito!'
-              );
-              musicPlayerProvider.refreshPlaylist();
-            }
+            await onAudioQuery.createPlaylist(namePlaylist);
+            showSnackbar(
+              context: context,
+              message: '¡La playlist $namePlaylist fue agregada con éxito!'
+            );
+            musicPlayerProvider.refreshPlaylist();
           }
         ),
         bottomNavigationBar: (musicPlayerProvider.isLoading || musicPlayerProvider.songPlayed.title.isEmpty)

@@ -6,21 +6,21 @@ class MusicPlayerProvider extends ChangeNotifier {
 
   final OnAudioQuery onAudioQuery = OnAudioQuery();
 
-  AudioModel _songPlayed = AudioModel({ 'title': '', '_id': 0});
+  SongModel _songPlayed = SongModel({});
   bool _isLoading = false;
   bool _isShuffling = false;
 
-  Map<int, List<AudioModel>> albumCollection = {};
-  Map<int, List<AudioModel>> artistCollection = {};
-  Map<int, List<AudioModel>> genreCollection = {};
+  Map<int, List<SongModel>> albumCollection = {};
+  Map<int, List<SongModel>> artistCollection = {};
+  Map<int, List<SongModel>> genreCollection = {};
 
-  List<AudioModel> songList = [];
+  List<SongModel> songList = [];
   List<AlbumModel> albumList = [];
   List<GenreModel> genreList = [];
   List<ArtistModel> artistList = [];
   List<PlaylistModel> playLists = [];
 
-  List<AudioModel> currentPlaylist = [];
+  List<SongModel> currentPlaylist = [];
   
   MusicPlayerProvider() {
     getAllSongs();
@@ -40,9 +40,9 @@ class MusicPlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  AudioModel get songPlayed => _songPlayed;
+  SongModel get songPlayed => _songPlayed;
 
-  set songPlayed( AudioModel value ) {
+  set songPlayed( SongModel value ) {
     _songPlayed = value;
     notifyListeners();
   }
@@ -55,10 +55,13 @@ class MusicPlayerProvider extends ChangeNotifier {
     
     songList = await onAudioQuery.querySongs();
     songList = songList.map(
-      (e) => e.copyWith(uri: MusicActions.getArtworkPath(e.data))
+      (e) {
+        e.uri = MusicActions.getArtworkPath(e.data) ?? '';
+        return e;
+      }
     ).toList();
 
-    // albumList = await onAudioQuery.queryAlbums();
+    albumList = await onAudioQuery.queryAlbums();
     genreList = await onAudioQuery.queryGenres();
     artistList = await onAudioQuery.queryArtists();
     playLists = await onAudioQuery.queryPlaylists();
@@ -74,15 +77,9 @@ class MusicPlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<AudioModel>> searchSongByQuery(String query) async {
-    List<AudioModel> songList = await onAudioQuery.querySongs(
-      filter: MediaFilter.forGenres(
-        toQuery: {
-          MediaColumns.Audio.TITLE: [query.toString()]
-        }
-      ),
-    );
-    return songList;
+  Future<List<SongModel>> searchSongByQuery(String query) async {
+    List<dynamic> songList = await onAudioQuery.queryWithFilters(query, WithFiltersType.AUDIOS );
+    return songList.toSongModel();
   }
 
   Future<void> searchByAlbumId(int albumId) async {
@@ -90,18 +87,12 @@ class MusicPlayerProvider extends ChangeNotifier {
     if( albumCollection.containsKey(albumId) ) return;
 
     _isLoading = true;
-    albumCollection[albumId] = await onAudioQuery.querySongs(
-      filter: MediaFilter.forAlbums(
-        toQuery: {
-          MediaColumns.Audio.ALBUM_ID: [albumId.toString()]
-        },
-        albumSortType: AlbumSortType.NUM_OF_SONGS  
-      ),
-    );
+    albumCollection[albumId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.ALBUM_ID, albumId );
 
-    albumCollection[albumId] = albumCollection[albumId]!.map(
-      (e) => e.copyWith(uri: MusicActions.getArtworkPath(e.data))
-    ).toList();
+    albumCollection[albumId] = albumCollection[albumId]!.map( (e) {
+      e.uri = MusicActions.getArtworkPath(e.data) ?? '';
+      return e;
+    }).toList();
 
     _isLoading = false;
     notifyListeners();
@@ -112,18 +103,12 @@ class MusicPlayerProvider extends ChangeNotifier {
     if( artistCollection.containsKey(artistId) ) return;
 
     _isLoading = true;
-    artistCollection[artistId] = await onAudioQuery.querySongs(
-      filter: MediaFilter.forArtists(
-        toQuery: {
-          MediaColumns.Audio.ARTIST_ID: [artistId.toString()],
-        },
-        artistSortType: ArtistSortType.NUM_OF_ALBUMS
-      ),
-    );
+    artistCollection[artistId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.ARTIST_ID, artistId );
 
-    artistCollection[artistId] = artistCollection[artistId]!.map(
-      (e) => e.copyWith(uri: MusicActions.getArtworkPath(e.data))
-    ).toList();
+    artistCollection[artistId] = artistCollection[artistId]!.map( (e) {
+      e.uri = MusicActions.getArtworkPath(e.data) ?? '';
+      return e;
+    }).toList();
 
     _isLoading = false;
     notifyListeners();
@@ -134,17 +119,12 @@ class MusicPlayerProvider extends ChangeNotifier {
     if( genreCollection.containsKey(genreId) ) return;
 
     _isLoading = true;
-    genreCollection[genreId] = await onAudioQuery.querySongs(
-      filter: MediaFilter.forGenres(
-        toQuery: {
-          MediaColumns.Audio.GENRE_ID: [genreId.toString()]
-        }
-      ),
-    );
+    genreCollection[genreId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.GENRE_ID, genreId );
 
-    genreCollection[genreId] = genreCollection[genreId]!.map(
-      (e) => e.copyWith(uri: MusicActions.getArtworkPath(e.data))
-    ).toList();
+    genreCollection[genreId] = genreCollection[genreId]!.map( (e) {
+      e.uri = MusicActions.getArtworkPath(e.data) ?? '';
+      return e;
+    }).toList();
     _isLoading = false;
     notifyListeners();
   }
