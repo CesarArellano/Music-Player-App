@@ -31,19 +31,19 @@ dependencies:
     sdk: flutter
   
   cupertino_icons: ^1.0.5
-  assets_audio_player: ^3.0.5
+  assets_audio_player: ^3.0.6
   on_audio_query: ^2.6.1
-  provider: ^6.0.3
+  provider: ^6.0.5
   custom_page_transitions: ^0.0.4
-  audio_video_progress_bar: ^0.10.0
+  audio_video_progress_bar: ^0.11.0
   marquee: ^2.2.3
   get_it: ^7.2.0
-  flutter_launcher_icons: ^0.9.2
-  flutter_native_splash: ^2.2.7
-  share_plus: ^4.0.10
+  flutter_launcher_icons: ^0.11.0
+  flutter_native_splash: ^2.2.16
+  share_plus: ^6.3.0
 
 dev_dependencies:
-  flutter_lints: ^1.0.0
+  flutter_lints: ^2.0.1
   flutter_test:
     sdk: flutter
 
