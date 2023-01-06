@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:music_player_app/theme/app_theme.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
@@ -31,11 +32,11 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
       ? const Center ( child: CircularProgressIndicator() )
       : albumList.isNotEmpty
         ? Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 5.0),
+          padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0),
           child: GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            mainAxisExtent: 235,
+            mainAxisExtent: 240,
             mainAxisSpacing: 4,
             crossAxisSpacing: 4
           ),
@@ -52,17 +53,25 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
                     artworkId: album.id,
                     type: ArtworkType.ALBUM,
                     size: 600,
-                    radius: BorderRadius.circular(2.5),
+                    radius: BorderRadius.circular(6.5),
                   ),
                   const SizedBox(height: 6),
                   Padding(
                     padding: const EdgeInsets.only(left: 4),
-                    child: Text(album.album, maxLines: 1, overflow: TextOverflow.ellipsis,),
+                    child: Text(
+                      album.album,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Padding(
                     padding: const EdgeInsets.only(left: 4),
-                    child: Text("${ album.numOfSongs } ${ (album.numOfSongs > 1) ? 'songs' : 'song' }"),
+                    child: Text(
+                      "${ album.numOfSongs } ${ (album.numOfSongs > 1) ? 'songs' : 'song' }",
+                      style: const TextStyle(color: AppTheme.lightTextColor, fontSize: 12),
+                    ),
                   ),
                 ],
               ),

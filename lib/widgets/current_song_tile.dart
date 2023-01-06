@@ -68,11 +68,15 @@ class _SelectorSongTitle extends StatelessWidget {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final songPlayed = musicPlayerProvider.songPlayed;
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Divider(height: 0.25, color: AppTheme.primaryColor),
+        const Divider(height: 0.20, color: Colors.white10),
         ListTile(
-          tileColor: const Color(0xFF001F42),
+          dense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 15),
+          visualDensity: const VisualDensity(horizontal: -1, vertical: -1),
+          tileColor: AppTheme.primaryColor,
           leading: ArtworkImage(
             artworkId: songPlayed.id,
             type: ArtworkType.AUDIO,
@@ -107,16 +111,18 @@ class _SelectorSongTitle extends StatelessWidget {
                       }
                     },
                     splashRadius: 24,
+                    iconSize: 28,
                     icon: AnimatedIcon( 
                       progress: _playAnimation,
                       icon: AnimatedIcons.play_pause,
-                      color: Colors.amber,
+                      color: Colors.white,
                     )
                   ),
                   IconButton(
                     splashRadius: 24,
                     icon: const Icon(Icons.queue_music),
-                    color: AppTheme.accentColor,
+                    iconSize: 26,
+                    color: Colors.white,
                     onPressed: () => MusicActions.showCurrentPlayList(context),
                   )
                 ],
@@ -124,33 +130,28 @@ class _SelectorSongTitle extends StatelessWidget {
             }
           ),
           title: Text(
-            songPlayed.title ?? '',
+            songPlayed.title ?? '', 
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)
+            style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 15)
           ),
           subtitle: Text(
             "${ songPlayed.artist ?? 'No artist' } • ${ songPlayed.album }",
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 12)
+            style: const TextStyle(fontSize: 12, color: AppTheme.lightTextColor)
           ),
           onTap: () {
             PageTransitions(
-              context: context, // BuildContext
-              child: const SongPlayedScreen(), // Widget
-              animation: AnimationType.slideUp, // AnimationType (package enum)
-              duration: const Duration( milliseconds:  250 ), // Duration
-              reverseDuration: const Duration( milliseconds:  250), // Duration
-              curve: Curves.easeOut, // bool
-              fullscreenDialog: false, // bool
-              replacement: false, // bool
+              context: context,
+              child: const SongPlayedScreen(),
+              animation: AnimationType.fadeIn,
+              curve: Curves.easeInOut,
             );
           },
         ),
         Container(
-          alignment: AlignmentDirectional.topStart,
-          height: 1,
+          height: 1.5,
           width: width * (audioControlProvider.currentDuration.inMilliseconds / songPlayed.duration! ),
           color: AppTheme.accentColor,
         )

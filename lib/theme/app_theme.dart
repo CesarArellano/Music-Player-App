@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
 
-  static const Color primaryColor = Color(0xFF0E3158);
+  static const Color primaryColor = Color(0xFF104674);
   static const Color accentColor = Colors.amber;
+  static const Color lightTextColor = Colors.white54;
 
   static ThemeData lightTheme = ThemeData.light().copyWith(
     useMaterial3: true,
@@ -14,19 +15,26 @@ class AppTheme {
     ), 
     appBarTheme: const AppBarTheme(
       elevation: 0.0,
-      backgroundColor: Color(0xFF001F42),
+      backgroundColor: primaryColor,
     ),
     colorScheme: const ColorScheme.dark(
       primary: Colors.white,
       onPrimary: Colors.white,
     ).copyWith(secondary: accentColor),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: const Color(0xFF001F42),
-      indicatorColor: Colors.blue.shade100,
+      backgroundColor: primaryColor,
+      indicatorColor: Colors.blue.shade200,
       labelTextStyle: MaterialStateProperty.all(
-        const TextStyle( fontSize: 12, fontWeight: FontWeight.w400, color: Colors.white54 )
+        const TextStyle( fontSize: 12, color: lightTextColor)
       )
-    )
+    ),
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: primaryColor,
+      selectedItemColor: Colors.white,
+      unselectedItemColor: lightTextColor,
+      selectedLabelStyle: TextStyle(fontSize: 12),
+      unselectedLabelStyle: TextStyle(fontSize: 12),
+    ),
   );
 
   static ThemeData darkTheme = ThemeData.dark().copyWith(

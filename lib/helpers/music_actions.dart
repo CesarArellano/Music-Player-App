@@ -78,10 +78,8 @@ class MusicActions {
     PageTransitions(
       context: context,
       child: const SongPlayedScreen(),
-      animation: AnimationType.slideUp,
-      duration: const Duration( milliseconds:  250 ),
-      reverseDuration: const Duration( milliseconds:  250),
-      curve: Curves.easeOut,
+      animation: AnimationType.fadeIn,
+      curve: Curves.easeInOut,
     );
   }
 

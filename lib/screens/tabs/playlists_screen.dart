@@ -35,7 +35,7 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> with AutomaticKeepAli
           itemBuilder: ( _, int i ) {
             final playlist = playlists[i];
             return ListTile(
-              contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 15),
               title: Text(playlist.playlist),
               subtitle: Text(playlist.numOfSongs.toString()),
               onLongPress: () async {

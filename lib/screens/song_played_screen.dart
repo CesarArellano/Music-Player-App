@@ -4,7 +4,9 @@ import 'dart:ui';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:marquee/marquee.dart';
+import 'package:music_player_app/theme/app_theme.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
@@ -45,67 +47,73 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
     final songPlayed = musicPlayerProvider.songPlayed;
     final imageFile = File(MusicActions.getArtworkPath(songPlayed.data) ?? '');
       
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        title: Column(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light.copyWith(
+        systemNavigationBarColor: Colors.black,
+      ),
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: Colors.transparent,
+          title: Column(
+            children: [
+              const SizedBox(height: 10,),
+              const Text('PLAYING FROM', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppTheme.lightTextColor, letterSpacing: 1) ),
+              const SizedBox(height: 4),
+              Text(songPlayed.album ?? 'No Album', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+            ]
+          ),
+          leading: IconButton(
+            splashRadius: 22,
+            icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
+          actions: <Widget>[
+            IconButton(
+              splashRadius: 20,
+              icon: const Icon(Icons.drag_indicator, color: Colors.white),
+              onPressed: () => MusicActions.showCurrentPlayList(context),
+            ),
+          ],
+        ),
+        body: Stack(
           children: [
-            const Text('PLAYING FROM', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: Colors.white) ),
-            const SizedBox(height: 4),
-            Text(songPlayed.album ?? 'No Album', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+            FutureBuilder<ImageProvider<Object>?>(
+              future: MusicActions.getSpecificArtwork(context),
+              builder: (context, snapshot) {
+    
+                if( snapshot.hasData ) {
+                  artwork = snapshot.data;
+                }
+    
+                return Transform.scale(
+                  scale: 1.1,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        fit: BoxFit.cover,
+                        image: artwork == null || imageFile.existsSync()
+                          ? Image.file(
+                            imageFile,
+                            errorBuilder: (_, __, ___) => Image.asset('assets/images/background.jpg')
+                          ).image
+                          : Image(image: artwork!).image
+                      )                    
+                    ),
+                    child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 50.0, sigmaY: 50.0),
+                        child: Container(
+                          decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), backgroundBlendMode: BlendMode.darken),
+                        ),
+                      ),
+                  ),
+                );
+              }
+            ),
+            _SongPlayedBody( playAnimation: _playAnimation ),
           ]
         ),
-        leading: IconButton(
-          splashRadius: 22,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: <Widget>[
-          IconButton(
-            splashRadius: 20,
-            icon: const Icon(Icons.drag_indicator, color: Colors.white),
-            onPressed: () => MusicActions.showCurrentPlayList(context),
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          FutureBuilder<ImageProvider<Object>?>(
-            future: MusicActions.getSpecificArtwork(context),
-            builder: (context, snapshot) {
-
-              if( snapshot.hasData ) {
-                artwork = snapshot.data;
-              }
-
-              return Transform.scale(
-                scale: 1.1,
-                child: Container(
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      fit: BoxFit.cover,
-                      image: artwork == null || imageFile.existsSync()
-                        ? Image.file(
-                          imageFile,
-                          errorBuilder: (_, __, ___) => Image.asset('assets/images/background.jpg')
-                        ).image
-                        : Image(image: artwork!).image
-                    )                    
-                  ),
-                  child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
-                      child: Container(
-                        decoration: BoxDecoration(color: Colors.black.withOpacity(0.65), backgroundBlendMode: BlendMode.darken),
-                      ),
-                    ),
-                ),
-              );
-            }
-          ),
-          _SongPlayedBody( playAnimation: _playAnimation ),
-        ]
       ),
     );
   }
@@ -164,19 +172,23 @@ class _SongPlayedBody extends StatelessWidget {
               //     ],
               //   ),
               // ),
-              SizedBox(height: size.height * 0.04),
-              Image.file(
-                imageFile,
-                width: double.infinity,
-                height: 350,
-                errorBuilder: (_,__,___) => ArtworkImage(
-                  artworkId: songPlayed.id,
-                  type: ArtworkType.AUDIO,
+              SizedBox(height: size.height * 0.015),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Image.file(
+                  imageFile,
                   width: double.infinity,
                   height: 350,
+                  errorBuilder: (_,__,___) => ArtworkImage(
+                    artworkId: songPlayed.id,
+                    type: ArtworkType.AUDIO,
+                    width: double.infinity,
+                    height: 350,
+                    radius: BorderRadius.circular(6),
+                  ),
                 ),
               ),
-              SizedBox(height: size.height * 0.04),
+              SizedBox(height: size.height * 0.05),
               SizedBox(
                 height: size.height * 0.07,
                 child: Column(
@@ -210,9 +222,9 @@ class _SongPlayedBody extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(height: size.height * 0.08),
-              const _SongTimeline(),
               SizedBox(height: size.height * 0.1),
+              const _SongTimeline(),
+              SizedBox(height: size.height * 0.09),
               _MusicControls(playAnimation: playAnimation)
             ],
           ),
@@ -294,7 +306,7 @@ class _MusicControls extends StatelessWidget {
                 }
                 
                 return FloatingActionButton(
-                  backgroundColor: Colors.amber,
+                  backgroundColor: Colors.white,
                   onPressed: () {
                     if( isPlaying ) {
                       playAnimation?.reverse();
@@ -386,12 +398,13 @@ class _SongTimeline extends StatelessWidget {
       thumbRadius: 8.0,
       barHeight: 3.0,
       progressBarColor: Colors.white,
-      thumbColor: Colors.amber,
+      thumbColor: Colors.white,
       progress: audioControlProvider.currentDuration,
       total: Duration(milliseconds: songPlayed.duration!),
       onSeek: (duration) {
         audioPlayer.seek(duration);
       },
+      timeLabelTextStyle: const TextStyle(color: AppTheme.lightTextColor, fontWeight: FontWeight.w500),
     );
   }
 }

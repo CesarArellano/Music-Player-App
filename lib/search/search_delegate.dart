@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:music_player_app/theme/app_theme.dart';
 import 'package:on_audio_query/on_audio_query.dart' show ArtworkType, SongModel;
@@ -13,13 +15,12 @@ class MusicSearchDelegate extends SearchDelegate {
   @override
   ThemeData appBarTheme(BuildContext context) {
     return Theme.of(context).copyWith(
-      // useMaterial3: true,
       colorScheme: const ColorScheme.dark(
         primary: Colors.white
       ),
       hintColor: Colors.white,
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF001F42),
+        backgroundColor: AppTheme.primaryColor,
       ),
       scaffoldBackgroundColor: AppTheme.primaryColor
     );
@@ -68,9 +69,23 @@ class MusicSearchDelegate extends SearchDelegate {
           return _emptyContainer();
         }
         final songs = asyncSnapshot.data;
-        return ListView.builder(
-          itemCount: songs!.length,
-          itemBuilder: (_, int i) => _songItem(context, songs[i], musicPlayerProvider)
+        return ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 15),
+          shrinkWrap: true,
+          children: [
+            const SizedBox(height: 10),
+            RichText(
+                text: TextSpan(
+                style: const TextStyle(fontSize: 18),
+                children: [
+                  const TextSpan(text: 'Songs', style: TextStyle(fontWeight: FontWeight.w500)),
+                  TextSpan(text: ' (${ songs?.length })', style: const TextStyle(color: AppTheme.lightTextColor))
+                ]
+              ),
+            ),
+            const Divider(color: AppTheme.lightTextColor),
+            ...songs!.map((song) => _songItem(context, song, musicPlayerProvider))
+          ]
         );
       }
     );
@@ -87,17 +102,28 @@ class MusicSearchDelegate extends SearchDelegate {
   }
 
   Widget _songItem(BuildContext context, SongModel song, MusicPlayerProvider musicPlayerProvider ) {
+    final imageFile = File(MusicActions.getArtworkPath(song.data) ?? '');
+    
     return RippleTile(
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-        leading: ArtworkImage(
-          artworkId: song.id,
-          type: ArtworkType.AUDIO,
-          width: 60,
-          height: 60,
-          size: 250,
-          radius: BorderRadius.circular(2.5),
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+        leading: imageFile.existsSync() 
+          ? ClipRRect(
+            borderRadius: BorderRadius.circular(3),
+            child: Image.file(
+              imageFile,
+              width: 55,
+              height: 55,
+            ),
+          )
+          : ArtworkImage(
+            artworkId: song.id,
+            type: ArtworkType.AUDIO,
+            width: 55,
+            height: 55,
+            size: 250,
+            radius: BorderRadius.circular(3),
+          ),
         title: Text(song.title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis),
         subtitle: Text(song.artist ?? 'No Artist', maxLines: 1, overflow: TextOverflow.ellipsis),
         // onTap: () => Navigator.pushNamed(context, 'details', arguments: song),
