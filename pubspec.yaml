@@ -42,8 +42,7 @@ dependencies:
   shared_preferences: ^2.0.15
   share_plus: ^6.3.0
   animate_do: ^3.0.2
-  just_audio: ^0.9.31
-  just_audio_background: ^0.0.1-beta.9
+  path_provider: ^2.0.11
   flutter_launcher_icons: ^0.11.0
   flutter_native_splash: ^2.2.16
 

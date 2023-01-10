@@ -53,14 +53,15 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> with AutomaticKeepAli
               onTap: () {
                 PageTransitions(
                   context: context,
+                  animation: AnimationType.fadeIn,
                   child: PlaylistSelectedScreen( playlist: playlist)
                 );
               },
               leading: ArtworkImage(
                 artworkId: playlist.id,
                 type: ArtworkType.PLAYLIST,
-                width: 40,
-                height: 40,
+                width: 55,
+                height: 55,
                 radius: BorderRadius.circular(2.5),
                 size: 250,
               ),

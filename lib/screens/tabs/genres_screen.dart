@@ -1,5 +1,5 @@
+import 'package:custom_page_transitions/custom_page_transitions.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
@@ -51,7 +51,11 @@ class _GenresScreenState extends State<GenresScreen> with AutomaticKeepAliveClie
                 ),
               ),
               onTap: () {
-                Navigator.push(context, CupertinoPageRoute(builder: (_) => GenreSelectedScreen( genreSelected: genre ) ));
+                PageTransitions(
+                  context: context,
+                  animation: AnimationType.fadeIn,
+                  child: GenreSelectedScreen( genreSelected: genre )
+                );
               },
             );
           } 

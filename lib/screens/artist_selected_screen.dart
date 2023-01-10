@@ -72,7 +72,7 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
                           type: ArtworkType.ARTIST,
                           width: 150,
                           height: 150,
-                          size: 600,
+                          size: 500,
                         ),
                         const SizedBox(width: 10),
                         Flexible(
@@ -106,10 +106,15 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
                       return RippleTile(
                         child: ListTile(
                           leading: imageFile.existsSync()
-                            ? Image.file(
-                              imageFile,
-                              width: 50,
-                              height: 50,
+                            ? ClipRRect(
+                              borderRadius: BorderRadius.circular(2.5),
+                              child: Image.file(
+                                imageFile,
+                                width: 50,
+                                height: 50,
+                                gaplessPlayback: true,
+                                filterQuality: FilterQuality.low,
+                              ),
                             )
                             : ArtworkImage(
                               artworkId: song.albumId ?? 1,

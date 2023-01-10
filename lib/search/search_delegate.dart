@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../helpers/music_actions.dart';
 import '../providers/music_player_provider.dart';
 import '../widgets/artwork_image.dart';
+import '../widgets/more_song_options_modal.dart';
 import '../widgets/widgets.dart';
 
 class MusicSearchDelegate extends SearchDelegate {
@@ -70,20 +71,25 @@ class MusicSearchDelegate extends SearchDelegate {
         }
         final songs = asyncSnapshot.data;
         return ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 15),
           shrinkWrap: true,
           children: [
             const SizedBox(height: 10),
-            RichText(
-                text: TextSpan(
-                style: const TextStyle(fontSize: 18),
-                children: [
-                  const TextSpan(text: 'Songs', style: TextStyle(fontWeight: FontWeight.w500)),
-                  TextSpan(text: ' (${ songs?.length })', style: const TextStyle(color: AppTheme.lightTextColor))
-                ]
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              child: RichText(
+                  text: TextSpan(
+                  style: const TextStyle(fontSize: 18),
+                  children: [
+                    const TextSpan(text: 'Songs', style: TextStyle(fontWeight: FontWeight.w500)),
+                    TextSpan(text: ' (${ songs?.length })', style: const TextStyle(color: AppTheme.lightTextColor))
+                  ]
+                ),
               ),
             ),
-            const Divider(color: AppTheme.lightTextColor),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 15),
+              child: Divider(color: AppTheme.lightTextColor),
+            ),
             ...songs!.map((song) => _songItem(context, song, musicPlayerProvider))
           ]
         );
@@ -106,7 +112,7 @@ class MusicSearchDelegate extends SearchDelegate {
     
     return RippleTile(
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 15),
         leading: imageFile.existsSync() 
           ? ClipRRect(
             borderRadius: BorderRadius.circular(3),
@@ -129,6 +135,14 @@ class MusicSearchDelegate extends SearchDelegate {
         // onTap: () => Navigator.pushNamed(context, 'details', arguments: song),
       ),
       onTap: () =>  MusicActions.songPlayAndPause(context, song, TypePlaylist.songs),
+      onLongPress: () {
+        showModalBottomSheet(
+          context: context,
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(topRight: Radius.circular(5), topLeft: Radius.circular(5))),
+          backgroundColor: AppTheme.primaryColor,
+          builder:(context) => MoreSongOptionsModal(song: song)
+        );
+      },
     );
   } 
 }

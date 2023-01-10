@@ -20,7 +20,8 @@ enum TypePlaylist {
   songs,
   album,
   artist,
-  genre
+  genre,
+  playlist,
 }
 class MusicActions {
 
@@ -35,7 +36,9 @@ class MusicActions {
         ? musicPlayerProvider.albumCollection[id]!
         : ( type == TypePlaylist.artist) 
           ? musicPlayerProvider.artistCollection[id]!
-          : musicPlayerProvider.genreCollection[id]!;
+          : ( type == TypePlaylist.playlist) 
+            ? musicPlayerProvider.playlistCollection[id]!
+            : musicPlayerProvider.genreCollection[id]!;
 
     final index = musicPlayerProvider.currentPlaylist.indexWhere((songOfList) => songOfList.id == song.id );
 
@@ -90,10 +93,11 @@ class MusicActions {
     final audioPlayer = audioPlayerHandler.get<AssetsAudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final currentSong = audioPlayer.getCurrentAudioTitle;
-    showModalBottomSheet(
 
-      backgroundColor: AppTheme.primaryColor,
+    showModalBottomSheet(
       context: context,
+      backgroundColor: AppTheme.primaryColor,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(topRight: Radius.circular(5), topLeft: Radius.circular(5))),
       builder: ( ctx ) => ListView.builder(
         shrinkWrap: true,
         itemCount: audioPlayer.playlist?.audios.length,
@@ -101,6 +105,7 @@ class MusicActions {
           final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
           final audio = audioPlayer.playlist?.audios[i];
           final currentColor = ( currentSong == audio?.metas.title ) ? AppTheme.accentColor : Colors.white;
+          
           return ListTile(
             leading: Icon( Icons.music_note, color: currentColor ),
             title: Text(audio!.metas.title!, maxLines: 1, style: TextStyle(color: currentColor)),
@@ -113,7 +118,7 @@ class MusicActions {
             },            
           );
         }
-      )
+      ),
     );
   }
 
