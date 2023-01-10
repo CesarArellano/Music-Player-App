@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:custom_page_transitions/custom_page_transitions.dart';
 import 'package:flutter/material.dart';
 import 'package:music_player_app/helpers/null_extension.dart';
 import 'package:music_player_app/widgets/ripple_tile.dart';
@@ -50,7 +50,7 @@ class _ArtistScreenState extends State<ArtistScreen> with AutomaticKeepAliveClie
                         type: ArtworkType.ARTIST,
                         width: 85,
                         height: 85,
-                        size: 250,
+                        size: 400,
                         radius: BorderRadius.circular(4),
                       ),
                       const SizedBox(width: 20),
@@ -75,7 +75,11 @@ class _ArtistScreenState extends State<ArtistScreen> with AutomaticKeepAliveClie
                   ),
                 ),
                 onTap: () {
-                  Navigator.push(context, CupertinoPageRoute(builder: (_) => ArtistSelectedScreen( artistSelected: artist) ));
+                  PageTransitions(
+                    context: context, 
+                    child: ArtistSelectedScreen( artistSelected: artist ),
+                    animation: AnimationType.fadeIn
+                  );
                 },
               ),
             );

@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:music_player_app/share_prefs/user_preferences.dart';
 import 'package:provider/provider.dart';
 
 import 'audio_player_handler.dart';
@@ -9,7 +10,10 @@ import 'providers/ui_provider.dart';
 import 'routes/app_router.dart';
 import 'theme/app_theme.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = UserPreferences();
+  await prefs.initPrefs();
   setupAudioHandlers();
   runApp(const MyApp());
 }

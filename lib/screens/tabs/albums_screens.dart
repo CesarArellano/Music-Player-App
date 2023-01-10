@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:custom_page_transitions/custom_page_transitions.dart';
 import 'package:flutter/material.dart';
 import 'package:music_player_app/theme/app_theme.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -52,7 +52,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
                   ArtworkImage(
                     artworkId: album.id,
                     type: ArtworkType.ALBUM,
-                    size: 600,
+                    size: 500,
                     radius: BorderRadius.circular(6.5),
                   ),
                   const SizedBox(height: 6),
@@ -76,7 +76,11 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
                 ],
               ),
               onTap: () {
-                Navigator.push(context, CupertinoPageRoute(builder: (_) => AlbumSelectedScreen( albumSelected: album) ));
+                PageTransitions(
+                  context: context, 
+                  child: AlbumSelectedScreen( albumSelected: album),
+                  animation: AnimationType.fadeIn
+                );
               }
             );
           },

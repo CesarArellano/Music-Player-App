@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:music_player_app/screens/tabs/favorite_screen.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -27,7 +28,7 @@ class HomeScreen extends StatelessWidget {
         systemNavigationBarColor: AppTheme.primaryColor,
       ),
       child: DefaultTabController(
-        length: 5,
+        length: 6,
         child: Scaffold(
           body: const _Body(),
           floatingActionButton: FloatingActionButton(
@@ -47,8 +48,9 @@ class HomeScreen extends StatelessWidget {
                       key: _keyForm,
                       child: TextFormField(
                         decoration: const InputDecoration(
-                          hintText: 'Playlist name',
-                          hintStyle: TextStyle(color: Colors.white54, fontSize: 18, fontWeight: FontWeight.w400 )
+                          labelText: 'Playlist name',
+                          labelStyle: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w400 ),
+                          errorStyle: TextStyle(color: Colors.white)
                         ),
                         controller: _namePlaylistCtrl,
                         onSaved: (value) {
@@ -95,7 +97,7 @@ class HomeScreen extends StatelessWidget {
           ),
           bottomNavigationBar: (musicPlayerProvider.isLoading || ( musicPlayerProvider.songPlayed.title ?? '').isEmpty)
             ? const CustomBottomNavigationBar()
-            : const CurrentSongTile()
+            : const CurrentSongTile(showBottomBar: true)
         ),
       ),
     );
@@ -112,52 +114,8 @@ class _Body extends StatelessWidget {
         const CustomBackground(),
         NestedScrollView(
           headerSliverBuilder: ( _, innerBoxIsScrolled ) {
-            return <Widget>[
-              SliverAppBar(
-                forceElevated: innerBoxIsScrolled,
-                title: const Text('Focus Music Player'),
-                pinned: true,
-                floating: true,
-                snap: true,
-                shape: const Border(bottom: BorderSide(color: Colors.white24)),
-                bottom: const TabBar(
-                  isScrollable: true,
-                  indicatorColor: AppTheme.accentColor,
-                  labelColor: Colors.white,
-                  labelStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                  unselectedLabelColor: AppTheme.lightTextColor,
-                  indicatorWeight: 3.0,
-                  tabs: <Widget> [
-                    Tab(text: 'Songs'),
-                    Tab(text: 'Albums'),
-                    Tab(text: 'Artists'),
-                    Tab(text: 'Playlist'),
-                    Tab(text: 'Genres'),
-                  ], 
-                  
-                ),
-                actions: <Widget>[
-                  IconButton(
-                    splashRadius: 20,
-                    icon: const Icon(Icons.search),
-                    color: AppTheme.lightTextColor,
-                    onPressed: () => showSearch(context: context, delegate: MusicSearchDelegate() ),
-                    tooltip: 'Search music',
-                  ),
-                  PopupMenuButton(
-                    icon: const Icon(Icons.more_vert, color: AppTheme.lightTextColor),
-                    tooltip: 'More options',
-                    itemBuilder: (_) => [
-                      PopupMenuItem(
-                        child: const Text('Share App', style: TextStyle(color: Colors.black)),
-                        onTap: () async {
-                          await Share.share("Hey, I Recommend this App fopr you. It's Most Stylish MP3 Music Player for your Android Device You would definitely like it.Please Try it Out. https://github.com/CesarArellano/Music-Player-App");
-                        },
-                      )
-                    ],
-                  ),
-                ],
-              ),
+            return <Widget> [
+              _CustomAppBar( forceElevated: innerBoxIsScrolled),
             ];
           },
           body: MediaQuery.removePadding(
@@ -169,10 +127,69 @@ class _Body extends StatelessWidget {
                 AlbumsScreen(),
                 ArtistScreen(),
                 PlaylistsScreen(),
+                FavoriteScreen(),
                 GenresScreen(),
               ],
             ),
           ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CustomAppBar extends StatelessWidget {
+  const _CustomAppBar({
+    Key? key,
+    required this.forceElevated,
+  }) : super(key: key);
+  final bool forceElevated;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverAppBar(
+      forceElevated: forceElevated,
+      title: const Text('Focus Music Player'),
+      pinned: true,
+      floating: true,
+      snap: true,
+      shape: const Border(bottom: BorderSide(color: Colors.white24)),
+      bottom: const TabBar(
+        isScrollable: true,
+        indicatorColor: AppTheme.accentColor,
+        labelColor: Colors.white,
+        labelStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+        unselectedLabelColor: AppTheme.lightTextColor,
+        indicatorWeight: 3.0,
+        tabs: <Widget> [
+          Tab(text: 'Songs'),
+          Tab(text: 'Albums'),
+          Tab(text: 'Artists'),
+          Tab(text: 'Playlist'),
+          Tab(text: 'Favorites'),
+          Tab(text: 'Genres'),
+        ], 
+        
+      ),
+      actions: <Widget>[
+        IconButton(
+          splashRadius: 20,
+          icon: const Icon(Icons.search),
+          color: AppTheme.lightTextColor,
+          onPressed: () => showSearch(context: context, delegate: MusicSearchDelegate() ),
+          tooltip: 'Search music',
+        ),
+        PopupMenuButton(
+          icon: const Icon(Icons.more_vert, color: AppTheme.lightTextColor),
+          tooltip: 'More options',
+          itemBuilder: (_) => [
+            PopupMenuItem(
+              child: const Text('Share App', style: TextStyle(color: Colors.black)),
+              onTap: () async {
+                await Share.share("Hey, I Recommend this App fopr you. It's Most Stylish MP3 Music Player for your Android Device You would definitely like it.Please Try it Out. https://github.com/CesarArellano/Music-Player-App");
+              },
+            )
+          ],
         ),
       ],
     );

@@ -32,7 +32,7 @@ class ArtworkImage extends StatelessWidget {
       artworkWidth: width,
       artworkHeight: height,
       size: size,
-      artworkFit: BoxFit.contain,
+      artworkFit: BoxFit.cover,
       nullArtworkWidget: Container(
         decoration: BoxDecoration(
           color: Colors.white24,

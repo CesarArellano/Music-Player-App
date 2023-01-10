@@ -2,13 +2,15 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:music_player_app/theme/app_theme.dart';
+import 'package:music_player_app/widgets/ripple_tile.dart';
+import 'package:music_player_app/widgets/widgets.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
 import '../../helpers/music_actions.dart';
 import '../../providers/music_player_provider.dart';
 import '../../widgets/artwork_image.dart';
-import '../../widgets/widgets.dart';
+import '../../widgets/more_song_options_modal.dart';
 
 class SongsScreen extends StatefulWidget {
   
@@ -40,6 +42,15 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
             final imageFile = File(MusicActions.getArtworkPath(song.data) ?? '');
 
             return RippleTile(
+              onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.songs),
+              onLongPress: () {
+                showModalBottomSheet(
+                  context: context,
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(topRight: Radius.circular(5), topLeft: Radius.circular(5))),
+                  backgroundColor: AppTheme.primaryColor,
+                  builder:(context) => MoreSongOptionsModal(song: song)
+                );
+              },
               child: ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 15),
                 title: Text(song.title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -51,6 +62,8 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
                       imageFile,
                       width: 55,
                       height: 55,
+                      filterQuality: FilterQuality.low,
+                      gaplessPlayback: true,
                     ),
                   )
                   : ArtworkImage(
@@ -62,7 +75,6 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
                     radius: BorderRadius.circular(3),
                   ),
               ),
-              onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.songs),
             );
           } 
         )

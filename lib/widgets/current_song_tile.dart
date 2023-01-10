@@ -16,8 +16,10 @@ import 'widgets.dart';
 class CurrentSongTile extends StatefulWidget {
   const CurrentSongTile({
     Key? key,
+    this.showBottomBar = false
   }) : super(key: key);
 
+  final bool showBottomBar;
   @override
   State<CurrentSongTile> createState() => _CurrentSongTileState();
 }
@@ -46,7 +48,8 @@ class _CurrentSongTileState extends State<CurrentSongTile> with SingleTickerProv
       mainAxisSize: MainAxisSize.min,
       children: [
         _SelectorSongTitle(playAnimation: _playAnimation),
-        const CustomBottomNavigationBar()
+        if( widget.showBottomBar )
+          const CustomBottomNavigationBar()
       ],
     );
   }

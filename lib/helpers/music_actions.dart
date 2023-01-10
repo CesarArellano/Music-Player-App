@@ -1,10 +1,13 @@
 
 
 
+import 'dart:io';
+
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:custom_page_transitions/custom_page_transitions.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import '../audio_player_handler.dart';
@@ -49,14 +52,15 @@ class MusicActions {
                 title: song.title,
                 id: song.id.toString(),
                 image: MetasImage.file(MusicActions.getArtworkPath(song.data) ?? ''),
-                onImageLoadFail: const MetasImage.asset('assets/images/background.jpg') 
+                onImageLoadFail: const MetasImage.asset('assets/images/background.jpg'),
               )
             ))
           ],
           startIndex: index,
         ),
-        headPhoneStrategy: HeadPhoneStrategy.pauseOnUnplugPlayOnPlug,
         showNotification: true,
+        headPhoneStrategy: HeadPhoneStrategy.pauseOnUnplugPlayOnPlug,
+        playInBackground: PlayInBackground.enabled
       );
       
       audioPlayer.currentPosition.listen((duration) {
@@ -79,7 +83,6 @@ class MusicActions {
       context: context,
       child: const SongPlayedScreen(),
       animation: AnimationType.fadeIn,
-      curve: Curves.easeInOut,
     );
   }
 
@@ -138,5 +141,21 @@ class MusicActions {
     }
     
     return const AssetImage('assets/images/background.jpg');
+  }
+
+  static Future<bool> deleteFile(String filePath) async {
+    try {
+      final permissionStatus = await Permission.manageExternalStorage.request();
+      final file = File(filePath);
+
+      if( permissionStatus.isGranted && await file.exists()) {
+        await file.delete(recursive: true);
+        return true;
+      }
+      
+      return false;
+    } catch (e) {
+      return false;
+    }
   }
 }

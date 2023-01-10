@@ -1,5 +1,7 @@
+import 'package:custom_page_transitions/custom_page_transitions.dart';
 import 'package:flutter/material.dart';
 import 'package:music_player_app/audio_player_handler.dart';
+import 'package:music_player_app/screens/playlist_selected_screen.dart';
 import 'package:music_player_app/widgets/artwork_image.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -49,6 +51,10 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> with AutomaticKeepAli
                 }
               },
               onTap: () {
+                PageTransitions(
+                  context: context,
+                  child: PlaylistSelectedScreen( playlist: playlist)
+                );
               },
               leading: ArtworkImage(
                 artworkId: playlist.id,

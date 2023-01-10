@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../helpers/music_actions.dart';
 import '../providers/music_player_provider.dart';
 import '../search/search_delegate.dart';
+import '../theme/app_theme.dart';
 import '../widgets/artwork_image.dart';
 import '../widgets/widgets.dart';
 
@@ -37,12 +38,14 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
-        title: const Text('Album Details'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppTheme.lightTextColor),
+          onPressed: () => Navigator.pop(context),
+        ), 
         actions: <Widget>[
           IconButton(
             splashRadius: 20,
-            icon: const Icon(Icons.search),
+            icon: const Icon(Icons.search, color: AppTheme.lightTextColor),
             onPressed: () => showSearch(context: context, delegate: MusicSearchDelegate() ),
           ),
         ],
@@ -57,7 +60,7 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.all(15.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: 
@@ -65,28 +68,52 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                         ArtworkImage(
                           artworkId: widget.albumSelected.id,
                           type: ArtworkType.ALBUM,
-                          width: 150,
-                          height: 150,
-                          size: 600,
-                          radius: BorderRadius.circular(2.5),
+                          width: 175,
+                          height: 175,
+                          size: 500,
+                          radius: BorderRadius.circular(4),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 15),
                         Flexible(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(widget.albumSelected.album, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
                               const SizedBox(height: 10),
-                              Text(widget.albumSelected.artist ?? 'No Artist', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400)),
+                              Text(widget.albumSelected.artist ?? 'No Artist', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppTheme.lightTextColor)),
                               const SizedBox(height: 5),
-                              Text("${ widget.albumSelected.numOfSongs } ${ (widget.albumSelected.numOfSongs > 1) ? 'songs' : 'song' }"),
+                              Text(
+                                "${ widget.albumSelected.getMap['minyear'] } • ${ widget.albumSelected.numOfSongs } ${ (widget.albumSelected.numOfSongs > 1) ? 'songs' : 'song' }",
+                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppTheme.lightTextColor)
+                              ),
                             ],
                           ),
                         )
                       ]
                     ),
                   ),
-                  const Divider(color: Colors.white54, height: 15),
+                  const SizedBox(height: 10),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 15),
+                    width: double.maxFinite,
+                    height: 50,
+                    child: TextButton.icon(
+                      style: TextButton.styleFrom(
+                        shape: RoundedRectangleBorder( borderRadius: BorderRadius.circular(2.5) ),
+                        backgroundColor: AppTheme.lightTextColor.withOpacity(0.15)
+                      ),
+                      icon: const Icon(Icons.play_arrow, color: AppTheme.lightTextColor),
+                      label: const Text('PLAY ALL'),
+                      onPressed: () {
+                        MusicActions.songPlayAndPause(
+                          context,
+                          musicPlayerProvider.albumCollection[widget.albumSelected.id]![0],
+                          TypePlaylist.album,
+                          id: widget.albumSelected.id
+                        );
+                      }
+                    ),
+                  ),
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),

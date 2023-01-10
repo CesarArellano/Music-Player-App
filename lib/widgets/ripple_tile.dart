@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class RippleTile extends StatelessWidget {
   final Widget child;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   const RippleTile({
     Key? key,
     required this.child,
-    required this.onTap
+    required this.onTap,
+    this.onLongPress,
   }) : super(key: key);
 
   @override
@@ -20,6 +22,7 @@ class RippleTile extends StatelessWidget {
             color: Colors.transparent,
             child: InkWell(
               onTap: onTap,
+              onLongPress: onLongPress,
             )
           ),
         )

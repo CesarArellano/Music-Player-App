@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:music_player_app/share_prefs/user_preferences.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 
@@ -19,8 +20,10 @@ class MusicPlayerProvider extends ChangeNotifier {
   List<GenreModel> genreList = [];
   List<ArtistModel> artistList = [];
   List<PlaylistModel> playLists = [];
+  List<SongModel> _favoriteList = [];
 
   List<SongModel> currentPlaylist = [];
+  List<String> _favoriteSongList = [];
   
   MusicPlayerProvider() {
     getAllSongs();
@@ -47,6 +50,24 @@ class MusicPlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  List<SongModel> get favoriteList => _favoriteList;
+
+  set favoriteList( List<SongModel> value ) {
+    _favoriteList = value;
+    notifyListeners();
+  }
+
+  List<String> get favoriteSongList => _favoriteSongList;
+  
+  bool isFavoriteSong(int id) {
+    return _favoriteSongList.contains(id.toString());
+  }
+
+  set favoriteSongList( List<String> value ) {
+    _favoriteSongList = value;
+    notifyListeners();
+  }
+
   void getAllSongs() async {
     _isLoading = true;
     if( ! await onAudioQuery.permissionsStatus() ) {
@@ -58,6 +79,7 @@ class MusicPlayerProvider extends ChangeNotifier {
     genreList = await onAudioQuery.queryGenres();
     artistList = await onAudioQuery.queryArtists();
     playLists = await onAudioQuery.queryPlaylists();
+    favoriteSongList = UserPreferences().favoriteSongList;
 
     _isLoading = false;
     notifyListeners();

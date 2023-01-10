@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:animate_do/animate_do.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,9 @@ import '../audio_player_handler.dart';
 import '../helpers/music_actions.dart';
 import '../providers/audio_control_provider.dart';
 import '../providers/music_player_provider.dart';
+import '../share_prefs/user_preferences.dart';
 import '../widgets/artwork_image.dart';
+import '../widgets/more_song_options_modal.dart';
 
 class SongPlayedScreen extends StatefulWidget {
   
@@ -43,8 +46,7 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
-    final songPlayed = musicPlayerProvider.songPlayed;
+    final songPlayed = Provider.of<MusicPlayerProvider>(context).songPlayed;
     final imageFile = File(MusicActions.getArtworkPath(songPlayed.data) ?? '');
       
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -73,7 +75,14 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
             IconButton(
               splashRadius: 20,
               icon: const Icon(Icons.drag_indicator, color: Colors.white),
-              onPressed: () => MusicActions.showCurrentPlayList(context),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(topRight: Radius.circular(5), topLeft: Radius.circular(5))),
+                  backgroundColor: AppTheme.primaryColor,
+                  builder:(context) => MoreSongOptionsModal(song: songPlayed)
+                );
+              },
             ),
           ],
         ),
@@ -82,31 +91,35 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
             FutureBuilder<ImageProvider<Object>?>(
               future: MusicActions.getSpecificArtwork(context),
               builder: (context, snapshot) {
-    
-                if( snapshot.hasData ) {
-                  artwork = snapshot.data;
-                }
-    
-                return Transform.scale(
-                  scale: 1.1,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        fit: BoxFit.cover,
-                        image: artwork == null || imageFile.existsSync()
-                          ? Image.file(
-                            imageFile,
-                            errorBuilder: (_, __, ___) => Image.asset('assets/images/background.jpg')
-                          ).image
-                          : Image(image: artwork!).image
-                      )                    
-                    ),
-                    child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 50.0, sigmaY: 50.0),
-                        child: Container(
-                          decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), backgroundBlendMode: BlendMode.darken),
-                        ),
+
+                artwork = snapshot.data;
+
+                return FadeIn(
+                  duration: const Duration(milliseconds: 400),
+                  child: Transform.scale(
+                    scale: 1.1,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: snapshot.hasData
+                          ? ( artwork == null  )
+                            ? Image.file(
+                              imageFile,
+                              gaplessPlayback: true,
+                              errorBuilder: (_, __, ___) => Image.asset('assets/images/background.jpg', gaplessPlayback: true)
+                            ).image
+                            : Image(image: artwork!, gaplessPlayback: true).image
+                          : const AssetImage('assets/images/background.jpg')
+                        )                    
                       ),
+                      child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 50.0, sigmaY: 50.0),
+                          child: Container(
+                            decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), backgroundBlendMode: BlendMode.darken),
+                          ),
+                        ),
+                    ),
                   ),
                 );
               }
@@ -133,6 +146,7 @@ class _SongPlayedBody extends StatelessWidget {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final songPlayed = musicPlayerProvider.songPlayed;
     final imageFile = File(MusicActions.getArtworkPath(songPlayed.data) ?? '');
+    final isFavoriteSong = musicPlayerProvider.isFavoriteSong(songPlayed.id);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -140,38 +154,6 @@ class _SongPlayedBody extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Container(
-              //   width: double.infinity,
-              //   height: 60,
-              //   color: Colors.transparent,
-              //   child: Row(
-              //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //     children: [
-              //       IconButton(
-              //         splashRadius: 22,
-              //         icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white ),
-              //         onPressed: () => Navigator.pop(context),
-              //       ),
-              //       Container(
-              //         alignment: Alignment.center,
-              //         width: 140,
-              //         child: Column(
-              //           children: [
-              //             const SizedBox(height: 16),
-              //             const Text('PLAYING FROM', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400) ),
-              //             const SizedBox(height: 4),
-              //             Text(songPlayed.album ?? 'No Album', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
-              //           ]
-              //         ),
-              //       ),
-              //       IconButton(
-              //         splashRadius: 20,
-              //         icon: const Icon(Icons.drag_indicator, color: Colors.white),
-              //         onPressed: () => MusicActions.showCurrentPlayList(context),
-              //       ),
-              //     ],
-              //   ),
-              // ),
               SizedBox(height: size.height * 0.015),
               ClipRRect(
                 borderRadius: BorderRadius.circular(6),
@@ -179,11 +161,13 @@ class _SongPlayedBody extends StatelessWidget {
                   imageFile,
                   width: double.infinity,
                   height: 350,
+                  gaplessPlayback: true,
                   errorBuilder: (_,__,___) => ArtworkImage(
                     artworkId: songPlayed.id,
                     type: ArtworkType.AUDIO,
                     width: double.infinity,
                     height: 350,
+                    size: 500,
                     radius: BorderRadius.circular(6),
                   ),
                 ),
@@ -191,34 +175,65 @@ class _SongPlayedBody extends StatelessWidget {
               SizedBox(height: size.height * 0.05),
               SizedBox(
                 height: size.height * 0.07,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Flexible (
-                      child: ( (songPlayed.title ?? '').length > 30 )
-                      ? Marquee(
-                        velocity: 50.0,
-                        text: songPlayed.title ?? '',
-                        blankSpace: 30,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                      )
-                      : Column(
-                        mainAxisSize: MainAxisSize.min,
+                    IconButton(
+                      onPressed: () {
+                        List<String> favoriteSongList = [ ...musicPlayerProvider.favoriteSongList ];
+                        List<SongModel> favoriteList = [ ...musicPlayerProvider.favoriteList ];
+
+                        if( isFavoriteSong ) {
+                          favoriteList.removeWhere(((song) => song.id == songPlayed.id));
+                          favoriteSongList.removeWhere(((songId) => songId == songPlayed.id.toString()));
+                        } else {
+                          final index = musicPlayerProvider.songList.indexWhere((song) => song.id == songPlayed.id);
+                          favoriteList.add( musicPlayerProvider.songList[index] );
+                          favoriteSongList.add(songPlayed.id.toString());
+                        }
+
+                        musicPlayerProvider.favoriteList = favoriteList;
+                        musicPlayerProvider.favoriteSongList = favoriteSongList;
+                        UserPreferences().favoriteSongList = favoriteSongList;
+                      },
+                      icon: Icon( isFavoriteSong ? Icons.favorite : Icons.favorite_border)
+                    ),
+                    Flexible(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const SizedBox(height: 10),
-                          Text( songPlayed.title ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18) ),
-                          const SizedBox(height: 9)
+                          Flexible (
+                            child: ( (songPlayed.title ?? '').length > 25 )
+                            ? Marquee(
+                              velocity: 50.0,
+                              text: songPlayed.title ?? '',
+                              blankSpace: 30,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                            )
+                            : Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const SizedBox(height: 10),
+                                Text( songPlayed.title ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18) ),
+                                const SizedBox(height: 9)
+                              ],
+                            )
+                          ),
+                          if( (songPlayed.artist ?? '').length > 30 )
+                            const SizedBox(height: 10,),
+                          Text(
+                            songPlayed.artist ?? 'No Artist',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 16, color: Colors.white54)
+                          ),
                         ],
-                      )
+                      ),
                     ),
-                    if( (songPlayed.artist ?? '').length > 30 )
-                      const SizedBox(height: 10,),
-                    Text(
-                      songPlayed.artist ?? 'No Artist',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 16, color: Colors.white54)
-                    ),
+                    IconButton(
+                      onPressed: () => MusicActions.showCurrentPlayList(context),
+                      icon: const Icon(Icons.playlist_play)
+                    )
                   ],
                 ),
               ),

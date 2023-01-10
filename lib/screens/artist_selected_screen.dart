@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:music_player_app/theme/app_theme.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
@@ -30,8 +31,8 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
     getSongs();
   }
 
-  void getSongs() async {
-    await Provider.of<MusicPlayerProvider>(context, listen: false).searchByArtistId( widget.artistSelected.id );
+  void getSongs() {
+    Provider.of<MusicPlayerProvider>(context, listen: false).searchByArtistId( widget.artistSelected.id );
   }
 
   @override
@@ -45,12 +46,13 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
           IconButton(
             splashRadius: 20,
             icon: const Icon(Icons.search),
+            color: AppTheme.lightTextColor,
             onPressed: () => showSearch(context: context, delegate: MusicSearchDelegate() ),
           ),
         ],
       ),
       body: musicPlayerProvider.isLoading
-        ? const Center( child: CircularProgressIndicator(color: Colors.black) )
+        ? const Center( child: CircularProgressIndicator(color: Colors.white) )
         : Stack(
           children: [
             const CustomBackground(),

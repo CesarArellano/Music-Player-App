@@ -10,12 +10,17 @@ class AppTheme {
     useMaterial3: true,
     splashFactory: InkSparkle.constantTurbulenceSeedSplashFactory,
     textTheme: Typography.whiteCupertino,
+    scaffoldBackgroundColor: primaryColor,
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: accentColor
     ), 
+    iconTheme: const IconThemeData(
+      color: lightTextColor
+    ),
     appBarTheme: const AppBarTheme(
       elevation: 0.0,
       backgroundColor: primaryColor,
+      iconTheme: IconThemeData(color: lightTextColor)
     ),
     colorScheme: const ColorScheme.dark(
       primary: Colors.white,
@@ -35,6 +40,7 @@ class AppTheme {
       selectedLabelStyle: TextStyle(fontSize: 12),
       unselectedLabelStyle: TextStyle(fontSize: 12),
     ),
+    
   );
 
   static ThemeData darkTheme = ThemeData.dark().copyWith(
