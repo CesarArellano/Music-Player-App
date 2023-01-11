@@ -61,7 +61,7 @@ class _ArtistScreenState extends State<ArtistScreen> with AutomaticKeepAliveClie
                           children: [
                             Text(
                               artist.artist,
-                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
                             ),
                             const SizedBox(height: 8),
                             Text(

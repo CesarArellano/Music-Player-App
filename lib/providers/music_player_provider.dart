@@ -75,12 +75,23 @@ class MusicPlayerProvider extends ChangeNotifier {
       await onAudioQuery.permissionsRequest();
     }
     
+    List<SongModel> tempFavoriteSongs = [];
+    
     songList = await onAudioQuery.querySongs();
     albumList = await onAudioQuery.queryAlbums();
     genreList = await onAudioQuery.queryGenres();
     artistList = await onAudioQuery.queryArtists();
     playLists = await onAudioQuery.queryPlaylists();
     favoriteSongList = UserPreferences().favoriteSongList;
+    
+    for (String songId in favoriteSongList) {
+      final index = songList.indexWhere((song) => song.id == int.tryParse(songId));
+      if( index != -1 ) {
+        tempFavoriteSongs.add( songList[index] );
+      }
+    }
+
+    favoriteList = [ ...tempFavoriteSongs ];
 
     _isLoading = false;
     notifyListeners();

@@ -38,7 +38,7 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> with AutomaticKeepAli
             final playlist = playlists[i];
             return ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 15),
-              title: Text(playlist.playlist),
+              title: Text(playlist.playlist, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w400),),
               subtitle: Text(playlist.numOfSongs.toString()),
               onLongPress: () async {
                 final resp = await onAudioQuery.removePlaylist(playlist.id);

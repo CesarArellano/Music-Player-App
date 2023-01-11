@@ -12,6 +12,7 @@ import 'package:share_plus/share_plus.dart';
 import '../helpers/custom_snackbar.dart';
 import '../helpers/music_actions.dart';
 import '../providers/music_player_provider.dart';
+import '../share_prefs/user_preferences.dart';
 import '../theme/app_theme.dart';
 
 class MoreSongOptionsModal extends StatefulWidget {
@@ -31,10 +32,12 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
 
   @override
   Widget build(BuildContext context) {
+    final songPlayed = widget.song;
     final onAudioQuery = audioPlayerHandler.get<OnAudioQuery>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final duration = Duration(milliseconds: widget.song.duration ?? 0);
     final imageFile = File(MusicActions.getArtworkPath(widget.song.data) ?? '');
+    final isFavoriteSong = musicPlayerProvider.isFavoriteSong(songPlayed.id);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -62,6 +65,26 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
               size: 250,
               radius: BorderRadius.circular(3),
             ),
+          trailing: IconButton(
+            onPressed: () {
+              List<String> favoriteSongList = [ ...musicPlayerProvider.favoriteSongList ];
+              List<SongModel> favoriteList = [ ...musicPlayerProvider.favoriteList ];
+
+              if( isFavoriteSong ) {
+                favoriteList.removeWhere(((song) => song.id == songPlayed.id));
+                favoriteSongList.removeWhere(((songId) => songId == songPlayed.id.toString()));
+              } else {
+                final index = musicPlayerProvider.songList.indexWhere((song) => song.id == songPlayed.id);
+                favoriteList.add( musicPlayerProvider.songList[index] );
+                favoriteSongList.add(songPlayed.id.toString());
+              }
+
+              musicPlayerProvider.favoriteList = favoriteList;
+              musicPlayerProvider.favoriteSongList = favoriteSongList;
+              UserPreferences().favoriteSongList = favoriteSongList;
+            },
+            icon: Icon( isFavoriteSong ? Icons.favorite : Icons.favorite_border)
+          ),
         ),
         const Divider(color: AppTheme.lightTextColor, height: 1),
         if( musicPlayerProvider.playLists.isNotEmpty )
