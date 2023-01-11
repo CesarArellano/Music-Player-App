@@ -10,7 +10,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
     final UIProvider uiProvider = Provider.of<UIProvider>(context);
     return Container(
       decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: Colors.white, width: 0.25))
+        border: Border(top: BorderSide(color: Colors.white30, width: 0.4))
       ),
       child: BottomNavigationBar(
         iconSize: 20,

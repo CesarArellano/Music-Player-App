@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:music_player_app/audio_player_handler.dart';
-import 'package:music_player_app/widgets/artwork_image.dart';
+import 'package:music_player_app/widgets/custom_list_tile.dart';
 import 'package:music_player_app/widgets/song_details_dialog.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
@@ -42,29 +42,11 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 15),
-          title: Text(widget.song.title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis),
-          subtitle: Text('${ widget.song.artist ?? 'No Artist' } • ${ duration.inMinutes }:${ duration.inSeconds.toString().substring(0,2) }', style: const TextStyle(color: AppTheme.lightTextColor, fontSize: 12)),                
-          leading: imageFile.existsSync() 
-            ? ClipRRect(
-              borderRadius: BorderRadius.circular(3),
-              child: Image.file(
-                imageFile,
-                width: 55,
-                height: 55,
-                filterQuality: FilterQuality.low,
-                gaplessPlayback: true,
-              ),
-            )
-            : ArtworkImage(
-              artworkId: widget.song.id,
-              type: ArtworkType.AUDIO,
-              width: 55,
-              height: 55,
-              size: 250,
-              radius: BorderRadius.circular(3),
-            ),
+        CustomListTile(
+          artworkId: songPlayed.id,
+          title: songPlayed.title ?? '',
+          subtitle: '${ songPlayed.artist ?? 'No Artist' } • ${ duration.inMinutes }:${ duration.inSeconds }',
+          imageFile: imageFile,
           trailing: IconButton(
             onPressed: () {
               List<String> favoriteSongList = [ ...musicPlayerProvider.favoriteSongList ];

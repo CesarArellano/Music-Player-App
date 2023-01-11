@@ -96,8 +96,6 @@ class MusicActions {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.primaryColor,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(topRight: Radius.circular(5), topLeft: Radius.circular(5))),
       builder: ( ctx ) => ListView.builder(
         shrinkWrap: true,
         itemCount: audioPlayer.playlist?.audios.length,

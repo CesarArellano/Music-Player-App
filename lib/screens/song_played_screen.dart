@@ -78,8 +78,6 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
               onPressed: () {
                 showModalBottomSheet(
                   context: context,
-                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(topRight: Radius.circular(5), topLeft: Radius.circular(5))),
-                  backgroundColor: AppTheme.primaryColor,
                   builder:(context) => MoreSongOptionsModal(song: songPlayed)
                 );
               },

@@ -51,9 +51,9 @@ class _ArtistScreenState extends State<ArtistScreen> with AutomaticKeepAliveClie
                         width: 85,
                         height: 85,
                         size: 400,
-                        radius: BorderRadius.circular(4),
+                        radius: BorderRadius.circular(2.5),
                       ),
-                      const SizedBox(width: 20),
+                      const SizedBox(width: 15),
                       Flexible(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

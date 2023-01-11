@@ -1,10 +1,9 @@
 import 'package:custom_page_transitions/custom_page_transitions.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:provider/provider.dart';
 
 import 'package:music_player_app/screens/genre_selected_screen.dart';
-import 'package:music_player_app/widgets/artwork_image.dart';
 import 'package:music_player_app/widgets/widgets.dart';
 
 import '../../providers/music_player_provider.dart';
@@ -37,18 +36,11 @@ class _GenresScreenState extends State<GenresScreen> with AutomaticKeepAliveClie
           itemBuilder: ( _, int i ) {
             final genre = genreList[i];
             return RippleTile(
-              child: ListTile(
-                contentPadding: const EdgeInsets.symmetric( horizontal: 15 ),
-                title: Text(genre.genre),
-                subtitle: Text("${ genre.numOfSongs } ${ ( genre.numOfSongs > 1) ? 'Songs' : 'Song' }"),
-                leading: ArtworkImage(
-                  artworkId: genre.id,
-                  type: ArtworkType.GENRE,
-                  width: 50,
-                  height: 50,
-                  radius: BorderRadius.circular(2.5),
-                  size: 250,
-                ),
+              child: CustomListTile(
+                title: genre.genre,
+                subtitle: '${ genre.numOfSongs } ${ ( genre.numOfSongs > 1) ? 'Songs' : 'Song' }',
+                artworkId: genre.id,
+                artworkType: ArtworkType.GENRE,
               ),
               onTap: () {
                 PageTransitions(
@@ -61,7 +53,13 @@ class _GenresScreenState extends State<GenresScreen> with AutomaticKeepAliveClie
           } 
         )
         : const Center( 
-          child: Text('No Genres', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))
+          child: Text(
+            'No Genres',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold
+            )
+          )
         );
   }
 }

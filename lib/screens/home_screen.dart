@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import 'package:music_player_app/screens/tabs/favorite_screen.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
@@ -109,31 +110,26 @@ class _Body extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        const CustomBackground(),
-        NestedScrollView(
-          headerSliverBuilder: ( _, innerBoxIsScrolled ) {
-            return <Widget> [
-              _CustomAppBar( forceElevated: innerBoxIsScrolled),
-            ];
-          },
-          body: MediaQuery.removePadding(
-            removeTop: true,
-            context: context,
-            child: const TabBarView(
-              children: <Widget>[
-                SongsScreen(),
-                AlbumsScreen(),
-                ArtistScreen(),
-                PlaylistsScreen(),
-                FavoriteScreen(),
-                GenresScreen(),
-              ],
-            ),
-          ),
+    return NestedScrollView(
+      headerSliverBuilder: ( _, innerBoxIsScrolled ) {
+        return <Widget> [
+          _CustomAppBar( forceElevated: innerBoxIsScrolled),
+        ];
+      },
+      body: MediaQuery.removePadding(
+        removeTop: true,
+        context: context,
+        child: const TabBarView(
+          children: <Widget>[
+            SongsScreen(),
+            AlbumsScreen(),
+            ArtistScreen(),
+            PlaylistsScreen(),
+            FavoriteScreen(),
+            GenresScreen(),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

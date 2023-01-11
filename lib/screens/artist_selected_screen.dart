@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:music_player_app/theme/app_theme.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -9,7 +8,6 @@ import 'package:provider/provider.dart';
 import '../helpers/music_actions.dart';
 import '../providers/music_player_provider.dart';
 import '../search/search_delegate.dart';
-import '../widgets/artwork_image.dart';
 import '../widgets/widgets.dart';
 
 class ArtistSelectedScreen extends StatefulWidget {
@@ -33,12 +31,9 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(() {
-      if( _scrollController.position.pixels >= 70 ) {
-        appBarTitle = widget.artistSelected.artist;
-      } else {
-        appBarTitle = null;
+      if( _scrollController.position.pixels >= 70 && appBarTitle == null ) {
+        setState(() => appBarTitle = widget.artistSelected.artist);
       }
-      setState(() {});
     });
     getSongs();
   }
@@ -46,6 +41,7 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
   @override
   void dispose() {
     super.dispose();
+    _scrollController.removeListener(() { });
     _scrollController.dispose();
   }
 
@@ -64,10 +60,7 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
         ), 
         title: appBarTitle == null 
           ? null
-          : FadeInUp(
-            duration: const Duration(milliseconds: 400),
-            child: Text(appBarTitle!, maxLines: 1, overflow: TextOverflow.ellipsis)
-          ),
+          : Text(appBarTitle!, maxLines: 1, overflow: TextOverflow.ellipsis),
         actions: <Widget>[
           IconButton(
             splashRadius: 20,
@@ -76,7 +69,6 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
             onPressed: () => showSearch(context: context, delegate: MusicSearchDelegate() ),
           ),
         ],
-        bottom: _BottomAppBar(),
       ),
       body: musicPlayerProvider.isLoading
         ? const Center( child: CircularProgressIndicator(color: Colors.white) )
@@ -126,31 +118,20 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
                 final imageFile = File(MusicActions.getArtworkPath(song.data) ?? '');
                 
                 return RippleTile(
-                  child: ListTile(
-                    leading: imageFile.existsSync()
-                      ? ClipRRect(
-                        borderRadius: BorderRadius.circular(2.5),
-                        child: Image.file(
-                          imageFile,
-                          width: 50,
-                          height: 50,
-                          gaplessPlayback: true,
-                          filterQuality: FilterQuality.low,
-                        ),
-                      )
-                      : ArtworkImage(
-                        artworkId: song.albumId ?? 1,
-                        type: ArtworkType.ALBUM,
-                        width: 50,
-                        height: 50,
-                        size: 250,
-                        radius: BorderRadius.circular(2.5),
-                      ),
-                    title: Text(song.title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis),
-                    subtitle: Text(song.artist ?? 'No Artist', style: const TextStyle(color: AppTheme.lightTextColor, fontSize: 12))
+                  child: CustomListTile(
+                    imageFile: imageFile,
+                    title: song.title ?? '',
+                    subtitle: song.artist ?? 'No Artist',
+                    artworkId: song.id,
                   ),
                   onTap: () {
                     MusicActions.songPlayAndPause(context, song, TypePlaylist.artist, id: widget.artistSelected.id );
+                  },
+                  onLongPress: () {
+                    showModalBottomSheet(
+                      context: context,
+                      builder:( _ ) => MoreSongOptionsModal(song: song)
+                    );
                   },
                 );
               },
@@ -163,16 +144,4 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
           : const CurrentSongTile()
     );
   }
-}
-
-class _BottomAppBar extends StatelessWidget implements PreferredSizeWidget {
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(); // Your custom widget implementation.
-  }
-
 }

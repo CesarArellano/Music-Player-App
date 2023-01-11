@@ -1,11 +1,10 @@
-import 'package:custom_page_transitions/custom_page_transitions.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:music_player_app/theme/app_theme.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:provider/provider.dart';
+import 'package:custom_page_transitions/custom_page_transitions.dart';
 
 import '../../providers/music_player_provider.dart';
-import '../../widgets/artwork_image.dart';
 import '../../widgets/widgets.dart';
 import '../screens.dart';
 
@@ -36,7 +35,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
           child: GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            mainAxisExtent: 240,
+            mainAxisExtent: 235,
             mainAxisSpacing: 4,
             crossAxisSpacing: 4
           ),
@@ -53,7 +52,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
                     artworkId: album.id,
                     type: ArtworkType.ALBUM,
                     size: 500,
-                    radius: BorderRadius.circular(6.5),
+                    radius: BorderRadius.circular(2.5),
                   ),
                   const SizedBox(height: 6),
                   Padding(
@@ -78,7 +77,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
               onTap: () {
                 PageTransitions(
                   context: context, 
-                  child: AlbumSelectedScreen( albumSelected: album),
+                  child: AlbumSelectedScreen( albumSelected: album ),
                   animation: AnimationType.fadeIn
                 );
               }
@@ -87,7 +86,13 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
       ),
         )
       : const Center( 
-        child: Text('No Albums', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))
+        child: Text(
+          'No Albums',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold
+          )
+        )
       );
   }
 }

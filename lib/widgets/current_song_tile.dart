@@ -10,7 +10,6 @@ import '../providers/audio_control_provider.dart';
 import '../providers/music_player_provider.dart';
 import '../screens/song_played_screen.dart';
 import '../theme/app_theme.dart';
-import 'artwork_image.dart';
 import 'widgets.dart';
 
 class CurrentSongTile extends StatefulWidget {
@@ -74,7 +73,7 @@ class _SelectorSongTitle extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Divider(height: 0.20, color: Colors.white10),
+        const Divider(height: 0.20, color: Colors.white30),
         ListTile(
           dense: true,
           contentPadding: const EdgeInsets.symmetric(horizontal: 15),
@@ -148,13 +147,14 @@ class _SelectorSongTitle extends StatelessWidget {
             PageTransitions(
               context: context,
               child: const SongPlayedScreen(),
-              animation: AnimationType.fadeIn,
+              duration: const Duration(milliseconds: 250),
+              animation: AnimationType.slideUp,
               curve: Curves.easeInOut,
             );
           },
         ),
         Container(
-          height: 1.5,
+          height: 2,
           width: width * (audioControlProvider.currentDuration.inMilliseconds / songPlayed.duration! ),
           color: AppTheme.accentColor,
         )

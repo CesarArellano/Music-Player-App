@@ -11,6 +11,7 @@ class AppTheme {
     splashFactory: InkSparkle.constantTurbulenceSeedSplashFactory,
     textTheme: Typography.whiteCupertino,
     scaffoldBackgroundColor: primaryColor,
+    
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: accentColor
     ), 
@@ -25,6 +26,7 @@ class AppTheme {
     colorScheme: const ColorScheme.dark(
       primary: Colors.white,
       onPrimary: Colors.white,
+      secondary: Colors.white
     ).copyWith(secondary: accentColor),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: primaryColor,
@@ -40,7 +42,15 @@ class AppTheme {
       selectedLabelStyle: TextStyle(fontSize: 12),
       unselectedLabelStyle: TextStyle(fontSize: 12),
     ),
-    
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: AppTheme.primaryColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(5),
+          topRight: Radius.circular(5),
+        )
+      ),
+    )
   );
 
   static ThemeData darkTheme = ThemeData.dark().copyWith(
