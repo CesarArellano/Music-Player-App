@@ -28,7 +28,8 @@ class _PlaylistSelectedScreenState extends State<PlaylistSelectedScreen> {
   @override
   void initState() {
     super.initState();
-    Provider.of<MusicPlayerProvider>(context, listen: false).searchByPlaylistId( widget.playlist.id );
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
+    musicPlayerProvider.searchByPlaylistId( widget.playlist.id, force: (musicPlayerProvider.playlistCollection[widget.playlist.id]?.length ?? 0) != widget.playlist.numOfSongs);
   }
   
   @override
@@ -43,7 +44,7 @@ class _PlaylistSelectedScreenState extends State<PlaylistSelectedScreen> {
         title: Text(widget.playlist.playlist),
       ),
       body: musicPlayerProvider.isLoading
-        ? const Center( child: CircularProgressIndicator(color: Colors.white) )
+        ? const Center( child: CircularProgressIndicator() )
         :  musicPlayerProvider.playlistCollection[widget.playlist.id]!.isEmpty
           ? _EmptyList(playlist: widget.playlist)
           : ListView.builder(
@@ -66,7 +67,11 @@ class _PlaylistSelectedScreenState extends State<PlaylistSelectedScreen> {
                   onLongPress: () {
                     showModalBottomSheet(
                       context: context,
-                      builder:( _ ) => MoreSongOptionsModal(song: song)
+                      builder:( _ ) => MoreSongOptionsModal(
+                        song: song,
+                        isPlaylist: true,
+                        playlistId: widget.playlist.id,
+                      )
                     );
                   },
                 );

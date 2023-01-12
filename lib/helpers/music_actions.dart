@@ -23,6 +23,7 @@ enum TypePlaylist {
   artist,
   genre,
   playlist,
+  favorites
 }
 class MusicActions {
 
@@ -41,7 +42,9 @@ class MusicActions {
           ? musicPlayerProvider.artistCollection[id]!
           : ( type == TypePlaylist.playlist) 
             ? musicPlayerProvider.playlistCollection[id]!
-            : musicPlayerProvider.genreCollection[id]!;
+            : ( type == TypePlaylist.genre) 
+              ? musicPlayerProvider.genreCollection[id]!
+              : musicPlayerProvider.favoriteList;
 
     final index = musicPlayerProvider.currentPlaylist.indexWhere((songOfList) => songOfList.id == song.id );
 
@@ -134,36 +137,20 @@ class MusicActions {
     );
   }
 
-  static String? getArtworkPath(String uri) {
-    if( uri.isEmpty ) return null;
+  static Future<bool> createArtwork(File imageTempFile, int songId) async {
+    final artworkBytes = await OnAudioQuery().queryArtwork(songId, ArtworkType.AUDIO, size: 500);
     
-    final pathSegments = uri.split('/');
-    String finalPath = '';
-    
-    for(int i = 0; i < pathSegments.length; i++) {
-      if( i + 1 == pathSegments.length ) break;
-      finalPath += '/${ pathSegments[i] }';
+    if( artworkBytes != null ) {
+      await imageTempFile.writeAsBytes(artworkBytes);
+      return true;
     }
-    
-    return '$finalPath/cover.jpg';   
+
+    return false;
   }
 
-  static Future<ImageProvider<Object>?> getSpecificArtwork(BuildContext context) async {
-    final songPlayed = Provider.of<MusicPlayerProvider>(context, listen: false).songPlayed;
-    final OnAudioQuery onAudioQuery = audioPlayerHandler.get();
-    final foundArtwork = await onAudioQuery.queryArtwork(songPlayed.id, ArtworkType.AUDIO);
-    
-    if (foundArtwork != null ) {
-      return MemoryImage(foundArtwork);
-    }
-    
-    return const AssetImage('assets/images/background.jpg');
-  }
-
-  static Future<bool> deleteFile(String filePath) async {
+  static Future<bool> deleteFile(File file) async {
     try {
       final permissionStatus = await Permission.manageExternalStorage.request();
-      final file = File(filePath);
 
       if( permissionStatus.isGranted && await file.exists()) {
         await file.delete(recursive: true);
@@ -175,4 +162,18 @@ class MusicActions {
       return false;
     }
   }
+
+  // static String? getArtworkPath(String uri) {
+  //   if( uri.isEmpty ) return null;
+    
+  //   final pathSegments = uri.split('/');
+  //   String finalPath = '';
+    
+  //   for(int i = 0; i < pathSegments.length; i++) {
+  //     if( i + 1 == pathSegments.length ) break;
+  //     finalPath += '/${ pathSegments[i] }';
+  //   }
+    
+  //   return '$finalPath/cover.jpg';   
+  // }
 }

@@ -17,10 +17,16 @@ import '../theme/app_theme.dart';
 class MoreSongOptionsModal extends StatefulWidget {
   const MoreSongOptionsModal({
     super.key,
-    required this.song
+    required this.song,
+    this.isPlaylist = false,
+    this.disabledDeleteButton = false,
+    this.playlistId,
   });
 
   final SongModel song;
+  final int? playlistId;
+  final bool isPlaylist;
+  final bool disabledDeleteButton;
 
   @override
   State<MoreSongOptionsModal> createState() => _MoreSongOptionsModalState();
@@ -35,7 +41,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
     final onAudioQuery = audioPlayerHandler.get<OnAudioQuery>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final duration = Duration(milliseconds: widget.song.duration ?? 0);
-    final imageFile = File(MusicActions.getArtworkPath(widget.song.data) ?? '');
+    final imageFile = File('${ musicPlayerProvider.appDirectory }/${ songPlayed.albumId }.jpg');
     final isFavoriteSong = musicPlayerProvider.isFavoriteSong(songPlayed.id);
 
     return Column(
@@ -112,11 +118,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
           leading: const Icon(Icons.share, color: AppTheme.lightTextColor,),
           title: const Text('Share Audio'),
           onTap: () async {
-            final imageFile = File('${ musicPlayerProvider.appDirectory }/${ widget.song.id }.jpg');
-
-            List<XFile> filesToShare = [ 
-              XFile(widget.song.data)
-            ];
+            List<XFile> filesToShare = [ XFile(songPlayed.data) ];
 
             if( await imageFile.exists() ) {
               filesToShare.add(XFile(imageFile.path));
@@ -135,30 +137,55 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
             showDialog(context: context, builder: (_) => SongDetailsDialog(song: widget.song));
           },
         ),
-        ListTile(
-          leading: const Icon(Icons.delete_forever, color: AppTheme.lightTextColor,),
-          title: const Text('Delete from device'),
-          onTap: () async {
-            final isDeleted = await MusicActions.deleteFile(widget.song.data);
-            
-            if( !context.mounted ) return;
+        if( !widget.disabledDeleteButton )
+          ListTile(
+            leading: Icon(widget.isPlaylist ? Icons.playlist_remove : Icons.delete_forever, color: AppTheme.lightTextColor,),
+            title: Text(widget.isPlaylist ? 'Remove from this playlist' : 'Delete from device'),
+            onTap: () async {
+              final albumId = songPlayed.albumId;
+              final artistId = songPlayed.artistId;
 
-            Navigator.pop(context);
+              if( widget.isPlaylist ) {
+                onAudioQuery.removeFromPlaylist(widget.playlistId!, songPlayed.id);
+                return await musicPlayerProvider.searchByPlaylistId(widget.playlistId!, force: true);
+              }
 
-            if( isDeleted ) {
-              Provider.of<MusicPlayerProvider>(context, listen: false).getAllSongs();
-              return showSnackbar(
+              if( albumId != null ) {
+                await musicPlayerProvider.searchByAlbumId(albumId);
+                if( musicPlayerProvider.albumCollection[albumId]?.length == 1  && await imageFile.exists() ) {
+                  MusicActions.deleteFile(imageFile);
+                }
+              }
+              
+              final isDeleted = await MusicActions.deleteFile(File(songPlayed.data));
+              
+              if( !context.mounted ) return;
+
+              Navigator.pop(context);
+
+              if( isDeleted ) {
+                Provider.of<MusicPlayerProvider>(context, listen: false).getAllSongs();
+                
+                if( albumId != null ) {
+                  await musicPlayerProvider.searchByAlbumId(albumId, force: true);
+                }
+
+                if( artistId != null ) {
+                  await musicPlayerProvider.searchByArtistId(artistId, force: true);
+                }
+
+                return showSnackbar(
+                  context: context,
+                  message: 'Se eliminó exitosamente'
+                );
+              }
+              showSnackbar(
                 context: context,
-                message: 'Se eliminó exitosamente'
+                message: 'Error al eliminar',
+                backgroundColor: Colors.red
               );
-            }
-            showSnackbar(
-              context: context,
-              message: 'Error al eliminar',
-              backgroundColor: Colors.red
-            );
-          },
-        ),
+            },
+          ),
       ],
     );
   }

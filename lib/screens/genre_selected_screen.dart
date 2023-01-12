@@ -45,7 +45,8 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
   }
 
   void getSongs() async {
-    await Provider.of<MusicPlayerProvider>(context, listen: false).searchByGenreId( widget.genreSelected.id );
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
+    musicPlayerProvider.searchByGenreId( widget.genreSelected.id, force: (musicPlayerProvider.genreCollection[widget.genreSelected.id]?.length ?? 0) != widget.genreSelected.numOfSongs);
   }
 
   @override
@@ -148,7 +149,7 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
                     onLongPress: () {
                       showModalBottomSheet(
                         context: context,
-                        builder:( _ ) => MoreSongOptionsModal(song: song)
+                        builder:( _ ) => MoreSongOptionsModal(song: song, disabledDeleteButton: true)
                       );
                     },
                   );

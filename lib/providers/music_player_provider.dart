@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:music_player_app/helpers/music_actions.dart';
 import 'package:music_player_app/share_prefs/user_preferences.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
@@ -32,6 +33,7 @@ class MusicPlayerProvider extends ChangeNotifier {
   
   MusicPlayerProvider() {
     getAllSongs();
+    decodeFavoriteSongs();
   }
 
   bool get isLoading => _isLoading;
@@ -73,40 +75,30 @@ class MusicPlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void getAllSongs() async {
+  Future<void> getAllSongs() async {
     _isLoading = true;
+    
     if( ! await onAudioQuery.permissionsStatus() ) {
       await onAudioQuery.permissionsRequest();
     }
-    
-    List<SongModel> tempFavoriteSongs = [];
     
     songList = await onAudioQuery.querySongs();
     albumList = await onAudioQuery.queryAlbums();
     genreList = await onAudioQuery.queryGenres();
     artistList = await onAudioQuery.queryArtists();
     playLists = await onAudioQuery.queryPlaylists();
-    favoriteSongList = UserPreferences().favoriteSongList;
-    
-    for (String songId in favoriteSongList) {
-      final index = songList.indexWhere((song) => song.id == int.tryParse(songId));
-      if( index != -1 ) {
-        tempFavoriteSongs.add( songList[index] );
-      }
-    }
-
     appDirectory = (await getApplicationDocumentsDirectory()).path;
-    for (SongModel song in songList) {
-      File imageTempFile = File('$appDirectory/${ song.albumId }.jpg');
-      if( await imageTempFile.exists() ) continue;
-      final artworkBytes = await OnAudioQuery().queryArtwork(song.id, ArtworkType.AUDIO, size: 500);
-      if( artworkBytes != null ) {
-        await imageTempFile.writeAsBytes(artworkBytes);
+
+    if( !UserPreferences().isFirstTime ) {
+      final songListLength = songList.length;
+      for (int i = 0; i < songListLength; i++) {
+        File imageTempFile = File('$appDirectory/${ songList[i].albumId }.jpg');
+        if( await imageTempFile.exists() ) continue;
+        await MusicActions.createArtwork(imageTempFile, songList[i].id);
       }
+      UserPreferences().isFirstTime = true;
     }
-
-    favoriteList = [ ...tempFavoriteSongs ];
-
+    
     _isLoading = false;
     notifyListeners();
   }
@@ -123,9 +115,9 @@ class MusicPlayerProvider extends ChangeNotifier {
     return songList.toSongModel();
   }
 
-  Future<void> searchByAlbumId(int albumId) async {
+  Future<void> searchByAlbumId(int albumId, { bool force = false }) async {
     
-    if( albumCollection.containsKey(albumId) ) return;
+    if( albumCollection.containsKey(albumId) && !force ) return;
 
     _isLoading = true;
     albumCollection[albumId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.ALBUM_ID, albumId );
@@ -133,9 +125,9 @@ class MusicPlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> searchByArtistId(int artistId) async {
+  Future<void> searchByArtistId(int artistId, { bool force = false }) async {
     
-    if( artistCollection.containsKey(artistId) ) return;
+    if( artistCollection.containsKey(artistId) && !force ) return;
 
     _isLoading = true;
     artistCollection[artistId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.ARTIST_ID, artistId );
@@ -143,9 +135,9 @@ class MusicPlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> searchByGenreId(int genreId) async {
+  Future<void> searchByGenreId(int genreId, { bool force = false }) async {
     
-    if( genreCollection.containsKey(genreId) ) return;
+    if( genreCollection.containsKey(genreId) && !force ) return;
 
     _isLoading = true;
     genreCollection[genreId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.GENRE_ID, genreId );
@@ -153,9 +145,9 @@ class MusicPlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> searchByPlaylistId(int playlistId) async {
+  Future<void> searchByPlaylistId(int playlistId, { bool force = false }) async {
     
-    if( playlistCollection.containsKey(playlistId) ) return;
+    if( playlistCollection.containsKey(playlistId) && !force ) return;
 
     _isLoading = true;
     playlistCollection[playlistId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.PLAYLIST, playlistId );
@@ -163,4 +155,21 @@ class MusicPlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> decodeFavoriteSongs() async {
+    List<SongModel> tempFavoriteSongs = [];
+    
+    songList = await onAudioQuery.querySongs();
+    favoriteSongList = UserPreferences().favoriteSongList;
+
+    final int favoriteListLength = favoriteSongList.length;
+
+    for (int i = 0; i < favoriteListLength; i ++) {
+      final index = songList.indexWhere((song) => song.id == int.tryParse(favoriteSongList[i]));
+      if( index != -1 ) {
+        tempFavoriteSongs.add( songList[index] );
+      }
+    }
+
+    favoriteList = [ ...tempFavoriteSongs ];
+  }
 }

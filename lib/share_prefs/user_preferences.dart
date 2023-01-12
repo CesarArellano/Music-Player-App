@@ -14,6 +14,15 @@ class UserPreferences {
     _prefs = await SharedPreferences.getInstance();
   }
 
+  // GET y SET del isFirstTime.
+  bool get isFirstTime {
+    return _prefs.getBool('isFirstTime') ?? false;
+  }
+
+  set isFirstTime(bool value) {
+    _prefs.setBool('isFirstTime', value);
+  }
+
   // GET y SET del favoriteSongList.
   List<String> get favoriteSongList {
     return _prefs.getStringList('favoriteSongList') ?? [];

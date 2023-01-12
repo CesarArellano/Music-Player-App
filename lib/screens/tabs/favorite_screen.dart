@@ -35,11 +35,11 @@ class _FavoriteScreenState extends State<FavoriteScreen> with AutomaticKeepAlive
           final heroId = 'favorite-song-${ song.id }';
 
           return RippleTile(
-            onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.songs, heroId: heroId ),
+            onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.favorites, heroId: heroId ),
             onLongPress: () {
               showModalBottomSheet(
                 context: context,
-                builder:(context) => MoreSongOptionsModal(song: song)
+                builder:(context) => MoreSongOptionsModal(song: song, disabledDeleteButton: true)
               );
             },
             child: CustomListTile(
