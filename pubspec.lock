@@ -127,13 +127,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.5"
-  custom_page_transitions:
-    dependency: "direct main"
-    description:
-      name: custom_page_transitions
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.0.4"
   fading_edge_scrollview:
     dependency: transitive
     description:

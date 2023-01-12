@@ -16,6 +16,7 @@ class CustomListTile extends StatelessWidget {
     this.artworkType = ArtworkType.AUDIO,
     this.imageFile,
     this.trailing,
+    this.tag = ''
   }) : super(key: key);
   
   final int artworkId;
@@ -24,6 +25,7 @@ class CustomListTile extends StatelessWidget {
   final String subtitle;
   final File? imageFile;
   final Widget? trailing;
+  final String tag;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +36,8 @@ class CustomListTile extends StatelessWidget {
       leading: ArtworkFileImage(
         artworkId: artworkId,
         artworkType: artworkType,
-        imageFile: imageFile
+        imageFile: imageFile,
+        tag: tag,
       ),
       trailing: trailing,
     );

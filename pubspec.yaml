@@ -34,7 +34,6 @@ dependencies:
   assets_audio_player: ^3.0.6
   on_audio_query: ^2.6.1
   provider: ^6.0.5
-  custom_page_transitions: ^0.0.4
   audio_video_progress_bar: ^0.11.0
   marquee: ^2.2.3
   get_it: ^7.2.0

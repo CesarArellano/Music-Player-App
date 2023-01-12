@@ -1,7 +1,8 @@
+import 'dart:io';
+
 import 'package:assets_audio_player/assets_audio_player.dart';
-import 'package:custom_page_transitions/custom_page_transitions.dart';
 import 'package:flutter/material.dart';
-import 'package:on_audio_query/on_audio_query.dart' show ArtworkType;
+import 'package:music_player_app/providers/ui_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../audio_player_handler.dart';
@@ -68,7 +69,11 @@ class _SelectorSongTitle extends StatelessWidget {
     final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
     final audioControlProvider = Provider.of<AudioControlProvider>(context);
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
+    final uiProvider = Provider.of<UIProvider>(context);
     final songPlayed = musicPlayerProvider.songPlayed;
+    final imageFile = File('${ musicPlayerProvider.appDirectory }/${ songPlayed.albumId }.jpg');
+    final heroId = 'current-song-${ songPlayed.id }';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -79,13 +84,12 @@ class _SelectorSongTitle extends StatelessWidget {
           contentPadding: const EdgeInsets.symmetric(horizontal: 15),
           visualDensity: const VisualDensity(horizontal: -1, vertical: -1),
           tileColor: AppTheme.primaryColor,
-          leading: ArtworkImage(
+          leading: ArtworkFileImage(
             artworkId: songPlayed.id,
-            type: ArtworkType.AUDIO,
+            imageFile: imageFile,
             height: 40,
             width: 40,
-            size: 200,
-            radius: BorderRadius.circular(2.5),
+            tag: heroId,
           ),
           trailing: StreamBuilder<bool>(
             stream: audioPlayer.isPlaying,
@@ -144,12 +148,10 @@ class _SelectorSongTitle extends StatelessWidget {
             style: const TextStyle(fontSize: 12, color: AppTheme.lightTextColor)
           ),
           onTap: () {
-            PageTransitions(
-              context: context,
-              child: const SongPlayedScreen(),
-              duration: const Duration(milliseconds: 200),
-              animation: AnimationType.slideUp,
-              curve: Curves.easeInOut,
+            uiProvider.currentHeroId = heroId;
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SongPlayedScreen())
             );
           },
         ),

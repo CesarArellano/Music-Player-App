@@ -107,15 +107,17 @@ class MusicSearchDelegate extends SearchDelegate {
 
   Widget _songItem(BuildContext context, SongModel song, MusicPlayerProvider musicPlayerProvider ) {
     final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
-    
+    final heroId = 'search-song-${ song.id }';
+
     return RippleTile(
       child: CustomListTile(
         imageFile: imageFile,
         title: song.title ?? '',
         subtitle: song.artist ?? 'No Artist',
-        artworkId: song.id
+        artworkId: song.id,
+        tag: heroId,
       ),
-      onTap: () =>  MusicActions.songPlayAndPause(context, song, TypePlaylist.songs),
+      onTap: () =>  MusicActions.songPlayAndPause(context, song, TypePlaylist.songs, heroId: heroId),
       onLongPress: () {
         showModalBottomSheet(
           context: context,

@@ -32,9 +32,10 @@ class _FavoriteScreenState extends State<FavoriteScreen> with AutomaticKeepAlive
         itemBuilder: ( _, int i ) {
           final song = songList[i];
           final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
+          final heroId = 'favorite-song-${ song.id }';
 
           return RippleTile(
-            onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.songs),
+            onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.songs, heroId: heroId ),
             onLongPress: () {
               showModalBottomSheet(
                 context: context,
@@ -46,6 +47,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> with AutomaticKeepAlive
               subtitle: song.artist ?? 'No Artist',                
               imageFile: imageFile,
               artworkId: song.id,
+              tag: heroId,
             ),
           );
         } 

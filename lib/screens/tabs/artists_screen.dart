@@ -1,4 +1,3 @@
-import 'package:custom_page_transitions/custom_page_transitions.dart';
 import 'package:flutter/material.dart';
 import 'package:music_player_app/helpers/null_extension.dart';
 import 'package:music_player_app/widgets/ripple_tile.dart';
@@ -75,10 +74,9 @@ class _ArtistScreenState extends State<ArtistScreen> with AutomaticKeepAliveClie
                   ),
                 ),
                 onTap: () {
-                  PageTransitions(
-                    context: context, 
-                    child: ArtistSelectedScreen( artistSelected: artist ),
-                    animation: AnimationType.fadeIn
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => ArtistSelectedScreen( artistSelected: artist ))
                   );
                 },
               ),

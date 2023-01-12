@@ -1,4 +1,3 @@
-import 'package:custom_page_transitions/custom_page_transitions.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
@@ -43,10 +42,9 @@ class _GenresScreenState extends State<GenresScreen> with AutomaticKeepAliveClie
                 artworkType: ArtworkType.GENRE,
               ),
               onTap: () {
-                PageTransitions(
-                  context: context,
-                  animation: AnimationType.fadeIn,
-                  child: GenreSelectedScreen( genreSelected: genre )
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => GenreSelectedScreen( genreSelected: genre ))
                 );
               },
             );

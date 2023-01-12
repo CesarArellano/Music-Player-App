@@ -4,9 +4,9 @@
 import 'dart:io';
 
 import 'package:assets_audio_player/assets_audio_player.dart';
-import 'package:custom_page_transitions/custom_page_transitions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:music_player_app/providers/ui_provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -26,11 +26,13 @@ enum TypePlaylist {
 }
 class MusicActions {
 
-  static void songPlayAndPause(BuildContext context, SongModel song, TypePlaylist type, { id = 0 }) async {
+  static void songPlayAndPause(BuildContext context, SongModel song, TypePlaylist type, { required String heroId, id = 0 }) async {
     final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
-
+    final uiProvider = Provider.of<UIProvider>(context, listen: false);
+    uiProvider.currentHeroId = heroId;
+    
     musicPlayerProvider.currentPlaylist = ( type == TypePlaylist.songs )
       ? musicPlayerProvider.songList
       : ( type == TypePlaylist.album)
@@ -95,10 +97,9 @@ class MusicActions {
       audioPlayer.seek( const Duration( seconds: 0 ));
     }
 
-    PageTransitions(
-      context: context,
-      child: const SongPlayedScreen(),
-      animation: AnimationType.fadeIn,
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const SongPlayedScreen())
     );
   }
 

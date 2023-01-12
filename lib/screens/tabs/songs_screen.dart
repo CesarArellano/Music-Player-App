@@ -35,15 +35,17 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
           itemBuilder: ( _, int i ) {
             final song = songList[i];
             final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
+            final heroId = 'songs-${ song.id }';
 
             return RippleTile(
               child: CustomListTile(
                 title: song.title ?? '',
                 subtitle: song.artist ?? 'No Artist',
                 artworkId: song.id,
-                imageFile: imageFile
+                imageFile: imageFile,
+                tag: heroId,
               ),
-              onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.songs),
+              onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.songs, heroId: heroId),
               onLongPress: () {
                 showModalBottomSheet(
                   context: context,

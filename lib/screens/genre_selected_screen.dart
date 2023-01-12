@@ -113,11 +113,15 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
                   label: 'PLAY ALL',
                   icon: Icons.play_arrow,
                   onPressed: () {
+                    final song = musicPlayerProvider.genreCollection[widget.genreSelected.id]![0];
+                    final heroId = 'genre-song-${ song.id }';
+
                     MusicActions.songPlayAndPause(
                       context,
-                      musicPlayerProvider.genreCollection[widget.genreSelected.id]![0],
+                      song,
                       TypePlaylist.genre,
-                      id: widget.genreSelected.id
+                      id: widget.genreSelected.id,
+                      heroId: heroId
                     );
                   }
                 ),
@@ -130,15 +134,17 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
                 itemBuilder: (_, int i) {
                   final song = musicPlayerProvider.genreCollection[widget.genreSelected.id]![i];
                   final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
-                  
+                  final heroId = 'genre-song-${ song.id }';
+
                   return RippleTile(
                     child: CustomListTile(
                       imageFile: imageFile,
                       title: song.title ?? '',
                       subtitle: song.artist ?? 'No Artist',
                       artworkId: song.id,
+                      tag: heroId,
                     ),
-                    onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.genre, id: widget.genreSelected.id ),
+                    onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.genre, id: widget.genreSelected.id, heroId: heroId),
                     onLongPress: () {
                       showModalBottomSheet(
                         context: context,

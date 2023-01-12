@@ -53,15 +53,16 @@ class _PlaylistSelectedScreenState extends State<PlaylistSelectedScreen> {
               itemBuilder: (_, int i) {
                 final song = musicPlayerProvider.playlistCollection[widget.playlist.id]![i];
                 final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
-                
+                final heroId = 'playlist-song-${ song.id }';
                 return RippleTile(
                   child: CustomListTile(
                     artworkId: song.id,
                     title: song.title ?? '',
                     subtitle: song.artist ?? 'No Artist',
                     imageFile: imageFile,
+                    tag: heroId,
                   ),
-                  onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.playlist, id: widget.playlist.id ),
+                  onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.playlist, id: widget.playlist.id, heroId: heroId),
                   onLongPress: () {
                     showModalBottomSheet(
                       context: context,

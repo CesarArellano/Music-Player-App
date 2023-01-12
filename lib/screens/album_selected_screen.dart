@@ -119,11 +119,15 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                   label: 'PLAY ALL',
                   icon: Icons.play_arrow,
                   onPressed: () {
+                    final song = musicPlayerProvider.albumCollection[widget.albumSelected.id]![0];
+                    final heroId = 'album-song-${ song.id }';
+
                     MusicActions.songPlayAndPause(
                       context,
-                      musicPlayerProvider.albumCollection[widget.albumSelected.id]![0],
+                      song,
                       TypePlaylist.album,
-                      id: widget.albumSelected.id
+                      id: widget.albumSelected.id,
+                      heroId: heroId
                     );
                   }
                 ),
@@ -136,7 +140,7 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                 itemBuilder: (_, int i) {
                   final song = musicPlayerProvider.albumCollection[widget.albumSelected.id]![i];
                   final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
-                  
+                  final heroId = 'album-song-${ song.id }';
                   return RippleTile(
                     child: ListTile(
                       leading: Row(
@@ -149,13 +153,14 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                             artworkId: widget.albumSelected.id,
                             artworkType: ArtworkType.ALBUM,
                             imageFile: imageFile,
+                            tag: heroId,
                           ),
                         ],
                       ),
                       title: Text(song.title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis),
                       subtitle: Text(song.artist ?? 'No Artist', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppTheme.lightTextColor, fontSize: 12)),
                     ),
-                    onTap: () =>  MusicActions.songPlayAndPause(context, song, TypePlaylist.album, id: widget.albumSelected.id ),
+                    onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.album, id: widget.albumSelected.id, heroId: heroId),
                     onLongPress: () {
                       showModalBottomSheet(
                         context: context,

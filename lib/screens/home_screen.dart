@@ -33,6 +33,7 @@ class HomeScreen extends StatelessWidget {
         child: Scaffold(
           body: const _Body(),
           floatingActionButton: FloatingActionButton(
+            heroTag: 'fab',
             backgroundColor: AppTheme.accentColor,
             child: const Icon(Icons.add, color: Colors.black),
             onPressed: () async {

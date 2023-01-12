@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:music_player_app/theme/app_theme.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:custom_page_transitions/custom_page_transitions.dart';
 
 import '../../providers/music_player_provider.dart';
 import '../../widgets/widgets.dart';
@@ -79,10 +78,9 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
                 ],
               ),
               onTap: () {
-                PageTransitions(
-                  context: context, 
-                  child: AlbumSelectedScreen( albumSelected: album ),
-                  animation: AnimationType.fadeIn
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => AlbumSelectedScreen( albumSelected: album ))
                 );
               }
             );

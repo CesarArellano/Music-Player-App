@@ -12,6 +12,7 @@ class ArtworkFileImage extends StatelessWidget {
     this.artworkType = ArtworkType.AUDIO,
     this.width = 55,
     this.height = 55,
+    this.tag
   });
 
   final ArtworkType artworkType;
@@ -19,28 +20,64 @@ class ArtworkFileImage extends StatelessWidget {
   final File? imageFile;
   final double width;
   final double height;
+  final String? tag;
 
   @override
   Widget build(BuildContext context) {
     return (imageFile ?? File('')).existsSync() 
-      ? ClipRRect(
-        borderRadius: BorderRadius.circular(2.5),
-        child: Image.file(
-          imageFile!,
-          width: width,
-          height: height,
-          fit: BoxFit.cover,
-          filterQuality: FilterQuality.low,
-          gaplessPlayback: true,
-        ),
-      )
-      : ArtworkImage(
-        artworkId: artworkId,
-        type: artworkType,
-        width: width,
-        height: height,
-        size: 250,
-        radius: BorderRadius.circular(2.5),
-      );
+      ? tag != null
+        ? Hero(
+          tag: tag!,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(2.5),
+            child: Image.file(
+              imageFile!,
+              width: width,
+              height: height,
+              fit: BoxFit.cover,
+              filterQuality: FilterQuality.low,
+              gaplessPlayback: true,
+              errorBuilder: (context, error, stackTrace) {
+                return ArtworkImage(
+                  artworkId: artworkId,
+                  type: artworkType,
+                  width: width,
+                  height: height,
+                  size: 250,
+                  radius: BorderRadius.circular(2.5),
+                );
+              },
+            ),
+          ),
+        )
+        : ClipRRect(
+          borderRadius: BorderRadius.circular(2.5),
+          child: Image.file(
+            imageFile!,
+            width: width,
+            height: height,
+            fit: BoxFit.cover,
+            filterQuality: FilterQuality.low,
+            gaplessPlayback: true,
+            errorBuilder: (context, error, stackTrace) {
+              return ArtworkImage(
+                artworkId: artworkId,
+                type: artworkType,
+                width: width,
+                height: height,
+                size: 250,
+                radius: BorderRadius.circular(2.5),
+              );
+            },
+          ),
+        )
+    : ArtworkImage(
+      artworkId: artworkId,
+      type: artworkType,
+      width: width,
+      height: height,
+      size: 250,
+      radius: BorderRadius.circular(2.5),
+    );
   }
 }

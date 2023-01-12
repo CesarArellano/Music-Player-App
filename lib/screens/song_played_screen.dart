@@ -15,13 +15,16 @@ import '../audio_player_handler.dart';
 import '../helpers/music_actions.dart';
 import '../providers/audio_control_provider.dart';
 import '../providers/music_player_provider.dart';
+import '../providers/ui_provider.dart';
 import '../share_prefs/user_preferences.dart';
 import '../widgets/artwork_image.dart';
 import '../widgets/more_song_options_modal.dart';
 
 class SongPlayedScreen extends StatefulWidget {
   
-  const SongPlayedScreen({Key? key}) : super(key: key);
+  const SongPlayedScreen({
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<SongPlayedScreen> createState() => _SongPlayedScreenState();
@@ -112,7 +115,9 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
                 ),
               )
             ),
-            _SongPlayedBody( playAnimation: _playAnimation ),
+            _SongPlayedBody(
+              playAnimation: _playAnimation
+            ),
           ]
         ),
       ),
@@ -132,10 +137,11 @@ class _SongPlayedBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
+    final currentHeroId = Provider.of<UIProvider>(context).currentHeroId;
     final songPlayed = musicPlayerProvider.songPlayed;
     final imageFile = File('${ musicPlayerProvider.appDirectory }/${ songPlayed.albumId }.jpg');
     final isFavoriteSong = musicPlayerProvider.isFavoriteSong(songPlayed.id);
-
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: SafeArea(
@@ -143,21 +149,24 @@ class _SongPlayedBody extends StatelessWidget {
           child: Column(
             children: [
               SizedBox(height: size.height * 0.015),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: Image.file(
-                  imageFile,
-                  width: double.infinity,
-                  height: 350,
-                  fit: BoxFit.cover,
-                  gaplessPlayback: true,
-                  errorBuilder: (_,__,___) => ArtworkImage(
-                    artworkId: songPlayed.id,
-                    type: ArtworkType.AUDIO,
+              Hero(
+                tag: currentHeroId,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(3.5),
+                  child: Image.file(
+                    imageFile,
                     width: double.infinity,
                     height: 350,
-                    size: 500,
-                    radius: BorderRadius.circular(6),
+                    fit: BoxFit.cover,
+                    gaplessPlayback: true,
+                    errorBuilder: (_,__,___) => ArtworkImage(
+                      artworkId: songPlayed.id,
+                      type: ArtworkType.AUDIO,
+                      width: double.infinity,
+                      height: 350,
+                      size: 500,
+                      radius: BorderRadius.circular(6),
+                    ),
                   ),
                 ),
               ),
@@ -256,6 +265,7 @@ class _MusicControls extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         FloatingActionButton(
+          heroTag: 'forward',
           elevation: 0.0,
           highlightElevation: 0.0,
           backgroundColor: Colors.transparent,
@@ -282,6 +292,7 @@ class _MusicControls extends StatelessWidget {
             InkWell(
               onLongPress: () =>  audioPlayer.seekBy( const Duration(seconds: -10) ),
               child: FloatingActionButton(
+                heroTag: 'fast_rewind',
                 elevation: 0.0,
                 highlightElevation: 0.0,
                 backgroundColor: Colors.transparent,
@@ -310,6 +321,7 @@ class _MusicControls extends StatelessWidget {
                 }
                 
                 return FloatingActionButton(
+                  heroTag: 'play_pause',
                   backgroundColor: Colors.white,
                   onPressed: () {
                     if( isPlaying ) {
@@ -332,6 +344,7 @@ class _MusicControls extends StatelessWidget {
             InkWell(
               onLongPress: () =>  audioPlayer.seekBy( const Duration(seconds: 10) ),
               child: FloatingActionButton(
+                heroTag: 'fast_forward',
                 elevation: 0.0,
                 highlightElevation: 0.0,
                 backgroundColor: Colors.transparent,
@@ -349,6 +362,7 @@ class _MusicControls extends StatelessWidget {
           ]
         ),
         FloatingActionButton(
+          heroTag: 'shuffle',
           elevation: 0.0,
           highlightElevation: 0.0,
           backgroundColor: Colors.transparent,
