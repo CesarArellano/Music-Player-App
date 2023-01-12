@@ -147,7 +147,7 @@ class _SelectorSongTitle extends StatelessWidget {
             PageTransitions(
               context: context,
               child: const SongPlayedScreen(),
-              duration: const Duration(milliseconds: 250),
+              duration: const Duration(milliseconds: 200),
               animation: AnimationType.slideUp,
               curve: Curves.easeInOut,
             );

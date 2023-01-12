@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:custom_page_transitions/custom_page_transitions.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -64,7 +65,18 @@ class MusicActions {
         ),
         showNotification: true,
         headPhoneStrategy: HeadPhoneStrategy.pauseOnUnplugPlayOnPlug,
-        playInBackground: PlayInBackground.enabled
+        playInBackground: PlayInBackground.enabled,
+        notificationSettings: NotificationSettings(
+          customStopAction: (player) {
+            player.stop();
+            player.dispose();
+            if( Platform.isAndroid ) {
+              SystemNavigator.pop();
+            } else {
+              exit(0);
+            }
+          },
+        )
       );
       
       audioPlayer.currentPosition.listen((duration) {

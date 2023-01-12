@@ -86,8 +86,8 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
         ),
         body: Stack(
           children: [
-            FadeIn(
-              duration: const Duration(milliseconds: 400),
+            FadeInUp(
+              duration: const Duration(milliseconds: 300),
               child: Transform.scale(
                 scale: 1.1,
                 child: Container(
@@ -149,6 +149,7 @@ class _SongPlayedBody extends StatelessWidget {
                   imageFile,
                   width: double.infinity,
                   height: 350,
+                  fit: BoxFit.cover,
                   gaplessPlayback: true,
                   errorBuilder: (_,__,___) => ArtworkImage(
                     artworkId: songPlayed.id,
