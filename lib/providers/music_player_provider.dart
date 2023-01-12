@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:music_player_app/share_prefs/user_preferences.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:path_provider/path_provider.dart';
 
 
 class MusicPlayerProvider extends ChangeNotifier {
@@ -8,6 +11,7 @@ class MusicPlayerProvider extends ChangeNotifier {
   final OnAudioQuery onAudioQuery = OnAudioQuery();
 
   SongModel _songPlayed = SongModel({});
+  String appDirectory = '';
   bool _isLoading = false;
   bool _isShuffling = false;
 
@@ -88,6 +92,16 @@ class MusicPlayerProvider extends ChangeNotifier {
       final index = songList.indexWhere((song) => song.id == int.tryParse(songId));
       if( index != -1 ) {
         tempFavoriteSongs.add( songList[index] );
+      }
+    }
+
+    appDirectory = (await getApplicationDocumentsDirectory()).path;
+    for (SongModel song in songList) {
+      File imageTempFile = File('$appDirectory/${ song.albumId }.jpg');
+      if( await imageTempFile.exists() ) continue;
+      final artworkBytes = await OnAudioQuery().queryArtwork(song.id, ArtworkType.AUDIO, size: 500);
+      if( artworkBytes != null ) {
+        await imageTempFile.writeAsBytes(artworkBytes);
       }
     }
 

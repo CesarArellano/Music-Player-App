@@ -23,14 +23,15 @@ class _FavoriteScreenState extends State<FavoriteScreen> with AutomaticKeepAlive
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final songList = Provider.of<MusicPlayerProvider>(context).favoriteList;
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
+    final songList = musicPlayerProvider.favoriteList;
 
     return songList.isNotEmpty
       ? ListView.builder(
         itemCount: songList.length,
         itemBuilder: ( _, int i ) {
           final song = songList[i];
-          final imageFile = File(MusicActions.getArtworkPath(song.data) ?? '');
+          final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
 
           return RippleTile(
             onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.songs),

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:music_player_app/theme/app_theme.dart';
@@ -42,17 +44,19 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
           itemCount: albumList.length,
           itemBuilder: ( _, int i ) {
             final album = albumList[i];
-            
+            final imageFile = File('${ musicPlayerProvider.appDirectory }/${ album.id }.jpg');
+
             return RippleTile(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  ArtworkImage(
+                  ArtworkFileImage(
                     artworkId: album.id,
-                    type: ArtworkType.ALBUM,
-                    size: 500,
-                    radius: BorderRadius.circular(2.5),
+                    artworkType: ArtworkType.ALBUM,
+                    width: double.maxFinite,
+                    height: 190,
+                    imageFile: imageFile,
                   ),
                   const SizedBox(height: 6),
                   Padding(

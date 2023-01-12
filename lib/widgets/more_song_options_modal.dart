@@ -5,7 +5,6 @@ import 'package:music_player_app/audio_player_handler.dart';
 import 'package:music_player_app/widgets/custom_list_tile.dart';
 import 'package:music_player_app/widgets/song_details_dialog.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -113,21 +112,20 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
           leading: const Icon(Icons.share, color: AppTheme.lightTextColor,),
           title: const Text('Share Audio'),
           onTap: () async {
-            Directory appDocDir = await getApplicationDocumentsDirectory();
-            File imageTempFile = File('${ appDocDir.path }/${ widget.song.title ?? ''}.jpg');
-            List<XFile> filesToShare = [ XFile(widget.song.data) ];
-            final artworkBytes = await OnAudioQuery().queryArtwork(widget.song.id, ArtworkType.AUDIO, size: 500);
-            if( artworkBytes != null) {
-              final imageFile = XFile((await imageTempFile.writeAsBytes(artworkBytes)).path);
-              filesToShare.add(imageFile);
+            final imageFile = File('${ musicPlayerProvider.appDirectory }/${ widget.song.id }.jpg');
+
+            List<XFile> filesToShare = [ 
+              XFile(widget.song.data)
+            ];
+
+            if( await imageFile.exists() ) {
+              filesToShare.add(XFile(imageFile.path));
             }
-            
+
             await Share.shareXFiles(
               filesToShare,
               text: 'I share you the song ${ widget.song.title ?? '' }'
             );
-
-            MusicActions.deleteFile(imageTempFile.path);
           },
         ),
         ListTile(

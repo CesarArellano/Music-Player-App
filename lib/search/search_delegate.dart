@@ -106,7 +106,7 @@ class MusicSearchDelegate extends SearchDelegate {
   }
 
   Widget _songItem(BuildContext context, SongModel song, MusicPlayerProvider musicPlayerProvider ) {
-    final imageFile = File(MusicActions.getArtworkPath(song.data) ?? '');
+    final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
     
     return RippleTile(
       child: CustomListTile(

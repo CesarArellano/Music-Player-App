@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:music_player_app/widgets/custom_icon_text_button.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -50,6 +52,8 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
   @override
   Widget build(BuildContext context) {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
+    final imageGeneralFile = File('${ musicPlayerProvider.appDirectory }/${ widget.albumSelected.id }.jpg');
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -80,13 +84,12 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: 
                   [
-                    ArtworkImage(
+                    ArtworkFileImage(
                       artworkId: widget.albumSelected.id,
-                      type: ArtworkType.ALBUM,
+                      artworkType: ArtworkType.ALBUM,
+                      imageFile: imageGeneralFile,
                       width: 175,
                       height: 175,
-                      size: 500,
-                      radius: BorderRadius.circular(4),
                     ),
                     const SizedBox(width: 15),
                     Flexible(
@@ -132,6 +135,8 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                 itemCount: musicPlayerProvider.albumCollection[widget.albumSelected.id]!.length,
                 itemBuilder: (_, int i) {
                   final song = musicPlayerProvider.albumCollection[widget.albumSelected.id]![i];
+                  final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
+                  
                   return RippleTile(
                     child: ListTile(
                       leading: Row(
@@ -140,18 +145,15 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                           const SizedBox(width: 5),
                           Text('${ i + 1 }'),
                           SizedBox(width: ( i + 1 >= 10) ? 18 : 25 ),
-                          ArtworkImage(
+                          ArtworkFileImage(
                             artworkId: widget.albumSelected.id,
-                            type: ArtworkType.ALBUM,
-                            width: 50,
-                            height: 50,
-                            size: 250,
-                            radius: BorderRadius.circular(2.5),
+                            artworkType: ArtworkType.ALBUM,
+                            imageFile: imageFile,
                           ),
                         ],
                       ),
-                      title: Text(song.title ?? ''),
-                      subtitle: Text(song.artist ?? 'No Artist')
+                      title: Text(song.title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis),
+                      subtitle: Text(song.artist ?? 'No Artist', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppTheme.lightTextColor, fontSize: 12)),
                     ),
                     onTap: () =>  MusicActions.songPlayAndPause(context, song, TypePlaylist.album, id: widget.albumSelected.id ),
                     onLongPress: () {

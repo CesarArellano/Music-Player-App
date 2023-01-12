@@ -129,7 +129,7 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
                 itemCount: musicPlayerProvider.genreCollection[widget.genreSelected.id]!.length,
                 itemBuilder: (_, int i) {
                   final song = musicPlayerProvider.genreCollection[widget.genreSelected.id]![i];
-                  final imageFile = File(MusicActions.getArtworkPath(song.data) ?? '');
+                  final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
                   
                   return RippleTile(
                     child: CustomListTile(

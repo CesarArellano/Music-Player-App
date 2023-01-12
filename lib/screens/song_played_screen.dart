@@ -29,7 +29,6 @@ class SongPlayedScreen extends StatefulWidget {
 
 class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerProviderStateMixin {
   AnimationController? _playAnimation;
-  ImageProvider<Object>? artwork;
 
   @override
   void initState() {
@@ -46,8 +45,9 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    final songPlayed = Provider.of<MusicPlayerProvider>(context).songPlayed;
-    final imageFile = File(MusicActions.getArtworkPath(songPlayed.data) ?? '');
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
+    final songPlayed = musicPlayerProvider.songPlayed;
+    final imageFile = File('${ musicPlayerProvider.appDirectory }/${ songPlayed.albumId }.jpg');
       
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
@@ -86,41 +86,31 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
         ),
         body: Stack(
           children: [
-            FutureBuilder<ImageProvider<Object>?>(
-              future: MusicActions.getSpecificArtwork(context),
-              builder: (context, snapshot) {
-
-                artwork = snapshot.data;
-
-                return FadeIn(
-                  duration: const Duration(milliseconds: 400),
-                  child: Transform.scale(
-                    scale: 1.1,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          fit: BoxFit.cover,
-                          image: snapshot.hasData
-                          ? ( artwork == null  )
-                            ? Image.file(
-                              imageFile,
-                              gaplessPlayback: true,
-                              errorBuilder: (_, __, ___) => Image.asset('assets/images/background.jpg', gaplessPlayback: true)
-                            ).image
-                            : Image(image: artwork!, gaplessPlayback: true).image
-                          : const AssetImage('assets/images/background.jpg')
-                        )                    
-                      ),
-                      child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 50.0, sigmaY: 50.0),
-                          child: Container(
-                            decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), backgroundBlendMode: BlendMode.darken),
-                          ),
-                        ),
-                    ),
+            FadeIn(
+              duration: const Duration(milliseconds: 400),
+              child: Transform.scale(
+                scale: 1.1,
+                child: Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      fit: BoxFit.cover,
+                      image: imageFile.existsSync()
+                      ? Image.file(
+                          imageFile,
+                          gaplessPlayback: true,
+                          errorBuilder: (_, __, ___) => Image.asset('assets/images/background.jpg', gaplessPlayback: true)
+                        ).image
+                      : const AssetImage('assets/images/background.jpg')
+                    )                    
                   ),
-                );
-              }
+                  child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 50.0, sigmaY: 50.0),
+                      child: Container(
+                        decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), backgroundBlendMode: BlendMode.darken),
+                      ),
+                    ),
+                ),
+              )
             ),
             _SongPlayedBody( playAnimation: _playAnimation ),
           ]
@@ -143,7 +133,7 @@ class _SongPlayedBody extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final songPlayed = musicPlayerProvider.songPlayed;
-    final imageFile = File(MusicActions.getArtworkPath(songPlayed.data) ?? '');
+    final imageFile = File('${ musicPlayerProvider.appDirectory }/${ songPlayed.albumId }.jpg');
     final isFavoriteSong = musicPlayerProvider.isFavoriteSong(songPlayed.id);
 
     return Padding(

@@ -48,16 +48,17 @@ class MusicActions {
         Playlist(
           audios: [
             ...musicPlayerProvider.currentPlaylist.map((song) => Audio.file(
-              song.data,
-              metas: Metas(
-                album: song.album,
-                artist: song.artist,
-                title: song.title,
-                id: song.id.toString(),
-                image: MetasImage.file(MusicActions.getArtworkPath(song.data) ?? ''),
-                onImageLoadFail: const MetasImage.asset('assets/images/background.jpg'),
+                song.data,
+                metas: Metas(
+                  album: song.album,
+                  artist: song.artist,
+                  title: song.title,
+                  id: song.id.toString(),
+                  image: MetasImage.file('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg'),
+                  onImageLoadFail: const MetasImage.asset('assets/images/background.jpg'),
+                )
               )
-            ))
+            )
           ],
           startIndex: index,
         ),

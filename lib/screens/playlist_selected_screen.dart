@@ -8,9 +8,7 @@ import 'package:provider/provider.dart';
 
 import '../helpers/music_actions.dart';
 import '../providers/music_player_provider.dart';
-import '../widgets/artwork_image.dart';
-import '../widgets/current_song_tile.dart';
-import '../widgets/ripple_tile.dart';
+import '../widgets/widgets.dart';
 
 
 class PlaylistSelectedScreen extends StatefulWidget {
@@ -54,34 +52,21 @@ class _PlaylistSelectedScreenState extends State<PlaylistSelectedScreen> {
               itemCount: musicPlayerProvider.playlistCollection[widget.playlist.id]!.length,
               itemBuilder: (_, int i) {
                 final song = musicPlayerProvider.playlistCollection[widget.playlist.id]![i];
-                final imageFile = File(MusicActions.getArtworkPath(song.data) ?? '');
+                final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
                 
                 return RippleTile(
-                  child: ListTile(
-                    leading: imageFile.existsSync()
-                      ? ClipRRect(
-                        borderRadius: BorderRadius.circular(2.5),
-                        child: Image.file(
-                          imageFile,
-                          width: 50,
-                          height: 50,
-                          gaplessPlayback: true,
-                          filterQuality: FilterQuality.low,
-                        ),
-                      )
-                      : ArtworkImage(
-                        artworkId: song.albumId ?? 1,
-                        type: ArtworkType.ALBUM,
-                        width: 50,
-                        height: 50,
-                        size: 250,
-                        radius: BorderRadius.circular(2.5),
-                      ),
-                    title: Text(song.title ?? ''),
-                    subtitle: Text(song.artist ?? 'No Artist')
+                  child: CustomListTile(
+                    artworkId: song.id,
+                    title: song.title ?? '',
+                    subtitle: song.artist ?? 'No Artist',
+                    imageFile: imageFile,
                   ),
-                  onTap: () {
-                    MusicActions.songPlayAndPause(context, song, TypePlaylist.playlist, id: widget.playlist.id );
+                  onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.playlist, id: widget.playlist.id ),
+                  onLongPress: () {
+                    showModalBottomSheet(
+                      context: context,
+                      builder:( _ ) => MoreSongOptionsModal(song: song)
+                    );
                   },
                 );
               },
