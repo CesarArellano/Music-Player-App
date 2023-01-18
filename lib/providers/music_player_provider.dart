@@ -12,7 +12,10 @@ class MusicPlayerProvider extends ChangeNotifier {
 
   final OnAudioQuery onAudioQuery = OnAudioQuery();
 
-  SongModel _songPlayed = SongModel({});
+  SongModel _songPlayed = SongModel({
+    '_id': 0
+  });
+  
   String appDirectory = '';
   bool isLoading = false;
   bool isCreatingArtworks = false;
