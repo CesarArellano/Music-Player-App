@@ -48,7 +48,7 @@ class MusicActions {
 
     final index = musicPlayerProvider.currentPlaylist.indexWhere((songOfList) => songOfList.id == song.id );
 
-    if( musicPlayerProvider.songPlayed.title != song.title ) {
+    if( musicPlayerProvider.songPlayed.id != song.id ) {
       audioPlayer.stop();
       audioPlayer.open(
         Playlist(

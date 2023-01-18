@@ -1,3 +1,4 @@
+export 'package:music_player_app/widgets/custom_loader.dart';
 export 'package:music_player_app/widgets/artwork_file_image.dart';
 export 'package:music_player_app/widgets/more_song_options_modal.dart';
 export 'package:music_player_app/widgets/custom_list_tile.dart';

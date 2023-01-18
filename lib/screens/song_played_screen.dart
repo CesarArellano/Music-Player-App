@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:animate_do/animate_do.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
@@ -89,31 +88,26 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
         ),
         body: Stack(
           children: [
-            FadeInUp(
-              duration: const Duration(milliseconds: 300),
-              child: Transform.scale(
-                scale: 1.1,
-                child: Container(
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      fit: BoxFit.cover,
-                      image: imageFile.existsSync()
-                      ? Image.file(
-                          imageFile,
-                          gaplessPlayback: true,
-                          errorBuilder: (_, __, ___) => Image.asset('assets/images/background.jpg', gaplessPlayback: true)
-                        ).image
-                      : const AssetImage('assets/images/background.jpg')
-                    )                    
-                  ),
-                  child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 50.0, sigmaY: 50.0),
-                      child: Container(
-                        decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), backgroundBlendMode: BlendMode.darken),
-                      ),
-                    ),
+            Transform.scale(
+              scale: 1.1,
+              child: Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    fit: BoxFit.cover,
+                    image: Image.file(
+                      imageFile,
+                      gaplessPlayback: true,
+                      errorBuilder: (_, __, ___) => Image.asset('assets/images/background.jpg', gaplessPlayback: true)
+                    ).image
+                  )                    
                 ),
-              )
+                child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 50.0, sigmaY: 50.0),
+                    child: Container(
+                      decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), backgroundBlendMode: BlendMode.darken),
+                    ),
+                  ),
+              ),
             ),
             _SongPlayedBody(
               playAnimation: _playAnimation
@@ -158,15 +152,16 @@ class _SongPlayedBody extends StatelessWidget {
                     width: double.infinity,
                     height: 350,
                     fit: BoxFit.cover,
+                    filterQuality: FilterQuality.medium,
                     gaplessPlayback: true,
-                    errorBuilder: (_,__,___) => ArtworkImage(
+                    errorBuilder: ( _, __, ___ ) => ArtworkImage(
                       artworkId: songPlayed.id,
                       type: ArtworkType.AUDIO,
                       width: double.infinity,
                       height: 350,
                       size: 500,
                       radius: BorderRadius.circular(6),
-                    ),
+                    )
                   ),
                 ),
               ),
@@ -177,6 +172,7 @@ class _SongPlayedBody extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(
+                      padding: EdgeInsets.zero,
                       onPressed: () {
                         List<String> favoriteSongList = [ ...musicPlayerProvider.favoriteSongList ];
                         List<SongModel> favoriteList = [ ...musicPlayerProvider.favoriteList ];
@@ -206,13 +202,15 @@ class _SongPlayedBody extends StatelessWidget {
                               velocity: 50.0,
                               text: songPlayed.title ?? '',
                               blankSpace: 30,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                              fadingEdgeEndFraction: 0.1,
+                              fadingEdgeStartFraction: 0.1,
+                              style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18),
                             )
                             : Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 const SizedBox(height: 10),
-                                Text( songPlayed.title ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18) ),
+                                Text( songPlayed.title ?? '', style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18) ),
                                 const SizedBox(height: 9)
                               ],
                             )
@@ -229,6 +227,7 @@ class _SongPlayedBody extends StatelessWidget {
                       ),
                     ),
                     IconButton(
+                      padding: EdgeInsets.zero,
                       onPressed: () => MusicActions.showCurrentPlayList(context),
                       icon: const Icon(Icons.playlist_play)
                     )

@@ -1,3 +1,4 @@
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 
 class RippleTile extends StatelessWidget {
@@ -14,19 +15,22 @@ class RippleTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        child,
-        Positioned.fill(
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: onTap,
-              onLongPress: onLongPress,
-            )
-          ),
-        )
-      ],
+    return FadeIn(
+      duration: const Duration(milliseconds: 300),
+      child: Stack(
+        children: [
+          child,
+          Positioned.fill(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: onTap,
+                onLongPress: onLongPress,
+              )
+            ),
+          )
+        ],
+      ),
     );
   }
 }

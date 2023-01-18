@@ -62,7 +62,7 @@ class MusicSearchDelegate extends SearchDelegate {
     
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     return FutureBuilder(
-      future: musicPlayerProvider.searchSongByQuery(query),
+      future: musicPlayerProvider.searchSongByQuery(query.toLowerCase()),
       builder: ( _, AsyncSnapshot<List<SongModel>> asyncSnapshot) {
         if( !asyncSnapshot.hasData) {
           return _emptyContainer();

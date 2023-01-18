@@ -28,7 +28,7 @@ class _GenresScreenState extends State<GenresScreen> with AutomaticKeepAliveClie
     final genreList = musicPlayerProvider.genreList;
 
     return musicPlayerProvider.isLoading
-      ? const Center ( child: CircularProgressIndicator() )
+      ? CustomLoader(isCreatingArtworks: musicPlayerProvider.isCreatingArtworks)
       : genreList.isNotEmpty
         ? ListView.builder(
           itemCount: genreList.length,

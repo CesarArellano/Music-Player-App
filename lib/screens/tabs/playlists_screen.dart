@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:music_player_app/audio_player_handler.dart';
 import 'package:music_player_app/screens/playlist_selected_screen.dart';
-import 'package:music_player_app/widgets/artwork_image.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 import '../../helpers/custom_snackbar.dart';
 import '../../providers/music_player_provider.dart';
+import '../../widgets/widgets.dart';
 
 class PlaylistsScreen extends StatefulWidget {
   
@@ -29,7 +29,7 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> with AutomaticKeepAli
     final playlists = musicPlayerProvider.playLists;
 
     return musicPlayerProvider.isLoading
-      ? const Center ( child: CircularProgressIndicator() )
+      ? CustomLoader(isCreatingArtworks: musicPlayerProvider.isCreatingArtworks)
       : playlists.isNotEmpty 
         ? ListView.builder(
           itemCount: playlists.length,

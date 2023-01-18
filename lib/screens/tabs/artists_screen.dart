@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:music_player_app/helpers/null_extension.dart';
-import 'package:music_player_app/widgets/ripple_tile.dart';
+import '../../helpers/null_extension.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
 
 import '../../providers/music_player_provider.dart';
-import '../../widgets/artwork_image.dart';
+import '../../widgets/widgets.dart';
 import '../artist_selected_screen.dart';
 
 class ArtistScreen extends StatefulWidget {
@@ -30,7 +29,7 @@ class _ArtistScreenState extends State<ArtistScreen> with AutomaticKeepAliveClie
     final artistList = musicPlayerProvider.artistList;
 
     return musicPlayerProvider.isLoading
-      ? const Center ( child: CircularProgressIndicator() )
+      ? CustomLoader(isCreatingArtworks: musicPlayerProvider.isCreatingArtworks)
       : artistList.isNotEmpty
         ? ListView.builder(
           itemCount: artistList.length,

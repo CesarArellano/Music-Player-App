@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:music_player_app/helpers/music_actions.dart';
+import 'package:music_player_app/helpers/null_extension.dart';
 import 'package:music_player_app/share_prefs/user_preferences.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
@@ -13,7 +14,8 @@ class MusicPlayerProvider extends ChangeNotifier {
 
   SongModel _songPlayed = SongModel({});
   String appDirectory = '';
-  bool _isLoading = false;
+  bool isLoading = false;
+  bool isCreatingArtworks = false;
   bool _isShuffling = false;
 
   Map<int, List<SongModel>> albumCollection = {};
@@ -34,13 +36,6 @@ class MusicPlayerProvider extends ChangeNotifier {
   MusicPlayerProvider() {
     getAllSongs();
     decodeFavoriteSongs();
-  }
-
-  bool get isLoading => _isLoading;
-
-  set isLoading( bool value ) {
-    _isLoading = value;
-    notifyListeners();
   }
 
   bool get isShuffling => _isShuffling;
@@ -75,9 +70,15 @@ class MusicPlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> getAllSongs() async {
-    _isLoading = true;
-    
+  Future<void> getAllSongs({ bool forceCreatingArtworks = false }) async {
+    final createArtworks = ( !UserPreferences().isFirstTime || forceCreatingArtworks );
+
+    isLoading = true;
+    if( createArtworks ) {
+      isCreatingArtworks = true;
+    }
+    notifyListeners();
+
     if( ! await onAudioQuery.permissionsStatus() ) {
       await onAudioQuery.permissionsRequest();
     }
@@ -89,39 +90,41 @@ class MusicPlayerProvider extends ChangeNotifier {
     playLists = await onAudioQuery.queryPlaylists();
     appDirectory = (await getApplicationDocumentsDirectory()).path;
 
-    if( !UserPreferences().isFirstTime ) {
+    if( createArtworks ) {
       final songListLength = songList.length;
       for (int i = 0; i < songListLength; i++) {
         File imageTempFile = File('$appDirectory/${ songList[i].albumId }.jpg');
-        if( await imageTempFile.exists() ) continue;
+        if( imageTempFile.existsSync() ) continue;
         await MusicActions.createArtwork(imageTempFile, songList[i].id);
       }
+      isCreatingArtworks = false;
       UserPreferences().isFirstTime = true;
     }
     
-    _isLoading = false;
+    isLoading = false;
     notifyListeners();
   }
 
   Future<void> refreshPlaylist() async {
-    _isLoading = true;
+    isLoading = true;
+    notifyListeners();
     playLists = await onAudioQuery.queryPlaylists();
-    _isLoading = false;
+    isLoading = false;
     notifyListeners();
   }
 
   Future<List<SongModel>> searchSongByQuery(String query) async {
-    List<dynamic> songList = await onAudioQuery.queryWithFilters(query, WithFiltersType.AUDIOS );
-    return songList.toSongModel();
+    return songList.where((song) => song.title.value().toLowerCase().contains(query)).toList();
   }
 
   Future<void> searchByAlbumId(int albumId, { bool force = false }) async {
     
     if( albumCollection.containsKey(albumId) && !force ) return;
 
-    _isLoading = true;
+    isLoading = true;
+    notifyListeners();
     albumCollection[albumId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.ALBUM_ID, albumId );
-    _isLoading = false;
+    isLoading = false;
     notifyListeners();
   }
 
@@ -129,9 +132,10 @@ class MusicPlayerProvider extends ChangeNotifier {
     
     if( artistCollection.containsKey(artistId) && !force ) return;
 
-    _isLoading = true;
+    isLoading = true;
+    notifyListeners();
     artistCollection[artistId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.ARTIST_ID, artistId );
-    _isLoading = false;
+    isLoading = false;
     notifyListeners();
   }
 
@@ -139,9 +143,10 @@ class MusicPlayerProvider extends ChangeNotifier {
     
     if( genreCollection.containsKey(genreId) && !force ) return;
 
-    _isLoading = true;
+    isLoading = true;
+    notifyListeners();
     genreCollection[genreId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.GENRE_ID, genreId );
-    _isLoading = false;
+    isLoading = false;
     notifyListeners();
   }
 
@@ -149,9 +154,10 @@ class MusicPlayerProvider extends ChangeNotifier {
     
     if( playlistCollection.containsKey(playlistId) && !force ) return;
 
-    _isLoading = true;
+    isLoading = true;
+    notifyListeners();
     playlistCollection[playlistId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.PLAYLIST, playlistId );
-    _isLoading = false;
+    isLoading = false;
     notifyListeners();
   }
 

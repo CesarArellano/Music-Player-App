@@ -29,7 +29,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
     final albumList = musicPlayerProvider.albumList;
 
     return musicPlayerProvider.isLoading
-      ? const Center ( child: CircularProgressIndicator() )
+      ? CustomLoader(isCreatingArtworks: musicPlayerProvider.isCreatingArtworks)
       : albumList.isNotEmpty
         ? Padding(
           padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0),

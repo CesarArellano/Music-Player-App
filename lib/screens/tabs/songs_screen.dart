@@ -28,7 +28,7 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
     final songList = musicPlayerProvider.songList;
 
     return ( musicPlayerProvider.isLoading )
-      ? const Center( child: CircularProgressIndicator() )
+      ? CustomLoader(isCreatingArtworks: musicPlayerProvider.isCreatingArtworks)
       : songList.isNotEmpty
         ? ListView.builder(
           itemCount: songList.length,
