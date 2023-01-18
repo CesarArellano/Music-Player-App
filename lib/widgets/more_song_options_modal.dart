@@ -50,7 +50,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
         CustomListTile(
           artworkId: songPlayed.id,
           title: songPlayed.title ?? '',
-          subtitle: '${ songPlayed.artist ?? 'No Artist' } • ${ _getTimeString(duration) }',
+          subtitle: '${ songPlayed.artist ?? 'No Artist' } • ${ duration.getTimeString() }',
           imageFile: imageFile,
           trailing: IconButton(
             onPressed: () {
@@ -190,19 +190,21 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
     );
   }
 
-  String _getTimeString(Duration time) {
-    final minutes =
-        time.inMinutes.remainder(Duration.minutesPerHour).toString();
-    final seconds = time.inSeconds
-        .remainder(Duration.secondsPerMinute)
-        .toString()
-        .padLeft(2, '0');
-    return time.inHours > 0
-        ? "${time.inHours}:${minutes.padLeft(2, "0")}:$seconds"
-        : "$minutes:$seconds";
-  }
+  
 }
 
+extension Format on Duration {
+  String getTimeString() {
+    final minutes = inMinutes.remainder(Duration.minutesPerHour).toString();
+    final seconds = inSeconds
+      .remainder(Duration.secondsPerMinute)
+      .toString()
+      .padLeft(2, '0');
+    return inHours > 0
+      ? "$inHours:${minutes.padLeft(2, "0")}:$seconds"
+      : "$minutes:$seconds";
+  }
+}
 extension ContextExtensions on BuildContext {
   bool get mounted {
     try {
