@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+
 class AudioControlProvider extends ChangeNotifier {
 
   int _currentIndex = 0;
@@ -15,8 +16,7 @@ class AudioControlProvider extends ChangeNotifier {
   Duration get currentDuration => _currentDuration;
   
   set currentDuration(Duration value) {
-    _currentDuration= value;
+    _currentDuration = value;
     notifyListeners();
   }
-  
 }

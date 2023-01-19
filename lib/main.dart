@@ -26,8 +26,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider( create: ( _ ) => MusicPlayerProvider(), lazy: false ),
-        ChangeNotifierProvider( create: ( _ ) => AudioControlProvider(), lazy: false),
+        ChangeNotifierProvider( create: ( _ ) => MusicPlayerProvider() ),
+        ChangeNotifierProvider( create: ( _ ) => AudioControlProvider()),
         ChangeNotifierProvider( create: ( _ ) => UIProvider()),
       ],
       child: MaterialApp(

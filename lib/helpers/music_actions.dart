@@ -6,7 +6,6 @@ import 'dart:io';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:music_player_app/providers/ui_provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -14,7 +13,9 @@ import 'package:provider/provider.dart';
 import '../audio_player_handler.dart';
 import '../providers/audio_control_provider.dart';
 import '../providers/music_player_provider.dart';
+import '../providers/ui_provider.dart';
 import '../screens/song_played_screen.dart';
+import '../share_prefs/user_preferences.dart';
 import '../theme/app_theme.dart';
 
 enum TypePlaylist {
@@ -26,6 +27,65 @@ enum TypePlaylist {
   favorites
 }
 class MusicActions {
+
+  static void initSongs(BuildContext context, SongModel song, String heroId) {
+
+    final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
+    final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
+    final uiProvider = Provider.of<UIProvider>(context, listen: false);
+    
+    uiProvider.currentHeroId = heroId;
+    musicPlayerProvider.currentPlaylist = musicPlayerProvider.songList;
+
+    final index = musicPlayerProvider.currentPlaylist.indexWhere((songOfList) => songOfList.id == song.id );
+    audioPlayer.open(
+      Playlist(
+        audios: [
+          ...musicPlayerProvider.currentPlaylist.map((song) => Audio.file(
+              song.data,
+              metas: Metas(
+                album: song.album,
+                artist: song.artist,
+                title: song.title,
+                id: song.id.toString(),
+                image: MetasImage.file('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg'),
+                onImageLoadFail: const MetasImage.asset('assets/images/background.jpg'),
+              )
+            )
+          )
+        ],
+        startIndex: index,
+      ),
+      showNotification: true,
+      headPhoneStrategy: HeadPhoneStrategy.pauseOnUnplugPlayOnPlug,
+      playInBackground: PlayInBackground.enabled,
+      notificationSettings: NotificationSettings(
+        customStopAction: (player) {
+          player.stop();
+          player.dispose();
+          if( Platform.isAndroid ) {
+            SystemNavigator.pop();
+          } else {
+            exit(0);
+          }
+        },
+      ),
+      autoStart: false
+    );
+
+    audioPlayer.currentPosition.listen((duration) async {
+      audioControlProvider.currentDuration = duration;
+    });
+
+    audioPlayer.playlistAudioFinished.listen((playing) {
+      if( musicPlayerProvider.songPlayed.title == song.title || !playing.hasNext ) return;
+      
+      audioControlProvider.currentIndex = playing.playlist.nextIndex ?? audioControlProvider.currentIndex + 1;
+      musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ audioControlProvider.currentIndex ];
+      UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
+    });
+  }
 
   static void songPlayAndPause(
     BuildContext context,
@@ -100,9 +160,11 @@ class MusicActions {
         
         audioControlProvider.currentIndex = playing.playlist.nextIndex ?? audioControlProvider.currentIndex + 1;
         musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ audioControlProvider.currentIndex ];
+        UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
       });
 
       musicPlayerProvider.songPlayed = song;
+      UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
     } else {
       audioPlayer.seek( const Duration( seconds: 0 ));
     }
@@ -140,6 +202,7 @@ class MusicActions {
               audioPlayer.playlistPlayAtIndex(i);
               audioControlProvider.currentIndex = i;
               musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[i];
+              UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
               Navigator.pop(ctx);
             },            
           );

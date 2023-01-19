@@ -31,4 +31,13 @@ class UserPreferences {
   set favoriteSongList(List<String> value) {
     _prefs.setStringList('favoriteSongList', value);
   }
+
+  // GET y SET LastSongId.
+  int get lastSongId {
+    return _prefs.getInt('lastSongId') ?? 0;
+  }
+
+  set lastSongId(int value) {
+    _prefs.setInt('lastSongId', value);
+  }
 }

@@ -12,9 +12,7 @@ class MusicPlayerProvider extends ChangeNotifier {
 
   final OnAudioQuery onAudioQuery = OnAudioQuery();
 
-  SongModel _songPlayed = SongModel({
-    '_id': 0
-  });
+  SongModel _songPlayed = SongModel({ '_id': 0 });
   
   String appDirectory = '';
   bool isLoading = false;
@@ -73,7 +71,7 @@ class MusicPlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> getAllSongs({ bool forceCreatingArtworks = false }) async {
+  Future<void> getAllSongs({ BuildContext? context,  bool forceCreatingArtworks = false }) async {
     final createArtworks = ( !UserPreferences().isFirstTime || forceCreatingArtworks );
 
     isLoading = true;
@@ -132,7 +130,7 @@ class MusicPlayerProvider extends ChangeNotifier {
   Future<void> searchByArtistId(int artistId, { bool force = false }) async {
     
     if( artistCollection.containsKey(artistId) && !force ) return;
-    
+
     artistCollection[artistId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.ARTIST_ID, artistId );
   }
 

@@ -309,6 +309,7 @@ class _MusicControls extends StatelessWidget {
                   if( audioPlayer.currentLoopMode == LoopMode.none && controlProvider.currentIndex > 0 ) {
                     controlProvider.currentIndex -= 1;
                     musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[controlProvider.currentIndex];
+                    UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
                     audioPlayer.previous();
                   }
                 },
@@ -361,6 +362,7 @@ class _MusicControls extends StatelessWidget {
                   if( audioPlayer.currentLoopMode == LoopMode.none && controlProvider.currentIndex <= musicPlayerProvider.currentPlaylist.length - 2 ) {
                     controlProvider.currentIndex += 1;
                     musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[controlProvider.currentIndex];
+                    UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
                     audioPlayer.next();
                   }
                 },

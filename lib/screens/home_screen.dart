@@ -1,65 +1,100 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:music_player_app/helpers/null_extension.dart';
-
-import 'package:music_player_app/screens/tabs/favorite_screen.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../audio_player_handler.dart';
 import '../helpers/custom_snackbar.dart';
+import '../helpers/music_actions.dart';
+import '../helpers/null_extension.dart';
 import '../providers/music_player_provider.dart';
 import '../search/search_delegate.dart';
+import '../share_prefs/user_preferences.dart';
 import '../theme/app_theme.dart';
 import '../widgets/create_playlist_dialog.dart';
 import '../widgets/widgets.dart';
 import 'screens.dart';
+import 'tabs/favorite_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   
   const HomeScreen({Key? key}) : super(key: key);
 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   
+  @override
+  void initState() {
+    initSong();
+    super.initState();
+  }
+
+  void initSong() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        final int lastSongId = UserPreferences().lastSongId;
+        final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
+        
+        if( lastSongId == 0 ) return;
+          
+        musicPlayerProvider.songPlayed = musicPlayerProvider.songList.firstWhere(
+          (song) => song.id == lastSongId,
+          orElse: () => SongModel({ '_id': 0 })
+        );
+
+        if( musicPlayerProvider.songPlayed.id == 0 ) return;
+        
+        MusicActions.initSongs(context, musicPlayerProvider.songPlayed, 'current-song-${ musicPlayerProvider.songPlayed.id }');
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light.copyWith(
-        systemNavigationBarColor: AppTheme.primaryColor,
-      ),
-      child: DefaultTabController(
-        length: 6,
-        child: Scaffold(
-          body: const _Body(),
-          floatingActionButton: FloatingActionButton(
-            heroTag: 'fab',
-            backgroundColor: AppTheme.accentColor,
-            child: const Icon(Icons.add, color: Colors.black),
-            onPressed: () async {
-              
-              final CreatePlaylistResp dialogResp = await showDialog<CreatePlaylistResp>(
-                context: context,
-                builder: (_) => CreatePlaylistDialog()
-              ) ?? const CreatePlaylistResp(isCancel: true);
     
-              if( dialogResp.isCancel ) return;
-    
-              final onAudioQuery = audioPlayerHandler<OnAudioQuery>();
-              await onAudioQuery.createPlaylist(dialogResp.playlistName.value());
-              
-              showSnackbar(
-                context: context,
-                message: '¡La playlist ${ dialogResp.playlistName.value() } fue agregada con éxito!'
-              );
-              
-              musicPlayerProvider.refreshPlaylist();
-            }
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.light.copyWith(
+          systemNavigationBarColor: AppTheme.primaryColor,
+        ),
+        child: DefaultTabController(
+          length: 6,
+          child: Scaffold(
+            body: const _Body(),
+            floatingActionButton: FloatingActionButton(
+              heroTag: 'fab',
+              backgroundColor: AppTheme.accentColor,
+              child: const Icon(Icons.add, color: Colors.black),
+              onPressed: () async {
+                
+                final CreatePlaylistResp dialogResp = await showDialog<CreatePlaylistResp>(
+                  context: context,
+                  builder: (_) => CreatePlaylistDialog()
+                ) ?? const CreatePlaylistResp(isCancel: true);
+      
+                if( dialogResp.isCancel ) return;
+      
+                final onAudioQuery = audioPlayerHandler<OnAudioQuery>();
+                await onAudioQuery.createPlaylist(dialogResp.playlistName.value());
+                
+                showSnackbar(
+                  context: context,
+                  message: '¡La playlist ${ dialogResp.playlistName.value() } fue agregada con éxito!'
+                );
+                
+                musicPlayerProvider.refreshPlaylist();
+              }
+            ),
+            bottomNavigationBar: (musicPlayerProvider.isLoading || ( musicPlayerProvider.songPlayed.title ?? '').isEmpty)
+              ? const CustomBottomNavigationBar()
+              : const CurrentSongTile(showBottomBar: true)
           ),
-          bottomNavigationBar: (musicPlayerProvider.isLoading || ( musicPlayerProvider.songPlayed.title ?? '').isEmpty)
-            ? const CustomBottomNavigationBar()
-            : const CurrentSongTile(showBottomBar: true)
         ),
       ),
     );
