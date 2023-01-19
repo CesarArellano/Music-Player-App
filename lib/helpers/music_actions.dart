@@ -27,7 +27,14 @@ enum TypePlaylist {
 }
 class MusicActions {
 
-  static void songPlayAndPause(BuildContext context, SongModel song, TypePlaylist type, { required String heroId, id = 0 }) async {
+  static void songPlayAndPause(
+    BuildContext context,
+    SongModel song,
+    TypePlaylist type, { 
+      required String heroId,
+      int id = 0,
+    }
+  ) async {
     final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
@@ -102,15 +109,19 @@ class MusicActions {
 
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const SongPlayedScreen())
+      MaterialPageRoute(
+        builder: (_) => SongPlayedScreen(
+          playlistId: ( TypePlaylist.playlist == type ) ? id : null,
+          isPlaylist: ( TypePlaylist.playlist == type ),
+        )
+      )
     );
   }
 
   static void showCurrentPlayList(BuildContext context, ){
     final audioPlayer = audioPlayerHandler.get<AssetsAudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
-    final currentSong = audioPlayer.getCurrentAudioTitle;
-
+    
     showModalBottomSheet(
       context: context,
       builder: ( ctx ) => ListView.builder(
@@ -119,7 +130,7 @@ class MusicActions {
         itemBuilder: (_, int i) {
           final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
           final audio = audioPlayer.playlist?.audios[i];
-          final currentColor = ( currentSong == audio?.metas.title ) ? AppTheme.accentColor : Colors.white;
+          final currentColor = ( musicPlayerProvider.songPlayed.id.toString() == audio?.metas.id ) ? AppTheme.accentColor : Colors.white;
           
           return ListTile(
             leading: Icon( Icons.music_note, color: currentColor ),

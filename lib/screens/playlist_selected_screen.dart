@@ -25,13 +25,23 @@ class PlaylistSelectedScreen extends StatefulWidget {
 }
 
 class _PlaylistSelectedScreenState extends State<PlaylistSelectedScreen> {
+  
+  bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
-    musicPlayerProvider.searchByPlaylistId( widget.playlist.id, force: (musicPlayerProvider.playlistCollection[widget.playlist.id]?.length ?? 0) != widget.playlist.numOfSongs);
+    getSongs();
   }
   
+  void getSongs() {
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await  musicPlayerProvider.searchByPlaylistId( widget.playlist.id, force: (musicPlayerProvider.playlistCollection[widget.playlist.id]?.length ?? 0) != widget.playlist.numOfSongs);
+      setState(() => isLoading = false);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
@@ -43,14 +53,14 @@ class _PlaylistSelectedScreenState extends State<PlaylistSelectedScreen> {
         ), 
         title: Text(widget.playlist.playlist),
       ),
-      body: musicPlayerProvider.isLoading
+      body: isLoading
         ? const Center( child: CircularProgressIndicator() )
         :  musicPlayerProvider.playlistCollection[widget.playlist.id]!.isEmpty
           ? _EmptyList(playlist: widget.playlist)
           : ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: musicPlayerProvider.playlistCollection[widget.playlist.id]!.length,
+              itemCount: ( musicPlayerProvider.playlistCollection[widget.playlist.id] ?? [] ).length,
               itemBuilder: (_, int i) {
                 final song = musicPlayerProvider.playlistCollection[widget.playlist.id]![i];
                 final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');

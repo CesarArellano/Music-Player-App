@@ -125,21 +125,15 @@ class MusicPlayerProvider extends ChangeNotifier {
     if( albumCollection.containsKey(albumId) && !force ) return;
 
     isLoading = true;
-    notifyListeners();
     albumCollection[albumId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.ALBUM_ID, albumId );
     isLoading = false;
-    notifyListeners();
   }
 
   Future<void> searchByArtistId(int artistId, { bool force = false }) async {
     
     if( artistCollection.containsKey(artistId) && !force ) return;
-
-    isLoading = true;
-    notifyListeners();
+    
     artistCollection[artistId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.ARTIST_ID, artistId );
-    isLoading = false;
-    notifyListeners();
   }
 
   Future<void> searchByGenreId(int genreId, { bool force = false }) async {

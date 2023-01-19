@@ -26,6 +26,7 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
 
   final ScrollController _scrollController = ScrollController();
   String? appBarTitle;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -46,7 +47,10 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
   }
 
   void getSongs() {
-    Provider.of<MusicPlayerProvider>(context, listen: false).searchByArtistId( widget.artistSelected.id );
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Provider.of<MusicPlayerProvider>(context, listen: false).searchByArtistId( widget.artistSelected.id );
+      setState(() => isLoading = false);
+    });
   }
 
   @override
@@ -70,8 +74,8 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
           ),
         ],
       ),
-      body: musicPlayerProvider.isLoading
-        ? const Center( child: CircularProgressIndicator(color: Colors.white) )
+      body: isLoading
+        ? const Center( child: CircularProgressIndicator() )
         : ListView(
           controller: _scrollController,
           children: [
@@ -112,7 +116,7 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: musicPlayerProvider.artistCollection[widget.artistSelected.id]!.length,
+              itemCount: ( musicPlayerProvider.artistCollection[widget.artistSelected.id] ?? [] ).length,
               itemBuilder: (_, int i) {
                 final song = musicPlayerProvider.artistCollection[widget.artistSelected.id]![i];
                 final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');

@@ -35,7 +35,6 @@ class MyApp extends StatelessWidget {
         title: 'Music Player App',
         initialRoute: 'home',
         theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
         routes: AppRouter.routes,
         onGenerateRoute: AppRouter.onGenerateRoute,
       ),

@@ -23,7 +23,12 @@ class SongPlayedScreen extends StatefulWidget {
   
   const SongPlayedScreen({
     Key? key,
+    this.isPlaylist = false,
+    this.playlistId
   }) : super(key: key);
+
+  final bool isPlaylist;
+  final int? playlistId;
 
   @override
   State<SongPlayedScreen> createState() => _SongPlayedScreenState();
@@ -80,7 +85,11 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
               onPressed: () {
                 showModalBottomSheet(
                   context: context,
-                  builder:(context) => MoreSongOptionsModal(song: songPlayed)
+                  builder: (_) => MoreSongOptionsModal(
+                    song: songPlayed,
+                    isPlaylist: widget.isPlaylist,
+                    playlistId: widget.playlistId,
+                  )
                 );
               },
             ),
