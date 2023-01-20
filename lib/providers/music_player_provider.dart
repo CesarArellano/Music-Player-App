@@ -122,27 +122,27 @@ class MusicPlayerProvider extends ChangeNotifier {
     
     if( albumCollection.containsKey(albumId) && !force ) return;
 
-    isLoading = true;
-    albumCollection[albumId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.ALBUM_ID, albumId );
-    isLoading = false;
+    List<SongModel> tempAlbumList = await onAudioQuery.queryAudiosFrom( AudiosFromType.ALBUM_ID, albumId );
+    tempAlbumList.sort((a, b) => a.id.compareTo(b.id));
+    albumCollection[albumId] = tempAlbumList;
   }
 
   Future<void> searchByArtistId(int artistId, { bool force = false }) async {
     
     if( artistCollection.containsKey(artistId) && !force ) return;
-
-    artistCollection[artistId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.ARTIST_ID, artistId );
+    
+    List<SongModel> tempArtistList = await onAudioQuery.queryAudiosFrom( AudiosFromType.ARTIST_ID, artistId );
+    tempArtistList.sort((a, b) => a.id.compareTo(b.id));
+    artistCollection[artistId] = tempArtistList;
   }
 
   Future<void> searchByGenreId(int genreId, { bool force = false }) async {
     
     if( genreCollection.containsKey(genreId) && !force ) return;
 
-    isLoading = true;
-    notifyListeners();
-    genreCollection[genreId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.GENRE_ID, genreId );
-    isLoading = false;
-    notifyListeners();
+    List<SongModel> tempGenreList = await onAudioQuery.queryAudiosFrom( AudiosFromType.GENRE_ID, genreId );
+    tempGenreList.sort((a, b) => a.id.compareTo(b.id));
+    genreCollection[genreId] = tempGenreList;
   }
 
   Future<void> searchByPlaylistId(int playlistId, { bool force = false }) async {

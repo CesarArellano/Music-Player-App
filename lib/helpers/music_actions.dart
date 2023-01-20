@@ -25,7 +25,7 @@ enum TypePlaylist {
   artist,
   genre,
   playlist,
-  favorites
+  favorites,
 }
 class MusicActions {
 
@@ -56,7 +56,8 @@ class MusicActions {
 
     audioPlayer.playlistAudioFinished.listen((playing) {
       if( musicPlayerProvider.songPlayed.title == song.title || !playing.hasNext ) return;
-      
+      if( audioPlayer.loopMode.value == LoopMode.single ) return;
+
       audioControlProvider.currentIndex = playing.playlist.nextIndex ?? audioControlProvider.currentIndex + 1;
       musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ audioControlProvider.currentIndex ];
       UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
@@ -70,14 +71,14 @@ class MusicActions {
       required String heroId,
       int id = 0,
     }
-  ) async {
+  ) {
     
     final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
     
     Provider.of<UIProvider>(context, listen: false).currentHeroId = heroId;
-    
+
     switch (type) {
       case TypePlaylist.songs:
         musicPlayerProvider.currentPlaylist = musicPlayerProvider.songList;
@@ -121,10 +122,12 @@ class MusicActions {
 
       audioPlayer.playlistAudioFinished.listen((playing) {
         if( musicPlayerProvider.songPlayed.title == song.title || !playing.hasNext ) return;
-        
+        if( audioPlayer.loopMode.value == LoopMode.single ) return;
+
         audioControlProvider.currentIndex = playing.playlist.nextIndex ?? audioControlProvider.currentIndex + 1;
         musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ audioControlProvider.currentIndex ];
         UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
+
       });
 
       musicPlayerProvider.songPlayed = song;
