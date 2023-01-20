@@ -58,6 +58,7 @@ class MusicActions {
         startIndex: index,
       ),
       showNotification: true,
+      seek: Duration(milliseconds: UserPreferences().lastSongDuration ),
       headPhoneStrategy: HeadPhoneStrategy.pauseOnUnplugPlayOnPlug,
       playInBackground: PlayInBackground.enabled,
       notificationSettings: NotificationSettings(
@@ -76,6 +77,7 @@ class MusicActions {
 
     audioPlayer.currentPosition.listen((duration) async {
       audioControlProvider.currentDuration = duration;
+      UserPreferences().lastSongDuration = duration.inMilliseconds;
     });
 
     audioPlayer.playlistAudioFinished.listen((playing) {
@@ -153,6 +155,7 @@ class MusicActions {
       
       audioPlayer.currentPosition.listen((duration) {
         audioControlProvider.currentDuration = duration;
+        UserPreferences().lastSongDuration = duration.inMilliseconds;
       });
 
       audioPlayer.playlistAudioFinished.listen((playing) {
