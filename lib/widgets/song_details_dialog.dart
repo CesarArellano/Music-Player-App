@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:music_player_app/helpers/null_extension.dart';
 import 'package:music_player_app/theme/app_theme.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
@@ -22,7 +23,7 @@ class SongDetailsDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 10),
-          _RowLabel(label: 'Title: ', value: song.title ?? ''),
+          _RowLabel(label: 'Title: ', value: song.title.value()),
           const SizedBox(height: 15),
           _RowLabel(label: 'Album: ', value: '${ song.album }'),
           const SizedBox(height: 15),

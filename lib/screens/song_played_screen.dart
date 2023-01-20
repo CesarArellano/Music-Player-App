@@ -6,6 +6,7 @@ import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:marquee/marquee.dart';
+import 'package:music_player_app/helpers/null_extension.dart';
 import 'package:music_player_app/theme/app_theme.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
@@ -55,7 +56,7 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final songPlayed = musicPlayerProvider.songPlayed;
     final imageFile = File('${ musicPlayerProvider.appDirectory }/${ songPlayed.albumId }.jpg');
-      
+    
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
         systemNavigationBarColor: Colors.black,
@@ -70,7 +71,7 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
               const SizedBox(height: 10,),
               const Text('PLAYING FROM', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppTheme.lightTextColor, letterSpacing: 1) ),
               const SizedBox(height: 4),
-              Text(songPlayed.album ?? 'No Album', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+              Text(songPlayed.album.valueEmpty('No Album'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
             ]
           ),
           leading: IconButton(
@@ -206,10 +207,10 @@ class _SongPlayedBody extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Flexible (
-                            child: ( (songPlayed.title ?? '').length > 25 )
+                            child: ( songPlayed.title.value().length > 25 )
                             ? Marquee(
                               velocity: 50.0,
-                              text: songPlayed.title ?? '',
+                              text: songPlayed.title.value(),
                               blankSpace: 30,
                               fadingEdgeEndFraction: 0.1,
                               fadingEdgeStartFraction: 0.1,
@@ -219,15 +220,15 @@ class _SongPlayedBody extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 const SizedBox(height: 10),
-                                Text( songPlayed.title ?? '', style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18) ),
+                                Text( songPlayed.title.value(), style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18) ),
                                 const SizedBox(height: 9)
                               ],
                             )
                           ),
-                          if( (songPlayed.artist ?? '').length > 30 )
+                          if( songPlayed.artist.value().length > 30 )
                             const SizedBox(height: 10,),
                           Text(
-                            songPlayed.artist ?? 'No Artist',
+                            songPlayed.artist.valueEmpty('No Artist'),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 16, color: Colors.white54)

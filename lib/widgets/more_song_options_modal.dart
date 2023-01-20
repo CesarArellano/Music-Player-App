@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:music_player_app/audio_player_handler.dart';
+import 'package:music_player_app/helpers/null_extension.dart';
 import 'package:music_player_app/widgets/custom_list_tile.dart';
 import 'package:music_player_app/widgets/song_details_dialog.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -49,8 +50,8 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
       children: [
         CustomListTile(
           artworkId: songPlayed.id,
-          title: songPlayed.title ?? '',
-          subtitle: '${ songPlayed.artist ?? 'No Artist' } • ${ duration.getTimeString() }',
+          title: songPlayed.title.value(),
+          subtitle: '${ songPlayed.artist.valueEmpty('No Artist') } • ${ duration.getTimeString() }',
           imageFile: imageFile,
           trailing: IconButton(
             onPressed: () {
@@ -126,7 +127,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
 
             await Share.shareXFiles(
               filesToShare,
-              text: 'I share you the song ${ widget.song.title ?? '' }'
+              text: 'I share you the song ${ widget.song.title.value() }'
             );
           },
         ),
@@ -174,10 +175,12 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                   await musicPlayerProvider.searchByArtistId(artistId, force: true);
                 }
 
-                return showSnackbar(
+                showSnackbar(
                   context: context,
                   message: 'Se eliminó exitosamente'
                 );
+                
+                return;
               }
               showSnackbar(
                 context: context,

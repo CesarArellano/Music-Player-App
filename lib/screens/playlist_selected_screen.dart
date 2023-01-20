@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:music_player_app/helpers/null_extension.dart';
 import 'package:music_player_app/theme/app_theme.dart';
 import 'package:music_player_app/widgets/custom_icon_text_button.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -65,11 +66,12 @@ class _PlaylistSelectedScreenState extends State<PlaylistSelectedScreen> {
                 final song = musicPlayerProvider.playlistCollection[widget.playlist.id]![i];
                 final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
                 final heroId = 'playlist-song-${ song.id }';
+                
                 return RippleTile(
                   child: CustomListTile(
                     artworkId: song.id,
-                    title: song.title ?? '',
-                    subtitle: song.artist ?? 'No Artist',
+                    title: song.title.value(),
+                    subtitle: song.artist.valueEmpty('No Artist'),
                     imageFile: imageFile,
                     tag: heroId,
                   ),
@@ -87,7 +89,7 @@ class _PlaylistSelectedScreenState extends State<PlaylistSelectedScreen> {
                 );
               },
             ),
-      bottomNavigationBar: (musicPlayerProvider.isLoading || ( musicPlayerProvider.songPlayed.title ?? '').isEmpty)
+      bottomNavigationBar: (musicPlayerProvider.isLoading || musicPlayerProvider.songPlayed.title.value().isEmpty)
           ? null
           : const CurrentSongTile()
     );

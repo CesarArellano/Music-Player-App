@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:music_player_app/helpers/null_extension.dart';
 import 'package:music_player_app/theme/app_theme.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
@@ -125,8 +126,8 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
                 return RippleTile(
                   child: CustomListTile(
                     imageFile: imageFile,
-                    title: song.title ?? '',
-                    subtitle: song.artist ?? 'No Artist',
+                    title: song.title.value(),
+                    subtitle: song.artist.valueEmpty('No Artist'),
                     artworkId: song.id,
                     tag: heroId,
                   ),
@@ -145,7 +146,7 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
             const SizedBox(height: 5),
           ],
         ),
-      bottomNavigationBar: (musicPlayerProvider.isLoading || ( musicPlayerProvider.songPlayed.title ?? '').isEmpty)
+      bottomNavigationBar: (musicPlayerProvider.isLoading || musicPlayerProvider.songPlayed.title.value().isEmpty)
           ? null
           : const CurrentSongTile()
     );

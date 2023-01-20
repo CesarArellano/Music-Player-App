@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
+import 'package:music_player_app/helpers/null_extension.dart';
 import 'package:music_player_app/providers/ui_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -136,13 +137,13 @@ class _SelectorSongTitle extends StatelessWidget {
             }
           ),
           title: Text(
-            songPlayed.title ?? '', 
+            songPlayed.title.value(), 
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 15)
           ),
           subtitle: Text(
-            "${ songPlayed.artist ?? 'No artist' } • ${ songPlayed.album }",
+            "${ songPlayed.artist.valueEmpty('No Artist')} • ${ songPlayed.album }",
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontSize: 12, color: AppTheme.lightTextColor)

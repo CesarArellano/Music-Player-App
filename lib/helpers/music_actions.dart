@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:music_player_app/helpers/null_extension.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -33,46 +34,19 @@ class MusicActions {
     final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
-    final uiProvider = Provider.of<UIProvider>(context, listen: false);
+    Provider.of<UIProvider>(context, listen: false).currentHeroId = heroId;
     
-    uiProvider.currentHeroId = heroId;
     musicPlayerProvider.currentPlaylist = musicPlayerProvider.songList;
 
     final index = musicPlayerProvider.currentPlaylist.indexWhere((songOfList) => songOfList.id == song.id );
-    audioPlayer.open(
-      Playlist(
-        audios: [
-          ...musicPlayerProvider.currentPlaylist.map((song) => Audio.file(
-              song.data,
-              metas: Metas(
-                album: song.album,
-                artist: song.artist,
-                title: song.title,
-                id: song.id.toString(),
-                image: MetasImage.file('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg'),
-                onImageLoadFail: const MetasImage.asset('assets/images/background.jpg'),
-              )
-            )
-          )
-        ],
-        startIndex: index,
-      ),
-      showNotification: true,
-      seek: Duration(milliseconds: UserPreferences().lastSongDuration ),
-      headPhoneStrategy: HeadPhoneStrategy.pauseOnUnplugPlayOnPlug,
-      playInBackground: PlayInBackground.enabled,
-      notificationSettings: NotificationSettings(
-        customStopAction: (player) {
-          player.stop();
-          player.dispose();
-          if( Platform.isAndroid ) {
-            SystemNavigator.pop();
-          } else {
-            exit(0);
-          }
-        },
-      ),
-      autoStart: false
+
+    _openAudios(
+      index: index,
+      autoStart: false,
+      audioPlayer: audioPlayer,
+      appDirectory: musicPlayerProvider.appDirectory,
+      currentPlaylist: musicPlayerProvider.currentPlaylist,
+      seek: Duration(milliseconds: UserPreferences().lastSongDuration),
     );
 
     audioPlayer.currentPosition.listen((duration) async {
@@ -97,60 +71,47 @@ class MusicActions {
       int id = 0,
     }
   ) async {
+    
     final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
-    final uiProvider = Provider.of<UIProvider>(context, listen: false);
-    uiProvider.currentHeroId = heroId;
     
-    musicPlayerProvider.currentPlaylist = ( type == TypePlaylist.songs )
-      ? musicPlayerProvider.songList
-      : ( type == TypePlaylist.album)
-        ? musicPlayerProvider.albumCollection[id]!
-        : ( type == TypePlaylist.artist) 
-          ? musicPlayerProvider.artistCollection[id]!
-          : ( type == TypePlaylist.playlist) 
-            ? musicPlayerProvider.playlistCollection[id]!
-            : ( type == TypePlaylist.genre) 
-              ? musicPlayerProvider.genreCollection[id]!
-              : musicPlayerProvider.favoriteList;
+    Provider.of<UIProvider>(context, listen: false).currentHeroId = heroId;
+    
+    switch (type) {
+      case TypePlaylist.songs:
+        musicPlayerProvider.currentPlaylist = musicPlayerProvider.songList;
+        break;
+      case TypePlaylist.album:
+        musicPlayerProvider.currentPlaylist = musicPlayerProvider.albumCollection[id].value();
+        break;
+      case TypePlaylist.artist:
+        musicPlayerProvider.currentPlaylist = musicPlayerProvider.artistCollection[id].value();
+        break;
+      case TypePlaylist.playlist:
+        musicPlayerProvider.currentPlaylist = musicPlayerProvider.playlistCollection[id].value();
+        break;
+      case TypePlaylist.genre:
+        musicPlayerProvider.currentPlaylist = musicPlayerProvider.genreCollection[id].value();
+        break;
+      case TypePlaylist.favorites:
+        musicPlayerProvider.currentPlaylist = musicPlayerProvider.favoriteList;
+        break;
+      default:
+        musicPlayerProvider.currentPlaylist = musicPlayerProvider.songList;
+        break;
+    }
 
     final index = musicPlayerProvider.currentPlaylist.indexWhere((songOfList) => songOfList.id == song.id );
 
     if( musicPlayerProvider.songPlayed.id != song.id ) {
       audioPlayer.stop();
-      audioPlayer.open(
-        Playlist(
-          audios: [
-            ...musicPlayerProvider.currentPlaylist.map((song) => Audio.file(
-                song.data,
-                metas: Metas(
-                  album: song.album,
-                  artist: song.artist,
-                  title: song.title,
-                  id: song.id.toString(),
-                  image: MetasImage.file('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg'),
-                  onImageLoadFail: const MetasImage.asset('assets/images/background.jpg'),
-                )
-              )
-            )
-          ],
-          startIndex: index,
-        ),
-        showNotification: true,
-        headPhoneStrategy: HeadPhoneStrategy.pauseOnUnplugPlayOnPlug,
-        playInBackground: PlayInBackground.enabled,
-        notificationSettings: NotificationSettings(
-          customStopAction: (player) {
-            player.stop();
-            player.dispose();
-            if( Platform.isAndroid ) {
-              SystemNavigator.pop();
-            } else {
-              exit(0);
-            }
-          },
-        )
+      
+      _openAudios(
+        index: index,
+        audioPlayer: audioPlayer,
+        appDirectory: musicPlayerProvider.appDirectory,
+        currentPlaylist: musicPlayerProvider.currentPlaylist,
       );
       
       audioPlayer.currentPosition.listen((duration) {
@@ -240,17 +201,48 @@ class MusicActions {
     }
   }
 
-  // static String? getArtworkPath(String uri) {
-  //   if( uri.isEmpty ) return null;
-    
-  //   final pathSegments = uri.split('/');
-  //   String finalPath = '';
-    
-  //   for(int i = 0; i < pathSegments.length; i++) {
-  //     if( i + 1 == pathSegments.length ) break;
-  //     finalPath += '/${ pathSegments[i] }';
-  //   }
-    
-  //   return '$finalPath/cover.jpg';   
-  // }
+  static void _openAudios({
+    required AssetsAudioPlayer audioPlayer,
+    required List<SongModel> currentPlaylist,
+    required String appDirectory,
+    required int index,
+    bool autoStart = true,
+    Duration? seek
+  }) {
+    audioPlayer.open(
+      Playlist(
+        audios: [
+          ...currentPlaylist.map((song) => Audio.file(
+              song.data,
+              metas: Metas(
+                album: song.album,
+                artist: song.artist,
+                title: song.title,
+                id: song.id.toString(),
+                image: MetasImage.file('$appDirectory/${ song.albumId }.jpg'),
+                onImageLoadFail: const MetasImage.asset('assets/images/background.jpg'),
+              )
+            )
+          )
+        ],
+        startIndex: index,
+      ),
+      seek: seek,
+      autoStart: autoStart,
+      showNotification: true,
+      headPhoneStrategy: HeadPhoneStrategy.pauseOnUnplugPlayOnPlug,
+      playInBackground: PlayInBackground.enabled,
+      notificationSettings: NotificationSettings(
+        customStopAction: (player) {
+          player.stop();
+          player.dispose();
+          if( Platform.isAndroid ) {
+            SystemNavigator.pop();
+          } else {
+            exit(0);
+          }
+        },
+      )
+    );
+  }
 }

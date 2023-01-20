@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:music_player_app/helpers/null_extension.dart';
 import 'package:music_player_app/theme/app_theme.dart';
 import 'package:on_audio_query/on_audio_query.dart' show SongModel;
 import 'package:provider/provider.dart';
@@ -108,12 +109,12 @@ class MusicSearchDelegate extends SearchDelegate {
   Widget _songItem(BuildContext context, SongModel song, MusicPlayerProvider musicPlayerProvider ) {
     final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
     final heroId = 'search-song-${ song.id }';
-
+    
     return RippleTile(
       child: CustomListTile(
         imageFile: imageFile,
-        title: song.title ?? '',
-        subtitle: song.artist ?? 'No Artist',
+        title: song.title.value(),
+        subtitle: song.artist.valueEmpty('No Artist'),
         artworkId: song.id,
         tag: heroId,
       ),

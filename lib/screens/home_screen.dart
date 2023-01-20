@@ -1,3 +1,4 @@
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -6,11 +7,9 @@ import 'package:share_plus/share_plus.dart';
 
 import '../audio_player_handler.dart';
 import '../helpers/custom_snackbar.dart';
-import '../helpers/music_actions.dart';
 import '../helpers/null_extension.dart';
 import '../providers/music_player_provider.dart';
 import '../search/search_delegate.dart';
-import '../share_prefs/user_preferences.dart';
 import '../theme/app_theme.dart';
 import '../widgets/create_playlist_dialog.dart';
 import '../widgets/widgets.dart';
@@ -26,39 +25,40 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  
-  @override
-  void initState() {
-    initSong();
-    super.initState();
-  }
-
-  void initSong() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 500), () {
-        final int lastSongId = UserPreferences().lastSongId;
-        final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
-        
-        if( lastSongId == 0 ) return;
-          
-        musicPlayerProvider.songPlayed = musicPlayerProvider.songList.firstWhere(
-          (song) => song.id == lastSongId,
-          orElse: () => SongModel({ '_id': 0 })
-        );
-
-        if( musicPlayerProvider.songPlayed.id == 0 ) return;
-        
-        MusicActions.initSongs(context, musicPlayerProvider.songPlayed, 'current-song-${ musicPlayerProvider.songPlayed.id }');
-      });
-    });
-  }
+  bool _isSnackbarActive = false;
 
   @override
   Widget build(BuildContext context) {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     
     return WillPopScope(
-      onWillPop: () async => false,
+      onWillPop: () async {
+        if( _isSnackbarActive ) {
+          audioPlayerHandler<AssetsAudioPlayer>().stop();
+          audioPlayerHandler<AssetsAudioPlayer>().dispose();
+          SystemNavigator.pop();
+          return true;
+        }
+
+        _isSnackbarActive = true;
+        
+        showSnackbar(
+          context: context,
+          message: 'Please back again to exit',
+          snackBarAction: SnackBarAction(
+            label: 'EXIT',
+            textColor: AppTheme.accentColor,
+            onPressed: () {
+              audioPlayerHandler<AssetsAudioPlayer>().stop();
+              audioPlayerHandler<AssetsAudioPlayer>().dispose();
+              SystemNavigator.pop();
+            },
+          )
+        ).closed.then((_) => _isSnackbarActive = false);
+
+        await Future.delayed(const Duration(seconds: 4));
+        return false;
+      },
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.light.copyWith(
           systemNavigationBarColor: AppTheme.primaryColor,
@@ -91,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 musicPlayerProvider.refreshPlaylist();
               }
             ),
-            bottomNavigationBar: (musicPlayerProvider.isLoading || ( musicPlayerProvider.songPlayed.title ?? '').isEmpty)
+            bottomNavigationBar: (musicPlayerProvider.isLoading || ( musicPlayerProvider.songPlayed.title.value() ).isEmpty)
               ? const CustomBottomNavigationBar()
               : const CurrentSongTile(showBottomBar: true)
           ),

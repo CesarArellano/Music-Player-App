@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:music_player_app/helpers/null_extension.dart';
 import 'package:music_player_app/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
@@ -45,8 +46,8 @@ class _FavoriteScreenState extends State<FavoriteScreen> with AutomaticKeepAlive
                 );
               },
               child: CustomListTile(
-                title: song.title ?? '',
-                subtitle: song.artist ?? 'No Artist',                
+                title: song.title.value(),
+                subtitle: song.artist.valueEmpty('No Artist'),                
                 imageFile: imageFile,
                 artworkId: song.id,
                 tag: heroId,

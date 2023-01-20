@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:music_player_app/helpers/null_extension.dart';
 
 import '../theme/app_theme.dart';
 
@@ -27,9 +28,7 @@ class CreatePlaylistDialog extends StatelessWidget {
               errorStyle: TextStyle(color: Colors.white)
             ),
             controller: _namePlaylistCtrl,
-            onSaved: (value) {
-              namePlaylist = (value ?? '').trim();
-            },
+            onSaved: (value) => namePlaylist = value.value().trim(),
             validator: (value) {
               if( value == null || value.isEmpty ){
                 return 'Ingrese un nombre';

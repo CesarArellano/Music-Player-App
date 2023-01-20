@@ -1,11 +1,14 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:music_player_app/widgets/widgets.dart';
+import 'package:music_player_app/helpers/null_extension.dart';
+import 'package:on_audio_query/on_audio_query.dart' show SongModel;
 import 'package:provider/provider.dart';
 
 import '../../helpers/music_actions.dart';
 import '../../providers/music_player_provider.dart';
+import '../../share_prefs/user_preferences.dart';
+import '../../widgets/widgets.dart';
 
 class SongsScreen extends StatefulWidget {
   
@@ -16,9 +19,35 @@ class SongsScreen extends StatefulWidget {
 }
 
 class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClientMixin {
+  
   @override
   bool get wantKeepAlive => true;
 
+  @override
+  void initState() {
+    initSong();
+    super.initState();
+  }
+
+  void initSong() {
+    WidgetsBinding.instance.addPostFrameCallback(( _ ) {
+      Future.delayed(const Duration(milliseconds: 400), () {
+        final int lastSongId = UserPreferences().lastSongId;
+        final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
+        
+        if( lastSongId == 0 ) return;
+          
+        musicPlayerProvider.songPlayed = musicPlayerProvider.songList.firstWhere(
+          (song) => song.id == lastSongId,
+          orElse: () => SongModel({ '_id': 0 })
+        );
+
+        if( musicPlayerProvider.songPlayed.id == 0 ) return;
+        
+        MusicActions.initSongs(context, musicPlayerProvider.songPlayed, 'current-song-${ musicPlayerProvider.songPlayed.id }');
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,11 +65,11 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
             final song = songList[i];
             final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
             final heroId = 'songs-${ song.id }';
-
+            
             return RippleTile(
               child: CustomListTile(
-                title: song.title ?? '',
-                subtitle: song.artist ?? 'No Artist',
+                title: song.title.value(),
+                subtitle: song.artist.valueEmpty('No Artist'),
                 artworkId: song.id,
                 imageFile: imageFile,
                 tag: heroId,

@@ -1,3 +1,5 @@
+import 'package:on_audio_query/on_audio_query.dart' show SongModel;
+
 bool? nullExtensions;
 
 extension IntNullExtension on int? {
@@ -45,5 +47,12 @@ extension ListExts on List {
   dynamic get firstOrNull2 {
     if (isEmpty) return null;
     return first;
+  }
+}
+
+extension SongModelListExt on List<SongModel>? {
+  List<SongModel> value() {
+    if( this == null ) return [];
+    return this!;
   }
 }

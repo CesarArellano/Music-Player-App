@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:music_player_app/helpers/null_extension.dart';
 import 'package:music_player_app/widgets/custom_icon_text_button.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
@@ -102,7 +103,7 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                         children: [
                           Text(widget.albumSelected.album, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
                           const SizedBox(height: 10),
-                          Text(widget.albumSelected.artist ?? 'No Artist', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppTheme.lightTextColor)),
+                          Text(widget.albumSelected.artist.valueEmpty('No Artist'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppTheme.lightTextColor)),
                           const SizedBox(height: 5),
                           Text(
                             "${ widget.albumSelected.getMap['minyear'] } • ${ widget.albumSelected.numOfSongs } ${ (widget.albumSelected.numOfSongs > 1) ? 'songs' : 'song' }",
@@ -161,8 +162,8 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                           ),
                         ],
                       ),
-                      title: Text(song.title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis),
-                      subtitle: Text(song.artist ?? 'No Artist', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppTheme.lightTextColor, fontSize: 12)),
+                      title: Text(song.title.value(), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      subtitle: Text(song.artist.valueEmpty('No Artist'), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppTheme.lightTextColor, fontSize: 12)),
                     ),
                     onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.album, id: widget.albumSelected.id, heroId: heroId),
                     onLongPress: () {
@@ -178,7 +179,7 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
             ],
           ),
         ),
-      bottomNavigationBar: (musicPlayerProvider.isLoading || ( musicPlayerProvider.songPlayed.title ?? '').isEmpty)
+      bottomNavigationBar: (musicPlayerProvider.isLoading || musicPlayerProvider.songPlayed.title.value().isEmpty)
           ? null
           : const CurrentSongTile()
     );
