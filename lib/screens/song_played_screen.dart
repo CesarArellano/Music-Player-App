@@ -179,7 +179,7 @@ class _SongPlayedBody extends StatelessWidget {
               ),
               SizedBox(height: size.height * 0.05),
               SizedBox(
-                height: size.height * 0.07,
+                height: size.height * 0.08,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -228,7 +228,7 @@ class _SongPlayedBody extends StatelessWidget {
                             )
                           ),
                           if( songPlayed.artist.value().length > 30 )
-                            const SizedBox(height: 10,),
+                            const SizedBox(height: 5),
                           InkWell(
                             onTap: () {
                               final artistId = songPlayed.artistId;
@@ -384,7 +384,7 @@ class _MusicControls extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 child: const Icon( Icons.fast_forward ),
                 onPressed: () async {
-                  final resp = await audioPlayer.next();
+                  final resp = await audioPlayer.next(stopIfLast: true);
                   if( !resp ) return;
                   final currentIndex = musicPlayerProvider.currentPlaylist.indexWhere((song) => song.id.toString() == audioPlayer.current.value?.audio.audio.metas.id);
                   controlProvider.currentIndex = currentIndex;

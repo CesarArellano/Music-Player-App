@@ -11,6 +11,7 @@
         android:usesCleartextTraffic="true"
         android:label="Music Player"
         android:name="${applicationName}"
+        android:requestLegacyExternalStorage="true"
         android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"
