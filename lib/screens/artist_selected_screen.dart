@@ -1,14 +1,18 @@
 import 'dart:io';
 
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:focus_music_player/helpers/null_extension.dart';
+import 'package:focus_music_player/screens/album_selected_screen.dart';
 import 'package:focus_music_player/theme/app_theme.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
 import '../helpers/music_actions.dart';
+import '../models/artist_content_model.dart';
 import '../providers/music_player_provider.dart';
 import '../search/search_delegate.dart';
+import '../widgets/custom_icon_text_button.dart';
 import '../widgets/widgets.dart';
 
 class ArtistSelectedScreen extends StatefulWidget {
@@ -57,6 +61,8 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
   @override
   Widget build(BuildContext context) {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
+    final artistContentModel = musicPlayerProvider.artistCollection[widget.artistSelected.id] ?? ArtistContentModel();
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -65,7 +71,10 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
         ), 
         title: appBarTitle == null 
           ? null
-          : Text(appBarTitle!, maxLines: 1, overflow: TextOverflow.ellipsis),
+          : FadeInUp(
+            duration: const Duration(milliseconds: 350),
+            child: Text(appBarTitle!, maxLines: 1, overflow: TextOverflow.ellipsis)
+          ),
         actions: <Widget>[
           IconButton(
             splashRadius: 20,
@@ -80,46 +89,49 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
         : ListView(
           controller: _scrollController,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: 
-                [
-                  ArtworkImage(
-                    artworkId: widget.artistSelected.id,
-                    type: ArtworkType.ARTIST,
-                    width: 150,
-                    height: 150,
-                    size: 500,
-                  ),
-                  const SizedBox(width: 10),
-                  Flexible(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.artistSelected.artist,
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          "${ widget.artistSelected.numberOfAlbums } ${ (widget.artistSelected.numberOfAlbums ?? 1 ) > 1 ? 'Albums' : 'Album'} • ${ widget.artistSelected.numberOfTracks } ${ ((widget.artistSelected.numberOfTracks ?? 1 ) > 1) ? 'Songs' : 'Song' }",
-                          style: const TextStyle(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.w400)
-                        ),
-                      ],
-                    ),
-                  )
-                ]
-              ),
+            _AlbumHeader(
+              artistSelected: widget.artistSelected,
+              artistContentModel: artistContentModel
             ),
-            const Divider(color: Colors.white54, height: 15),
+            Container(
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                width: double.infinity,
+                height: 50,
+                child: CustomIconTextButton(
+                  label: 'PLAY ALL',
+                  icon: Icons.play_arrow,
+                  onPressed: () {
+                    final song = artistContentModel.songs.first;
+                    final heroId = 'artist-song-${ song.id }';
+
+                    MusicActions.songPlayAndPause(
+                      context,
+                      song,
+                      TypePlaylist.artist,
+                      id: widget.artistSelected.id,
+                      heroId: heroId
+                    );
+                  }
+                ),
+              ),
+            const Padding(
+              padding: EdgeInsets.only(left: 15.0, top: 15),
+              child: Text('Albums', style: TextStyle(fontSize: 16)),
+            ),
+            _AlbumList(
+              artistContentModel: artistContentModel,
+              musicPlayerProvider: musicPlayerProvider,
+            ),
+            const Padding(
+              padding: EdgeInsets.only(left: 15.0, bottom: 5),
+              child: Text('Songs', style: TextStyle(fontSize: 16)),
+            ),
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: ( musicPlayerProvider.artistCollection[widget.artistSelected.id] ?? [] ).length,
+              itemCount: artistContentModel.songs.length,
               itemBuilder: (_, int i) {
-                final song = musicPlayerProvider.artistCollection[widget.artistSelected.id]![i];
+                final song = artistContentModel.songs[i];
                 final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
                 final heroId = 'artist-song-${ song.id }';
 
@@ -149,6 +161,118 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
       bottomNavigationBar: (musicPlayerProvider.isLoading || musicPlayerProvider.songPlayed.title.value().isEmpty)
           ? null
           : const CurrentSongTile()
+    );
+  }
+}
+
+class _AlbumList extends StatelessWidget {
+  const _AlbumList({
+    Key? key,
+    required this.artistContentModel,
+    required this.musicPlayerProvider,
+  }) : super(key: key);
+
+  final ArtistContentModel artistContentModel;
+  final MusicPlayerProvider musicPlayerProvider;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 175,
+      child: ListView.separated(
+        shrinkWrap: true,
+        scrollDirection: Axis.horizontal,
+        itemCount: artistContentModel.albums.length,
+        separatorBuilder: (_ , __) => const SizedBox(width: 5),
+        itemBuilder: (context, i) {
+          final album = artistContentModel.albums[i];
+
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if( i == 0 )
+                const SizedBox(width: 15),
+              RippleTile(
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AlbumSelectedScreen(albumSelected: album))),
+                child: SizedBox(
+                  width: 130,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ArtworkFileImage(
+                        artworkId: album.id,
+                        height: 130,
+                        width: 130,
+                        imageFile: File('${ musicPlayerProvider.appDirectory }/${ album.id }.jpg'),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(album.album, maxLines: 1, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400), overflow: TextOverflow.ellipsis,),
+                      const SizedBox(height: 5),
+                    ],
+                  ),
+                ),
+              ),
+              if( i == artistContentModel.albums.length - 1 )
+                const SizedBox(width: 15),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _AlbumHeader extends StatelessWidget {
+  const _AlbumHeader({
+    Key? key,
+    required this.artistSelected,
+    required this.artistContentModel,
+  }) : super(key: key);
+
+  final ArtistModel artistSelected;
+  final ArtistContentModel artistContentModel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(15.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: 
+        [
+          ArtworkImage(
+            artworkId: artistSelected.id,
+            type: ArtworkType.ARTIST,
+            width: 175,
+            height: 175,
+            size: 500,
+            radius: BorderRadius.circular(2.5),
+          ),
+          const SizedBox(width: 10),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  artistSelected.artist,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  "${ artistSelected.numberOfAlbums } ${ ( artistSelected.numberOfAlbums ?? 1 ) > 1 ? 'Albums' : 'Album'} • ${ artistSelected.numberOfTracks } ${ ((artistSelected.numberOfTracks ?? 1 ) > 1) ? 'Songs' : 'Song' }",
+                  style: const TextStyle(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.w400)
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  artistContentModel.totalDuration,
+                  style: const TextStyle(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.w400)
+                ),
+              ],
+            ),
+          )
+        ]
+      ),
     );
   }
 }

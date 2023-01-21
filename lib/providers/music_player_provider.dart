@@ -1,11 +1,14 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:focus_music_player/helpers/format_extension.dart';
 import 'package:focus_music_player/helpers/music_actions.dart';
 import 'package:focus_music_player/helpers/null_extension.dart';
 import 'package:focus_music_player/share_prefs/user_preferences.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
+
+import '../models/artist_content_model.dart';
 
 
 class MusicPlayerProvider extends ChangeNotifier {
@@ -20,7 +23,7 @@ class MusicPlayerProvider extends ChangeNotifier {
   bool _isShuffling = false;
 
   Map<int, List<SongModel>> albumCollection = {};
-  Map<int, List<SongModel>> artistCollection = {};
+  Map<int, ArtistContentModel> artistCollection = {};
   Map<int, List<SongModel>> genreCollection = {};
   Map<int, List<SongModel>> playlistCollection = {};
 
@@ -124,8 +127,28 @@ class MusicPlayerProvider extends ChangeNotifier {
     if( artistCollection.containsKey(artistId) && !force ) return;
     
     List<SongModel> tempArtistList = await onAudioQuery.queryAudiosFrom( AudiosFromType.ARTIST_ID, artistId );
+    List<int> tempAlbumIds = [];
+    List<AlbumModel> tempAlbums = [];
+    int totalDurationInMilliseconds = 0;
+    
+    for (SongModel song in tempArtistList) {
+      totalDurationInMilliseconds += song.duration ?? 0;
+      if( song.albumId.value() == 0 ) continue;
+      tempAlbumIds = [...tempAlbumIds, song.albumId! ];
+    }
+
+    tempAlbumIds = tempAlbumIds.toSet().toList();
+    
+    for (int albumId in tempAlbumIds) {
+      tempAlbums.add( albumList.firstWhere((album) => album.id == albumId ));
+    }
+
     tempArtistList.sort((a, b) => a.id.compareTo(b.id));
-    artistCollection[artistId] = tempArtistList;
+    artistCollection[artistId] = ArtistContentModel(
+      songs: tempArtistList,
+      albums: tempAlbums,
+      totalDuration: Duration(milliseconds: totalDurationInMilliseconds).getTimeString()
+    );
   }
 
   Future<void> searchByGenreId(int genreId, { bool force = false }) async {

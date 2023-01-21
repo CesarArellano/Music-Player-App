@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:focus_music_player/audio_player_handler.dart';
+import 'package:focus_music_player/helpers/format_extension.dart';
 import 'package:focus_music_player/helpers/null_extension.dart';
 import 'package:focus_music_player/providers/audio_control_provider.dart';
 import 'package:focus_music_player/widgets/custom_list_tile.dart';
@@ -126,7 +127,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
             song: songPlayed
           ),
         ),
-        if( musicPlayerProvider.playLists.isNotEmpty )
+        if( musicPlayerProvider.playLists.isNotEmpty ) ...[
           ListTile(
             leading: const Icon(Icons.playlist_add, color: AppTheme.lightTextColor,),
             title: const Text('Add to Playlist'),
@@ -166,6 +167,8 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
               );
             },
           ),
+          const Divider(color: AppTheme.lightTextColor, height: 1),
+        ],
         ListTile(
           leading: const Icon(Icons.share, color: AppTheme.lightTextColor,),
           title: const Text('Share Audio'),
@@ -267,18 +270,6 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
   }
 }
 
-extension Format on Duration {
-  String getTimeString() {
-    final minutes = inMinutes.remainder(Duration.minutesPerHour).toString();
-    final seconds = inSeconds
-      .remainder(Duration.secondsPerMinute)
-      .toString()
-      .padLeft(2, '0');
-    return inHours > 0
-      ? "$inHours:${minutes.padLeft(2, "0")}:$seconds"
-      : "$minutes:$seconds";
-  }
-}
 extension ContextExtensions on BuildContext {
   bool get mounted {
     try {

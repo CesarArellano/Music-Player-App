@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:focus_music_player/helpers/null_extension.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -61,7 +62,10 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
       appBar: AppBar(
         title: appBarTitle == null 
           ? null
-          : Text(appBarTitle!, maxLines: 1, overflow: TextOverflow.ellipsis),
+          : FadeInUp(
+            duration: const Duration(milliseconds: 350),
+            child: Text(appBarTitle!, maxLines: 1, overflow: TextOverflow.ellipsis)
+          ),
         actions: <Widget>[
           IconButton(
             splashRadius: 20,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:focus_music_player/helpers/format_extension.dart';
 import 'package:focus_music_player/helpers/null_extension.dart';
 import 'package:focus_music_player/theme/app_theme.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -35,7 +36,7 @@ class SongDetailsDialog extends StatelessWidget {
           const SizedBox(height: 15),
           _RowLabel(label: 'Format: ', value: song.fileExtension),
           const SizedBox(height: 15),
-          _RowLabel(label: 'Length: ', value: '${ duration.inMinutes }:${ duration.inSeconds.toString().substring(0,2) }'),
+          _RowLabel(label: 'Length: ', value: duration.getTimeString()),
         ],
       ),
       actionsPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),

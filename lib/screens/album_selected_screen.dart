@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:focus_music_player/helpers/null_extension.dart';
 import 'package:focus_music_player/widgets/custom_icon_text_button.dart';
@@ -67,7 +68,10 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
         ),
         title: appBarTitle == null 
           ? null
-          : Text(appBarTitle!, maxLines: 1, overflow: TextOverflow.ellipsis),
+          : FadeInUp(
+            duration: const Duration(milliseconds: 350),
+            child: Text(appBarTitle!, maxLines: 1, overflow: TextOverflow.ellipsis)
+          ),
         actions: <Widget>[
           IconButton(
             splashRadius: 20,

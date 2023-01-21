@@ -19,7 +19,7 @@ class SongsScreen extends StatefulWidget {
 }
 
 class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClientMixin {
-  
+
   @override
   bool get wantKeepAlive => true;
 

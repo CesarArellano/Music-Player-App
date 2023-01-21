@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:focus_music_player/models/artist_content_model.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -89,7 +90,7 @@ class MusicActions {
         musicPlayerProvider.currentPlaylist = musicPlayerProvider.albumCollection[id].value();
         break;
       case TypePlaylist.artist:
-        musicPlayerProvider.currentPlaylist = musicPlayerProvider.artistCollection[id].value();
+        musicPlayerProvider.currentPlaylist = (musicPlayerProvider.artistCollection[id] ?? ArtistContentModel()).songs;
         break;
       case TypePlaylist.playlist:
         musicPlayerProvider.currentPlaylist = musicPlayerProvider.playlistCollection[id].value();
