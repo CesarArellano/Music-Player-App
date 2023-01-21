@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:music_player_app/helpers/null_extension.dart';
-import 'package:music_player_app/widgets/widgets.dart';
+import 'package:focus_music_player/helpers/null_extension.dart';
+import 'package:focus_music_player/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
 import '../../helpers/music_actions.dart';

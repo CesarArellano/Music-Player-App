@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:music_player_app/helpers/null_extension.dart';
+import 'package:focus_music_player/helpers/null_extension.dart';
 
 import '../theme/app_theme.dart';
 

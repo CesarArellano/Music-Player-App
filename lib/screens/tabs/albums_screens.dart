@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:music_player_app/theme/app_theme.dart';
+import 'package:focus_music_player/theme/app_theme.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 import '../../providers/music_player_provider.dart';

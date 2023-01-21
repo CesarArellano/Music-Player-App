@@ -2,11 +2,11 @@ import 'dart:io';
 
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
-import 'package:music_player_app/audio_player_handler.dart';
-import 'package:music_player_app/helpers/null_extension.dart';
-import 'package:music_player_app/providers/audio_control_provider.dart';
-import 'package:music_player_app/widgets/custom_list_tile.dart';
-import 'package:music_player_app/widgets/song_details_dialog.dart';
+import 'package:focus_music_player/audio_player_handler.dart';
+import 'package:focus_music_player/helpers/null_extension.dart';
+import 'package:focus_music_player/providers/audio_control_provider.dart';
+import 'package:focus_music_player/widgets/custom_list_tile.dart';
+import 'package:focus_music_player/widgets/song_details_dialog.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';

@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:music_player_app/widgets/artwork_file_image.dart';
+import 'package:focus_music_player/widgets/artwork_file_image.dart';
 import 'package:on_audio_query/on_audio_query.dart' show ArtworkType;
 
 import '../theme/app_theme.dart';

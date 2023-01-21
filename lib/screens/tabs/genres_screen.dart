@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
-import 'package:music_player_app/screens/genre_selected_screen.dart';
-import 'package:music_player_app/widgets/widgets.dart';
+import 'package:focus_music_player/screens/genre_selected_screen.dart';
+import 'package:focus_music_player/widgets/widgets.dart';
 
 import '../../providers/music_player_provider.dart';
 

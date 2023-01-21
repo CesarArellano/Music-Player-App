@@ -6,11 +6,11 @@ import 'dart:io';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:music_player_app/helpers/null_extension.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
+import '../helpers/null_extension.dart';
 import '../audio_player_handler.dart';
 import '../providers/audio_control_provider.dart';
 import '../providers/music_player_provider.dart';

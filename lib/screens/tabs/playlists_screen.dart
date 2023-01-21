@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:music_player_app/audio_player_handler.dart';
-import 'package:music_player_app/screens/playlist_selected_screen.dart';
+import 'package:focus_music_player/audio_player_handler.dart';
+import 'package:focus_music_player/screens/playlist_selected_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 

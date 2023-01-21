@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:music_player_app/widgets/widgets.dart';
+import 'package:focus_music_player/widgets/widgets.dart';
 import 'package:on_audio_query/on_audio_query.dart' show ArtworkType;
 
 class ArtworkFileImage extends StatelessWidget {

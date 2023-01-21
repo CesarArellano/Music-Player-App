@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:music_player_app/screens/screens.dart';
+import 'package:focus_music_player/screens/screens.dart';
 
 class AppRouter {
   static final Map<String, Widget Function(BuildContext)> routes = {

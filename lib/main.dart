@@ -1,6 +1,6 @@
 
 import 'package:flutter/material.dart';
-import 'package:music_player_app/share_prefs/user_preferences.dart';
+import 'package:focus_music_player/share_prefs/user_preferences.dart';
 import 'package:provider/provider.dart';
 
 import 'audio_player_handler.dart';
@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Music Player App',
+        title: 'Focus Music Player',
         initialRoute: 'home',
         theme: AppTheme.lightTheme,
         routes: AppRouter.routes,

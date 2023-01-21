@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:music_player_app/helpers/music_actions.dart';
-import 'package:music_player_app/helpers/null_extension.dart';
-import 'package:music_player_app/share_prefs/user_preferences.dart';
+import 'package:focus_music_player/helpers/music_actions.dart';
+import 'package:focus_music_player/helpers/null_extension.dart';
+import 'package:focus_music_player/share_prefs/user_preferences.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
 
