@@ -1,4 +1,4 @@
-package com.example.focus_music_player
+package com.cesararellano.focus_music_player
 
 import io.flutter.embedding.android.FlutterActivity
 
