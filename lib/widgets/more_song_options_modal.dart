@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:music_player_app/audio_player_handler.dart';
 import 'package:music_player_app/helpers/null_extension.dart';
+import 'package:music_player_app/providers/audio_control_provider.dart';
 import 'package:music_player_app/widgets/custom_list_tile.dart';
 import 'package:music_player_app/widgets/song_details_dialog.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -40,7 +42,9 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
   Widget build(BuildContext context) {
     final songPlayed = widget.song;
     final onAudioQuery = audioPlayerHandler.get<OnAudioQuery>();
+    final audioPlayer = audioPlayerHandler.get<AssetsAudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
+    final audioControlProvider = Provider.of<AudioControlProvider>(context);
     final duration = Duration(milliseconds: widget.song.duration ?? 0);
     final imageFile = File('${ musicPlayerProvider.appDirectory }/${ songPlayed.albumId }.jpg');
     final isFavoriteSong = musicPlayerProvider.isFavoriteSong(songPlayed.id);
@@ -75,6 +79,53 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
           ),
         ),
         const Divider(color: AppTheme.lightTextColor, height: 1),
+        ListTile(
+          leading: const Icon(Icons.replay_outlined, color: AppTheme.lightTextColor,),
+          title: const Text('Play next'),
+          onTap: () {
+            final currentIndex = audioControlProvider.currentIndex;
+
+            if( currentIndex == musicPlayerProvider.currentPlaylist.length - 1 ) {
+              return _addToQueue(
+                audioPlayer: audioPlayer,
+                musicPlayerProvider: musicPlayerProvider,
+                song: songPlayed
+              );
+            }
+
+            List<SongModel> tempList =  [ ...musicPlayerProvider.currentPlaylist ]..insert(
+              currentIndex + 1,
+              songPlayed
+            );
+            musicPlayerProvider.currentPlaylist = tempList;
+
+            audioPlayer.playlist?.insert(
+              currentIndex + 1, 
+              Audio.file(
+                songPlayed.data,
+                metas: Metas(
+                  album: songPlayed.album,
+                  artist: songPlayed.artist,
+                  title: songPlayed.title,
+                  id: songPlayed.id.toString(),
+                  image: MetasImage.file('${musicPlayerProvider.appDirectory }/${ songPlayed.albumId }.jpg'),
+                  onImageLoadFail: const MetasImage.asset('assets/images/background.jpg'),
+                )
+              )
+            );
+
+            Navigator.pop(context);
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.library_add_rounded, color: AppTheme.lightTextColor,),
+          title: const Text('Add to playing queue'),
+          onTap: () => _addToQueue(
+            audioPlayer: audioPlayer,
+            musicPlayerProvider: musicPlayerProvider,
+            song: songPlayed
+          ),
+        ),
         if( musicPlayerProvider.playLists.isNotEmpty )
           ListTile(
             leading: const Icon(Icons.playlist_add, color: AppTheme.lightTextColor,),
@@ -177,14 +228,14 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
 
                 showSnackbar(
                   context: context,
-                  message: 'Se eliminó exitosamente'
+                  message: 'Successfully removed'
                 );
                 
                 return;
               }
               showSnackbar(
                 context: context,
-                message: 'Error al eliminar',
+                message: 'Error when deleting',
                 backgroundColor: Colors.red
               );
             },
@@ -193,7 +244,27 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
     );
   }
 
-  
+  void _addToQueue({
+    required SongModel song,
+    required AssetsAudioPlayer audioPlayer,
+    required MusicPlayerProvider musicPlayerProvider
+  }) {
+    audioPlayer.playlist?.add(
+      Audio.file(
+        song.data,
+        metas: Metas(
+          album: song.album,
+          artist: song.artist,
+          title: song.title,
+          id: song.id.toString(),
+          image: MetasImage.file('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg'),
+          onImageLoadFail: const MetasImage.asset('assets/images/background.jpg'),
+        )
+      )
+    );
+    musicPlayerProvider.currentPlaylist = [ ...musicPlayerProvider.currentPlaylist, song ];
+    Navigator.pop(context);
+  }
 }
 
 extension Format on Duration {

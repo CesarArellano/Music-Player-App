@@ -79,6 +79,8 @@ class MusicActions {
     
     Provider.of<UIProvider>(context, listen: false).currentHeroId = heroId;
 
+    final playlistToLength = musicPlayerProvider.currentPlaylist.length;
+    
     switch (type) {
       case TypePlaylist.songs:
         musicPlayerProvider.currentPlaylist = musicPlayerProvider.songList;
@@ -104,8 +106,10 @@ class MusicActions {
     }
 
     final index = musicPlayerProvider.currentPlaylist.indexWhere((songOfList) => songOfList.id == song.id );
+    
+    audioControlProvider.currentIndex = index;
 
-    if( musicPlayerProvider.songPlayed.id != song.id ) {
+    if( musicPlayerProvider.songPlayed.id != song.id || playlistToLength != musicPlayerProvider.currentPlaylist.length ) {
       audioPlayer.stop();
       
       _openAudios(
@@ -248,4 +252,5 @@ class MusicActions {
       )
     );
   }
+
 }

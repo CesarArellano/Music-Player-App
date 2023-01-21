@@ -36,7 +36,6 @@ class MusicPlayerProvider extends ChangeNotifier {
   
   MusicPlayerProvider() {
     getAllSongs();
-    decodeFavoriteSongs();
   }
 
   bool get isShuffling => _isShuffling;
@@ -71,8 +70,8 @@ class MusicPlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> getAllSongs({ BuildContext? context,  bool forceCreatingArtworks = false }) async {
-    final createArtworks = ( !UserPreferences().isFirstTime || forceCreatingArtworks );
+  Future<void> getAllSongs({ bool forceCreatingArtworks = false }) async {
+    bool createArtworks = ( !UserPreferences().isFirstTime || forceCreatingArtworks );
 
     isLoading = true;
     if( createArtworks ) {
@@ -91,17 +90,10 @@ class MusicPlayerProvider extends ChangeNotifier {
     playLists = await onAudioQuery.queryPlaylists();
     appDirectory = (await getApplicationDocumentsDirectory()).path;
 
-    if( createArtworks ) {
-      final songListLength = songList.length;
-      for (int i = 0; i < songListLength; i++) {
-        File imageTempFile = File('$appDirectory/${ songList[i].albumId }.jpg');
-        if( imageTempFile.existsSync() ) continue;
-        await MusicActions.createArtwork(imageTempFile, songList[i].id);
-      }
-      isCreatingArtworks = false;
-      UserPreferences().isFirstTime = true;
-    }
+    decodeFavoriteSongs();
+    await createAllArtworks(createArtworks);
     
+    UserPreferences().numberOfSongs = songList.length;
     isLoading = false;
     notifyListeners();
   }
@@ -156,10 +148,9 @@ class MusicPlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> decodeFavoriteSongs() async {
+  void decodeFavoriteSongs() {
     List<SongModel> tempFavoriteSongs = [];
-    
-    songList = await onAudioQuery.querySongs();
+
     favoriteSongList = UserPreferences().favoriteSongList;
 
     final int favoriteListLength = favoriteSongList.length;
@@ -170,7 +161,19 @@ class MusicPlayerProvider extends ChangeNotifier {
         tempFavoriteSongs.add( songList[index] );
       }
     }
-
     favoriteList = [ ...tempFavoriteSongs ];
+  }
+
+  Future<void> createAllArtworks(bool createArtworks) async {
+    if( createArtworks || ( UserPreferences().numberOfSongs != songList.length ) ) {
+      final songListLength = songList.length;
+      for (int i = 0; i < songListLength; i++) {
+        File imageTempFile = File('$appDirectory/${ songList[i].albumId }.jpg');
+        if( imageTempFile.existsSync() ) continue;
+        await MusicActions.createArtwork(imageTempFile, songList[i].id);
+      }
+      isCreatingArtworks = false;
+      UserPreferences().isFirstTime = true;
+    }
   }
 }

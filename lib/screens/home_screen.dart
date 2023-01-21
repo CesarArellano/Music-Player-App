@@ -85,15 +85,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 
                 showSnackbar(
                   context: context,
-                  message: '¡La playlist ${ dialogResp.playlistName.value() } fue agregada con éxito!'
+                  message: 'The ${ dialogResp.playlistName.value() } playlist was successfully added!'
                 );
                 
                 musicPlayerProvider.refreshPlaylist();
               }
             ),
             bottomNavigationBar: (musicPlayerProvider.isLoading || ( musicPlayerProvider.songPlayed.title.value() ).isEmpty)
-              ? const CustomBottomNavigationBar()
-              : const CurrentSongTile(showBottomBar: true)
+              ? null
+              : const CurrentSongTile()
           ),
         ),
       ),

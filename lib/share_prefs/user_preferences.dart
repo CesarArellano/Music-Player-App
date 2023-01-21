@@ -49,4 +49,13 @@ class UserPreferences {
   set lastSongDuration(int value) {
     _prefs.setInt('lastSongDuration', value);
   }
+
+  // GET y SET numberOfSongs.
+  int get numberOfSongs {
+    return _prefs.getInt('numberOfSongs') ?? 0;
+  }
+
+  set numberOfSongs(int value) {
+    _prefs.setInt('numberOfSongs', value);
+  }
 }

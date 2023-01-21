@@ -44,7 +44,7 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> with AutomaticKeepAli
                 if( resp ) {
                   showSnackbar(
                     context: context,
-                    message: '¡La playlist ${ playlist.playlist } eliminada con éxito!'
+                    message: 'The ${ playlist.playlist } playlist was successfully removed!'
                   );
                   musicPlayerProvider.refreshPlaylist();
                 }

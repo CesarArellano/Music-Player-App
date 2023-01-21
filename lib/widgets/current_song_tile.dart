@@ -17,10 +17,10 @@ import 'widgets.dart';
 class CurrentSongTile extends StatefulWidget {
   const CurrentSongTile({
     Key? key,
-    this.showBottomBar = false
+    // this.showBottomBar = false
   }) : super(key: key);
 
-  final bool showBottomBar;
+  // final bool showBottomBar;
   @override
   State<CurrentSongTile> createState() => _CurrentSongTileState();
 }
@@ -44,17 +44,19 @@ class _CurrentSongTileState extends State<CurrentSongTile> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {    
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _SelectorSongTitle(playAnimation: _playAnimation),
-        if( widget.showBottomBar )
-          const CustomBottomNavigationBar()
-      ],
-    );
+    return _SelectorSongTitle(playAnimation: _playAnimation);
   }
 }
+
+// return Column(
+//   mainAxisAlignment: MainAxisAlignment.end,
+//   mainAxisSize: MainAxisSize.min,
+//   children: [
+//     _SelectorSongTitle(playAnimation: _playAnimation),
+//     if( widget.showBottomBar )
+//       const CustomBottomNavigationBar()
+//   ],
+// );
 
 class _SelectorSongTitle extends StatelessWidget {
   const _SelectorSongTitle({

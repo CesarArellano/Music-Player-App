@@ -34,58 +34,58 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
         ? Padding(
           padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0),
           child: GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisExtent: 235,
-            mainAxisSpacing: 4,
-            crossAxisSpacing: 4
-          ),
-          itemCount: albumList.length,
-          itemBuilder: ( _, int i ) {
-            final album = albumList[i];
-            final imageFile = File('${ musicPlayerProvider.appDirectory }/${ album.id }.jpg');
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisExtent: 235,
+              mainAxisSpacing: 4,
+              crossAxisSpacing: 4
+            ),
+            itemCount: albumList.length,
+            itemBuilder: ( _, int i ) {
+              final album = albumList[i];
+              final imageFile = File('${ musicPlayerProvider.appDirectory }/${ album.id }.jpg');
 
-            return RippleTile(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ArtworkFileImage(
-                    artworkId: album.id,
-                    artworkType: ArtworkType.ALBUM,
-                    width: double.maxFinite,
-                    height: 190,
-                    imageFile: imageFile,
-                  ),
-                  const SizedBox(height: 6),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: Text(
-                      album.album,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.w500),
+              return RippleTile(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ArtworkFileImage(
+                      artworkId: album.id,
+                      artworkType: ArtworkType.ALBUM,
+                      width: double.maxFinite,
+                      height: 190,
+                      imageFile: imageFile,
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: Text(
-                      "${ album.numOfSongs } ${ (album.numOfSongs > 1) ? 'songs' : 'song' }",
-                      style: const TextStyle(color: AppTheme.lightTextColor, fontSize: 12),
+                    const SizedBox(height: 6),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Text(
+                        album.album,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => AlbumSelectedScreen( albumSelected: album ))
-                );
-              }
-            );
-          },
-      ),
+                    const SizedBox(height: 2),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Text(
+                        "${ album.numOfSongs } ${ (album.numOfSongs > 1) ? 'songs' : 'song' }",
+                        style: const TextStyle(color: AppTheme.lightTextColor, fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => AlbumSelectedScreen( albumSelected: album ))
+                  );
+                }
+              );
+            },
+        ),
         )
       : const Center( 
         child: Text(
