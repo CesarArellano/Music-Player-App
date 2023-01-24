@@ -58,4 +58,5 @@ class UserPreferences {
   set numberOfSongs(int value) {
     _prefs.setInt('numberOfSongs', value);
   }
+  
 }

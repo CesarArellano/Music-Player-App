@@ -30,25 +30,31 @@ class _GenresScreenState extends State<GenresScreen> with AutomaticKeepAliveClie
     return musicPlayerProvider.isLoading
       ? CustomLoader(isCreatingArtworks: musicPlayerProvider.isCreatingArtworks)
       : genreList.isNotEmpty
-        ? ListView.builder(
-          itemCount: genreList.length,
-          itemBuilder: ( _, int i ) {
-            final genre = genreList[i];
-            return RippleTile(
-              child: CustomListTile(
-                title: genre.genre,
-                subtitle: '${ genre.numOfSongs } ${ ( genre.numOfSongs > 1) ? 'Songs' : 'Song' }',
-                artworkId: genre.id,
-                artworkType: ArtworkType.GENRE,
-              ),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => GenreSelectedScreen( genreSelected: genre ))
-                );
-              },
-            );
-          } 
+        ? OrientationBuilder(
+          builder: ( _, orientation ) => GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: ( orientation == Orientation.landscape ) ?  2 : 1,
+              childAspectRatio: 5.5
+            ),
+            itemCount: genreList.length,
+            itemBuilder: ( _, int i ) {
+              final genre = genreList[i];
+              return RippleTile(
+                child: CustomListTile(
+                  title: genre.genre,
+                  subtitle: '${ genre.numOfSongs } ${ ( genre.numOfSongs > 1) ? 'Songs' : 'Song' }',
+                  artworkId: genre.id,
+                  artworkType: ArtworkType.GENRE,
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => GenreSelectedScreen( genreSelected: genre ))
+                  );
+                },
+              );
+            } 
+          )
         )
         : const Center( 
           child: Text(

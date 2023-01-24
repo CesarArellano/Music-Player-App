@@ -30,30 +30,36 @@ class _FavoriteScreenState extends State<FavoriteScreen> with AutomaticKeepAlive
     return musicPlayerProvider.isLoading
       ? CustomLoader(isCreatingArtworks: musicPlayerProvider.isCreatingArtworks)
       : songList.isNotEmpty
-        ? ListView.builder(
-          itemCount: songList.length,
-          itemBuilder: ( _, int i ) {
-            final song = songList[i];
-            final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
-            final heroId = 'favorite-song-${ song.id }';
-
-            return RippleTile(
-              onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.favorites, heroId: heroId ),
-              onLongPress: () {
-                showModalBottomSheet(
-                  context: context,
-                  builder:(context) => MoreSongOptionsModal(song: song, disabledDeleteButton: true)
-                );
-              },
-              child: CustomListTile(
-                title: song.title.value(),
-                subtitle: song.artist.valueEmpty('No Artist'),                
-                imageFile: imageFile,
-                artworkId: song.id,
-                tag: heroId,
-              ),
-            );
-          } 
+        ? OrientationBuilder(
+          builder: ( _, orientation ) => GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: ( orientation == Orientation.landscape ) ?  2 : 1,
+              childAspectRatio: 5.5
+            ),
+            itemCount: songList.length,
+            itemBuilder: ( _, int i ) {
+              final song = songList[i];
+              final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
+              final heroId = 'favorite-song-${ song.id }';
+        
+              return RippleTile(
+                onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.favorites, heroId: heroId ),
+                onLongPress: () {
+                  showModalBottomSheet(
+                    context: context,
+                    builder:(context) => MoreSongOptionsModal(song: song, disabledDeleteButton: true)
+                  );
+                },
+                child: CustomListTile(
+                  title: song.title.value(),
+                  subtitle: song.artist.valueEmpty('No Artist'),                
+                  imageFile: imageFile,
+                  artworkId: song.id,
+                  tag: heroId,
+                ),
+              );
+            } 
+          ),
         )
         : const Center( 
           child: Text('No Favorites', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))

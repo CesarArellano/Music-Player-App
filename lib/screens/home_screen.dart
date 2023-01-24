@@ -190,14 +190,6 @@ class _CustomAppBar extends StatelessWidget {
                 musicPlayerProvider: musicPlayerProvider,
               )
             ),
-            PopupMenuItem(
-              child: const Text('Reload Artworks', style: TextStyle(color: Colors.black)),
-              onTap: () async => await _getAllSongs(
-                context: context,
-                musicPlayerProvider: musicPlayerProvider,
-                forceCreatingArtworks: true
-              )
-            )
           ],
         ),
       ],

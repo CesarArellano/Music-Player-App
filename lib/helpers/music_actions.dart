@@ -30,8 +30,12 @@ enum TypePlaylist {
 }
 class MusicActions {
 
-  static void initSongs(BuildContext context, SongModel song, String heroId) {
-
+  static void initSongs(
+    BuildContext context,
+    SongModel song, { 
+      required String heroId,
+    }
+  ) {
     final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
@@ -40,6 +44,8 @@ class MusicActions {
     musicPlayerProvider.currentPlaylist = musicPlayerProvider.songList;
 
     final index = musicPlayerProvider.currentPlaylist.indexWhere((songOfList) => songOfList.id == song.id );
+    
+    audioControlProvider.currentIndex = index;
 
     _openAudios(
       index: index,
@@ -107,10 +113,10 @@ class MusicActions {
     }
 
     final index = musicPlayerProvider.currentPlaylist.indexWhere((songOfList) => songOfList.id == song.id );
-    
     audioControlProvider.currentIndex = index;
 
     if( musicPlayerProvider.songPlayed.id != song.id || playlistToLength != musicPlayerProvider.currentPlaylist.length ) {
+
       audioPlayer.stop();
       
       _openAudios(

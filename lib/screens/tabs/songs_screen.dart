@@ -44,7 +44,11 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
 
         if( musicPlayerProvider.songPlayed.id == 0 ) return;
         
-        MusicActions.initSongs(context, musicPlayerProvider.songPlayed, 'current-song-${ musicPlayerProvider.songPlayed.id }');
+        MusicActions.initSongs(
+          context,
+          musicPlayerProvider.songPlayed,
+          heroId: 'current-song-${ musicPlayerProvider.songPlayed.id }'
+        );
       });
     });
   }
@@ -59,30 +63,36 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
     return ( musicPlayerProvider.isLoading )
       ? CustomLoader(isCreatingArtworks: musicPlayerProvider.isCreatingArtworks)
       : songList.isNotEmpty
-        ? ListView.builder(
-          itemCount: songList.length,
-          itemBuilder: ( _, int i ) {
-            final song = songList[i];
-            final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
-            final heroId = 'songs-${ song.id }';
-            
-            return RippleTile(
-              child: CustomListTile(
-                title: song.title.value(),
-                subtitle: song.artist.valueEmpty('No Artist'),
-                artworkId: song.id,
-                imageFile: imageFile,
-                tag: heroId,
-              ),
-              onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.songs, heroId: heroId),
-              onLongPress: () {
-                showModalBottomSheet(
-                  context: context,
-                  builder:( _ ) => MoreSongOptionsModal(song: song)
-                );
-              },
-            );
-          } 
+        ? OrientationBuilder(
+          builder: (context, orientation) => GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: ( orientation == Orientation.landscape ) ?  2 : 1,
+              childAspectRatio: 5.5
+            ),
+            itemCount: songList.length,
+            itemBuilder: ( _, int i ) {
+              final song = songList[i];
+              final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
+              final heroId = 'songs-${ song.id }';
+              
+              return RippleTile(
+                child: CustomListTile(
+                  title: song.title.value(),
+                  subtitle: song.artist.valueEmpty('No Artist'),
+                  artworkId: song.id,
+                  imageFile: imageFile,
+                  tag: heroId,
+                ),
+                onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.songs, heroId: heroId),
+                onLongPress: () {
+                  showModalBottomSheet(
+                    context: context,
+                    builder:( _ ) => MoreSongOptionsModal(song: song)
+                  );
+                },
+              );
+            } 
+          ),
         )
       : const Center( 
         child: Text(
