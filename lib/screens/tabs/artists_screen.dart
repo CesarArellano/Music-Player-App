@@ -1,13 +1,11 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:music_player_app/helpers/null_extension.dart';
-import 'package:music_player_app/widgets/ripple_tile.dart';
+import '../../helpers/null_extension.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
 
 import '../../providers/music_player_provider.dart';
-import '../../widgets/artwork_image.dart';
+import '../../widgets/widgets.dart';
 import '../artist_selected_screen.dart';
 
 class ArtistScreen extends StatefulWidget {
@@ -31,15 +29,18 @@ class _ArtistScreenState extends State<ArtistScreen> with AutomaticKeepAliveClie
     final artistList = musicPlayerProvider.artistList;
 
     return musicPlayerProvider.isLoading
-      ? const Center ( child: CircularProgressIndicator() )
+      ? CustomLoader(isCreatingArtworks: musicPlayerProvider.isCreatingArtworks)
       : artistList.isNotEmpty
-        ? ListView.builder(
-          itemCount: artistList.length,
-          itemBuilder: ( _, int i ) {
-            final artist = artistList[i];
-            return SizedBox(
-              width: double.infinity,
-              child: RippleTile(
+        ? OrientationBuilder(
+          builder: ( _, orientation ) => GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: ( orientation == Orientation.landscape ) ? 2 : 1,
+              childAspectRatio: 4,
+            ),
+            itemCount: artistList.length,
+            itemBuilder: ( _, int i ) {
+              final artist = artistList[i];
+              return RippleTile(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
                   child: Row(
@@ -50,10 +51,10 @@ class _ArtistScreenState extends State<ArtistScreen> with AutomaticKeepAliveClie
                         type: ArtworkType.ARTIST,
                         width: 85,
                         height: 85,
-                        size: 250,
-                        radius: BorderRadius.circular(4),
+                        size: 400,
+                        radius: BorderRadius.circular(2.5),
                       ),
-                      const SizedBox(width: 20),
+                      const SizedBox(width: 15),
                       Flexible(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,7 +62,9 @@ class _ArtistScreenState extends State<ArtistScreen> with AutomaticKeepAliveClie
                           children: [
                             Text(
                               artist.artist,
-                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
                             ),
                             const SizedBox(height: 8),
                             Text(
@@ -75,11 +78,14 @@ class _ArtistScreenState extends State<ArtistScreen> with AutomaticKeepAliveClie
                   ),
                 ),
                 onTap: () {
-                  Navigator.push(context, CupertinoPageRoute(builder: (_) => ArtistSelectedScreen( artistSelected: artist) ));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => ArtistSelectedScreen( artistSelected: artist ))
+                  );
                 },
-              ),
-            );
-          } 
+              );
+            } 
+          ),
         )
         : const Center( 
           child: Text('No Artists', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))

@@ -1,36 +1,44 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:music_player_app/helpers/music_actions.dart';
+import 'package:focus_music_player/helpers/format_extension.dart';
+import 'package:focus_music_player/helpers/music_actions.dart';
+import 'package:focus_music_player/helpers/null_extension.dart';
+import 'package:focus_music_player/share_prefs/user_preferences.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:path_provider/path_provider.dart';
+
+import '../models/artist_content_model.dart';
+
 
 class MusicPlayerProvider extends ChangeNotifier {
 
   final OnAudioQuery onAudioQuery = OnAudioQuery();
 
-  AudioModel _songPlayed = AudioModel({ 'title': '', '_id': 0});
-  bool _isLoading = false;
+  SongModel _songPlayed = SongModel({ '_id': 0 });
+  
+  String appDirectory = '';
+  bool isLoading = false;
+  bool isCreatingArtworks = false;
   bool _isShuffling = false;
 
-  Map<int, List<AudioModel>> albumCollection = {};
-  Map<int, List<AudioModel>> artistCollection = {};
-  Map<int, List<AudioModel>> genreCollection = {};
+  Map<int, List<SongModel>> albumCollection = {};
+  Map<int, ArtistContentModel> artistCollection = {};
+  Map<int, List<SongModel>> genreCollection = {};
+  Map<int, List<SongModel>> playlistCollection = {};
 
-  List<AudioModel> songList = [];
+  List<SongModel> songList = [];
   List<AlbumModel> albumList = [];
   List<GenreModel> genreList = [];
   List<ArtistModel> artistList = [];
   List<PlaylistModel> playLists = [];
+  List<SongModel> _favoriteList = [];
 
-  List<AudioModel> currentPlaylist = [];
+  List<SongModel> currentPlaylist = [];
+  List<String> _favoriteSongList = [];
   
   MusicPlayerProvider() {
     getAllSongs();
-  }
-
-  bool get isLoading => _isLoading;
-
-  set isLoading( bool value ) {
-    _isLoading = value;
-    notifyListeners();
   }
 
   bool get isShuffling => _isShuffling;
@@ -40,113 +48,155 @@ class MusicPlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  AudioModel get songPlayed => _songPlayed;
+  SongModel get songPlayed => _songPlayed;
 
-  set songPlayed( AudioModel value ) {
+  set songPlayed( SongModel value ) {
     _songPlayed = value;
     notifyListeners();
   }
 
-  void getAllSongs() async {
-    _isLoading = true;
+  List<SongModel> get favoriteList => _favoriteList;
+
+  set favoriteList( List<SongModel> value ) {
+    _favoriteList = value;
+    notifyListeners();
+  }
+
+  List<String> get favoriteSongList => _favoriteSongList;
+  
+  bool isFavoriteSong(int id) {
+    return _favoriteSongList.contains(id.toString());
+  }
+
+  set favoriteSongList( List<String> value ) {
+    _favoriteSongList = value;
+    notifyListeners();
+  }
+
+  Future<void> getAllSongs({ bool forceCreatingArtworks = false }) async {
+    bool createArtworks = ( !UserPreferences().isFirstTime || forceCreatingArtworks );
+
+    isLoading = true;
+    if( createArtworks ) {
+      isCreatingArtworks = true;
+    }
+    notifyListeners();
+
     if( ! await onAudioQuery.permissionsStatus() ) {
       await onAudioQuery.permissionsRequest();
     }
     
     songList = await onAudioQuery.querySongs();
-    songList = songList.map(
-      (e) => e.copyWith(uri: MusicActions.getArtworkPath(e.data))
-    ).toList();
-
-    // albumList = await onAudioQuery.queryAlbums();
+    albumList = await onAudioQuery.queryAlbums();
     genreList = await onAudioQuery.queryGenres();
     artistList = await onAudioQuery.queryArtists();
     playLists = await onAudioQuery.queryPlaylists();
+    appDirectory = (await getApplicationDocumentsDirectory()).path;
 
-    _isLoading = false;
+    decodeFavoriteSongs();
+    await createAllArtworks(createArtworks);
+    
+    UserPreferences().numberOfSongs = songList.length;
+    isLoading = false;
     notifyListeners();
   }
 
   Future<void> refreshPlaylist() async {
-    _isLoading = true;
+    isLoading = true;
+    notifyListeners();
     playLists = await onAudioQuery.queryPlaylists();
-    _isLoading = false;
+    isLoading = false;
     notifyListeners();
   }
 
-  Future<List<AudioModel>> searchSongByQuery(String query) async {
-    List<AudioModel> songList = await onAudioQuery.querySongs(
-      filter: MediaFilter.forGenres(
-        toQuery: {
-          MediaColumns.Audio.TITLE: [query.toString()]
-        }
-      ),
-    );
-    return songList;
+  Future<List<SongModel>> searchSongByQuery(String query) async {
+    return songList.where((song) => song.title.value().toLowerCase().contains(query)).toList();
   }
 
-  Future<void> searchByAlbumId(int albumId) async {
+  Future<void> searchByAlbumId(int albumId, { bool force = false }) async {
     
-    if( albumCollection.containsKey(albumId) ) return;
+    if( albumCollection.containsKey(albumId) && !force ) return;
 
-    _isLoading = true;
-    albumCollection[albumId] = await onAudioQuery.querySongs(
-      filter: MediaFilter.forAlbums(
-        toQuery: {
-          MediaColumns.Audio.ALBUM_ID: [albumId.toString()]
-        },
-        albumSortType: AlbumSortType.NUM_OF_SONGS  
-      ),
-    );
-
-    albumCollection[albumId] = albumCollection[albumId]!.map(
-      (e) => e.copyWith(uri: MusicActions.getArtworkPath(e.data))
-    ).toList();
-
-    _isLoading = false;
-    notifyListeners();
+    List<SongModel> tempAlbumList = await onAudioQuery.queryAudiosFrom( AudiosFromType.ALBUM_ID, albumId );
+    tempAlbumList.sort((a, b) => a.id.compareTo(b.id));
+    albumCollection[albumId] = tempAlbumList;
   }
 
-  Future<void> searchByArtistId(int artistId) async {
+  Future<void> searchByArtistId(int artistId, { bool force = false }) async {
     
-    if( artistCollection.containsKey(artistId) ) return;
-
-    _isLoading = true;
-    artistCollection[artistId] = await onAudioQuery.querySongs(
-      filter: MediaFilter.forArtists(
-        toQuery: {
-          MediaColumns.Audio.ARTIST_ID: [artistId.toString()],
-        },
-        artistSortType: ArtistSortType.NUM_OF_ALBUMS
-      ),
-    );
-
-    artistCollection[artistId] = artistCollection[artistId]!.map(
-      (e) => e.copyWith(uri: MusicActions.getArtworkPath(e.data))
-    ).toList();
-
-    _isLoading = false;
-    notifyListeners();
-  }
-
-  Future<void> searchByGenreId(int genreId) async {
+    if( artistCollection.containsKey(artistId) && !force ) return;
     
-    if( genreCollection.containsKey(genreId) ) return;
+    List<SongModel> tempArtistList = await onAudioQuery.queryAudiosFrom( AudiosFromType.ARTIST_ID, artistId );
+    List<int> tempAlbumIds = [];
+    List<AlbumModel> tempAlbums = [];
+    int totalDurationInMilliseconds = 0;
+    
+    for (SongModel song in tempArtistList) {
+      totalDurationInMilliseconds += song.duration ?? 0;
+      if( song.albumId.value() == 0 ) continue;
+      tempAlbumIds = [...tempAlbumIds, song.albumId! ];
+    }
 
-    _isLoading = true;
-    genreCollection[genreId] = await onAudioQuery.querySongs(
-      filter: MediaFilter.forGenres(
-        toQuery: {
-          MediaColumns.Audio.GENRE_ID: [genreId.toString()]
-        }
-      ),
+    tempAlbumIds = tempAlbumIds.toSet().toList();
+    
+    for (int albumId in tempAlbumIds) {
+      tempAlbums.add( albumList.firstWhere((album) => album.id == albumId ));
+    }
+
+    tempArtistList.sort((a, b) => a.id.compareTo(b.id));
+    artistCollection[artistId] = ArtistContentModel(
+      songs: tempArtistList,
+      albums: tempAlbums,
+      totalDuration: Duration(milliseconds: totalDurationInMilliseconds).getTimeString()
     );
+  }
 
-    genreCollection[genreId] = genreCollection[genreId]!.map(
-      (e) => e.copyWith(uri: MusicActions.getArtworkPath(e.data))
-    ).toList();
-    _isLoading = false;
+  Future<void> searchByGenreId(int genreId, { bool force = false }) async {
+    
+    if( genreCollection.containsKey(genreId) && !force ) return;
+
+    List<SongModel> tempGenreList = await onAudioQuery.queryAudiosFrom( AudiosFromType.GENRE_ID, genreId );
+    tempGenreList.sort((a, b) => a.id.compareTo(b.id));
+    genreCollection[genreId] = tempGenreList;
+  }
+
+  Future<void> searchByPlaylistId(int playlistId, { bool force = false }) async {
+    
+    if( playlistCollection.containsKey(playlistId) && !force ) return;
+
+    isLoading = true;
+    notifyListeners();
+    playlistCollection[playlistId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.PLAYLIST, playlistId );
+    isLoading = false;
     notifyListeners();
   }
 
+  void decodeFavoriteSongs() {
+    List<SongModel> tempFavoriteSongs = [];
+
+    favoriteSongList = UserPreferences().favoriteSongList;
+
+    final int favoriteListLength = favoriteSongList.length;
+
+    for (int i = 0; i < favoriteListLength; i ++) {
+      final index = songList.indexWhere((song) => song.id == int.tryParse(favoriteSongList[i]));
+      if( index != -1 ) {
+        tempFavoriteSongs.add( songList[index] );
+      }
+    }
+    favoriteList = [ ...tempFavoriteSongs ];
+  }
+
+  Future<void> createAllArtworks(bool createArtworks) async {
+    if( createArtworks || ( UserPreferences().numberOfSongs != songList.length ) ) {
+      final songListLength = songList.length;
+      for (int i = 0; i < songListLength; i++) {
+        File imageTempFile = File('$appDirectory/${ songList[i].albumId }.jpg');
+        if( imageTempFile.existsSync() ) continue;
+        await MusicActions.createArtwork(imageTempFile, songList[i].id);
+      }
+      isCreatingArtworks = false;
+      UserPreferences().isFirstTime = true;
+    }
+  }
 }

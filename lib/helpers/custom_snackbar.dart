@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 
-void showSnackbar({
+ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showSnackbar({
   required BuildContext context,
   required String message,
-  Color backgroundColor = Colors.green
+  Color backgroundColor = const Color(0xFF303030),
+  SnackBarAction? snackBarAction
 }) {
-  ScaffoldMessenger.of(context).showSnackBar(
+  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+  return ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-        backgroundColor: backgroundColor,
-        content: Text(message,
-        style: const TextStyle(color: Colors.white)
-      )
+      backgroundColor: backgroundColor,
+      content: Text(message, style: const TextStyle(color: Colors.white)),
+      action: snackBarAction,
     )
   );
 }

@@ -1,4 +1,9 @@
-export 'package:music_player_app/widgets/custom_bottom_navigation_bar.dart';
-export 'package:music_player_app/widgets/current_song_tile.dart';
-export 'package:music_player_app/widgets/custom_background.dart';
-export 'package:music_player_app/widgets/ripple_tile.dart';
+export 'package:focus_music_player/widgets/custom_loader.dart';
+export 'package:focus_music_player/widgets/artwork_file_image.dart';
+export 'package:focus_music_player/widgets/more_song_options_modal.dart';
+export 'package:focus_music_player/widgets/custom_list_tile.dart';
+export 'package:focus_music_player/widgets/artwork_image.dart';
+export 'package:focus_music_player/widgets/song_details_dialog.dart';
+export 'package:focus_music_player/widgets/custom_bottom_navigation_bar.dart';
+export 'package:focus_music_player/widgets/current_song_tile.dart';
+export 'package:focus_music_player/widgets/ripple_tile.dart';

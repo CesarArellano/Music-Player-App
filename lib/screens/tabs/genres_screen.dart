@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:provider/provider.dart';
 
-import 'package:music_player_app/screens/genre_selected_screen.dart';
-import 'package:music_player_app/widgets/artwork_image.dart';
-import 'package:music_player_app/widgets/widgets.dart';
+import 'package:focus_music_player/screens/genre_selected_screen.dart';
+import 'package:focus_music_player/widgets/widgets.dart';
 
 import '../../providers/music_player_provider.dart';
 
@@ -30,34 +28,42 @@ class _GenresScreenState extends State<GenresScreen> with AutomaticKeepAliveClie
     final genreList = musicPlayerProvider.genreList;
 
     return musicPlayerProvider.isLoading
-      ? const Center ( child: CircularProgressIndicator() )
+      ? CustomLoader(isCreatingArtworks: musicPlayerProvider.isCreatingArtworks)
       : genreList.isNotEmpty
-        ? ListView.builder(
-          itemCount: genreList.length,
-          itemBuilder: ( _, int i ) {
-            final genre = genreList[i];
-            return RippleTile(
-              child: ListTile(
-                contentPadding: const EdgeInsets.symmetric( horizontal: 15 ),
-                title: Text(genre.genre),
-                subtitle: Text("${ genre.numOfSongs } ${ ( genre.numOfSongs > 1) ? 'Songs' : 'Song' }"),
-                leading: ArtworkImage(
+        ? OrientationBuilder(
+          builder: ( _, orientation ) => GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: ( orientation == Orientation.landscape ) ?  2 : 1,
+              childAspectRatio: 5.5
+            ),
+            itemCount: genreList.length,
+            itemBuilder: ( _, int i ) {
+              final genre = genreList[i];
+              return RippleTile(
+                child: CustomListTile(
+                  title: genre.genre,
+                  subtitle: '${ genre.numOfSongs } ${ ( genre.numOfSongs > 1) ? 'Songs' : 'Song' }',
                   artworkId: genre.id,
-                  type: ArtworkType.GENRE,
-                  width: 50,
-                  height: 50,
-                  radius: BorderRadius.circular(2.5),
-                  size: 250,
+                  artworkType: ArtworkType.GENRE,
                 ),
-              ),
-              onTap: () {
-                Navigator.push(context, CupertinoPageRoute(builder: (_) => GenreSelectedScreen( genreSelected: genre ) ));
-              },
-            );
-          } 
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => GenreSelectedScreen( genreSelected: genre ))
+                  );
+                },
+              );
+            } 
+          )
         )
         : const Center( 
-          child: Text('No Genres', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))
+          child: Text(
+            'No Genres',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold
+            )
+          )
         );
   }
 }

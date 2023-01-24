@@ -4,19 +4,34 @@ import 'dart:ui';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:marquee/marquee.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
 import '../audio_player_handler.dart';
 import '../helpers/music_actions.dart';
+import '../helpers/null_extension.dart';
 import '../providers/audio_control_provider.dart';
 import '../providers/music_player_provider.dart';
+import '../providers/ui_provider.dart';
+import '../share_prefs/user_preferences.dart';
+import '../theme/app_theme.dart';
 import '../widgets/artwork_image.dart';
+import '../widgets/more_song_options_modal.dart';
+import 'artist_selected_screen.dart';
 
 class SongPlayedScreen extends StatefulWidget {
   
-  const SongPlayedScreen({Key? key}) : super(key: key);
+  const SongPlayedScreen({
+    Key? key,
+    this.isPlaylist = false,
+    this.playlistId
+  }) : super(key: key);
+
+  final bool isPlaylist;
+  final int? playlistId;
 
   @override
   State<SongPlayedScreen> createState() => _SongPlayedScreenState();
@@ -24,7 +39,6 @@ class SongPlayedScreen extends StatefulWidget {
 
 class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerProviderStateMixin {
   AnimationController? _playAnimation;
-  ImageProvider<Object>? artwork;
 
   @override
   void initState() {
@@ -43,69 +57,75 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
   Widget build(BuildContext context) {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final songPlayed = musicPlayerProvider.songPlayed;
-    final imageFile = File(songPlayed.uri ?? '');
-      
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        title: Column(
+    final imageFile = File('${ musicPlayerProvider.appDirectory }/${ songPlayed.albumId }.jpg');
+    
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light.copyWith(
+        systemNavigationBarColor: Colors.black,
+      ),
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: Colors.transparent,
+          title: Column(
+            children: [
+              const SizedBox(height: 10,),
+              const Text('PLAYING FROM', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppTheme.lightTextColor, letterSpacing: 1) ),
+              const SizedBox(height: 4),
+              Text(songPlayed.album.valueEmpty('No Album'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+            ]
+          ),
+          leading: IconButton(
+            splashRadius: 22,
+            icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
+          actions: <Widget>[
+            IconButton(
+              splashRadius: 20,
+              icon: const Icon(Icons.drag_indicator, color: Colors.white),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (_) => MoreSongOptionsModal(
+                    song: songPlayed,
+                    isPlaylist: widget.isPlaylist,
+                    playlistId: widget.playlistId,
+                  )
+                );
+              },
+            ),
+          ],
+        ),
+        body: Stack(
           children: [
-            const Text('PLAYING FROM', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: Colors.white) ),
-            const SizedBox(height: 4),
-            Text(songPlayed.album ?? 'No Album', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+            Transform.scale(
+              scale: 1.1,
+              child: Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    fit: BoxFit.cover,
+                    image: Image.file(
+                      imageFile,
+                      gaplessPlayback: true,
+                      errorBuilder: (_, __, ___) => Image.asset('assets/images/background.jpg', gaplessPlayback: true)
+                    ).image
+                  )                    
+                ),
+                child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 50.0, sigmaY: 50.0),
+                    child: Container(
+                      decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), backgroundBlendMode: BlendMode.darken),
+                    ),
+                  ),
+              ),
+            ),
+            _SongPlayedBody(
+              playAnimation: _playAnimation
+            ),
           ]
         ),
-        leading: IconButton(
-          splashRadius: 22,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: <Widget>[
-          IconButton(
-            splashRadius: 20,
-            icon: const Icon(Icons.drag_indicator, color: Colors.white),
-            onPressed: () => MusicActions.showCurrentPlayList(context),
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          FutureBuilder<ImageProvider<Object>?>(
-            future: MusicActions.getSpecificArtwork(context),
-            builder: (context, snapshot) {
-
-              if( snapshot.hasData ) {
-                artwork = snapshot.data;
-              }
-
-              return Transform.scale(
-                scale: 1.1,
-                child: Container(
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      fit: BoxFit.cover,
-                      image: artwork == null || imageFile.existsSync()
-                        ? Image.file(
-                          imageFile,
-                          errorBuilder: (_, __, ___) => Image.asset('assets/images/background.jpg')
-                        ).image
-                        : Image(image: artwork!).image
-                    )                    
-                  ),
-                  child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
-                      child: Container(
-                        decoration: BoxDecoration(color: Colors.black.withOpacity(0.65), backgroundBlendMode: BlendMode.darken),
-                      ),
-                    ),
-                ),
-              );
-            }
-          ),
-          _SongPlayedBody( playAnimation: _playAnimation ),
-        ]
       ),
     );
   }
@@ -123,96 +143,130 @@ class _SongPlayedBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
+    final currentHeroId = Provider.of<UIProvider>(context).currentHeroId;
     final songPlayed = musicPlayerProvider.songPlayed;
-    final imageFile = File(songPlayed.uri ?? '');
-
+    final imageFile = File('${ musicPlayerProvider.appDirectory }/${ songPlayed.albumId }.jpg');
+    final isFavoriteSong = musicPlayerProvider.isFavoriteSong(songPlayed.id);
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Container(
-              //   width: double.infinity,
-              //   height: 60,
-              //   color: Colors.transparent,
-              //   child: Row(
-              //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //     children: [
-              //       IconButton(
-              //         splashRadius: 22,
-              //         icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white ),
-              //         onPressed: () => Navigator.pop(context),
-              //       ),
-              //       Container(
-              //         alignment: Alignment.center,
-              //         width: 140,
-              //         child: Column(
-              //           children: [
-              //             const SizedBox(height: 16),
-              //             const Text('PLAYING FROM', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400) ),
-              //             const SizedBox(height: 4),
-              //             Text(songPlayed.album ?? 'No Album', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
-              //           ]
-              //         ),
-              //       ),
-              //       IconButton(
-              //         splashRadius: 20,
-              //         icon: const Icon(Icons.drag_indicator, color: Colors.white),
-              //         onPressed: () => MusicActions.showCurrentPlayList(context),
-              //       ),
-              //     ],
-              //   ),
-              // ),
-              SizedBox(height: size.height * 0.04),
-              Image.file(
-                imageFile,
-                width: double.infinity,
-                height: 350,
-                errorBuilder: (_,__,___) => ArtworkImage(
-                  artworkId: songPlayed.id,
-                  type: ArtworkType.AUDIO,
-                  width: double.infinity,
-                  height: 350,
+              SizedBox(height: size.height * 0.015),
+              Hero(
+                tag: currentHeroId,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(3.5),
+                  child: Image.file(
+                    imageFile,
+                    width: double.infinity,
+                    height: 350,
+                    fit: BoxFit.cover,
+                    filterQuality: FilterQuality.medium,
+                    gaplessPlayback: true,
+                    errorBuilder: ( _, __, ___ ) => ArtworkImage(
+                      artworkId: songPlayed.id,
+                      type: ArtworkType.AUDIO,
+                      width: double.infinity,
+                      height: 350,
+                      size: 500,
+                      radius: BorderRadius.circular(6),
+                    )
+                  ),
                 ),
               ),
-              SizedBox(height: size.height * 0.04),
+              SizedBox(height: size.height * 0.05),
               SizedBox(
-                height: size.height * 0.07,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                height: size.height * 0.08,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Flexible (
-                      child: ( songPlayed.title.length > 30 )
-                      ? Marquee(
-                        velocity: 50.0,
-                        text: songPlayed.title,
-                        blankSpace: 30,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                      )
-                      : Column(
-                        mainAxisSize: MainAxisSize.min,
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () {
+                        List<String> favoriteSongList = [ ...musicPlayerProvider.favoriteSongList ];
+                        List<SongModel> favoriteList = [ ...musicPlayerProvider.favoriteList ];
+
+                        if( isFavoriteSong ) {
+                          favoriteList.removeWhere(((song) => song.id == songPlayed.id));
+                          favoriteSongList.removeWhere(((songId) => songId == songPlayed.id.toString()));
+                        } else {
+                          final index = musicPlayerProvider.songList.indexWhere((song) => song.id == songPlayed.id);
+                          favoriteList.add( musicPlayerProvider.songList[index] );
+                          favoriteSongList.add(songPlayed.id.toString());
+                        }
+
+                        musicPlayerProvider.favoriteList = favoriteList;
+                        musicPlayerProvider.favoriteSongList = favoriteSongList;
+                        UserPreferences().favoriteSongList = favoriteSongList;
+                      },
+                      icon: Icon( isFavoriteSong ? Icons.favorite : Icons.favorite_border)
+                    ),
+                    Flexible(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const SizedBox(height: 10),
-                          Text( songPlayed.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18) ),
-                          const SizedBox(height: 9)
+                          Flexible (
+                            child: ( songPlayed.title.value().length > 25 )
+                            ? Marquee(
+                              velocity: 50.0,
+                              text: songPlayed.title.value(),
+                              blankSpace: 30,
+                              fadingEdgeEndFraction: 0.1,
+                              fadingEdgeStartFraction: 0.1,
+                              style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18),
+                            )
+                            : Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const SizedBox(height: 10),
+                                Text( songPlayed.title.value(), style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18) ),
+                                const SizedBox(height: 9)
+                              ],
+                            )
+                          ),
+                          if( songPlayed.artist.value().length > 30 )
+                            const SizedBox(height: 5),
+                          InkWell(
+                            onTap: () {
+                              final artistId = songPlayed.artistId;
+
+                              if( artistId == null || artistId == 0) return;
+
+                              final artistSelected = musicPlayerProvider.artistList.firstWhere((artist) => artist.id == artistId.value(), orElse: () => ArtistModel({ "_id": 0 }));
+                              
+                              if( artistSelected.id == 0) return;
+                              
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ArtistSelectedScreen(artistSelected: artistSelected)
+                                )
+                              );
+                            },
+                            child: Text(
+                              songPlayed.artist.valueEmpty('No Artist'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 16, color: Colors.white54)
+                            ),
+                          ),
                         ],
-                      )
+                      ),
                     ),
-                    if( (songPlayed.artist ?? '').length > 30 )
-                      const SizedBox(height: 10,),
-                    Text(
-                      songPlayed.artist ?? 'No Artist',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 16, color: Colors.white54)
-                    ),
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () => MusicActions.showCurrentPlayList(context),
+                      icon: const Icon(Icons.playlist_play)
+                    )
                   ],
                 ),
               ),
-              SizedBox(height: size.height * 0.08),
-              const _SongTimeline(),
               SizedBox(height: size.height * 0.1),
+              const _SongTimeline(),
+              SizedBox(height: size.height * 0.09),
               _MusicControls(playAnimation: playAnimation)
             ],
           ),
@@ -240,6 +294,7 @@ class _MusicControls extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         FloatingActionButton(
+          heroTag: 'forward',
           elevation: 0.0,
           highlightElevation: 0.0,
           backgroundColor: Colors.transparent,
@@ -253,10 +308,13 @@ class _MusicControls extends StatelessWidget {
             },
           ),
           onPressed: () async {
-            await audioPlayer.setLoopMode( 
-              audioPlayer.loopMode.value == LoopMode.none
+            final isLoppNone = ( audioPlayer.loopMode.value == LoopMode.none )
               ? LoopMode.single
-              : LoopMode.none
+              : LoopMode.none;
+
+            await audioPlayer.setLoopMode( isLoppNone );
+            Fluttertoast.showToast(
+              msg: ( isLoppNone == LoopMode.none ) ? 'Order' : 'Repeat Current'
             );
           },
         ),
@@ -266,16 +324,19 @@ class _MusicControls extends StatelessWidget {
             InkWell(
               onLongPress: () =>  audioPlayer.seekBy( const Duration(seconds: -10) ),
               child: FloatingActionButton(
+                heroTag: 'fast_rewind',
                 elevation: 0.0,
                 highlightElevation: 0.0,
                 backgroundColor: Colors.transparent,
                 child: const Icon( Icons.fast_rewind),
-                onPressed: () {
-                  if( audioPlayer.loopMode.value == LoopMode.none && controlProvider.currentIndex > 0 ) {
-                    controlProvider.currentIndex -= 1;
-                    musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[controlProvider.currentIndex];
-                    audioPlayer.previous();
-                  }
+                onPressed: () async {
+                  final resp = await audioPlayer.previous();
+                  if( !resp ) return;
+
+                  final currentIndex = musicPlayerProvider.currentPlaylist.indexWhere((song) => song.id.toString() == audioPlayer.current.value?.audio.audio.metas.id);
+                  controlProvider.currentIndex = currentIndex;
+                  musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[currentIndex];
+                  UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
                 },
                 
               ),
@@ -294,7 +355,8 @@ class _MusicControls extends StatelessWidget {
                 }
                 
                 return FloatingActionButton(
-                  backgroundColor: Colors.amber,
+                  heroTag: 'play_pause',
+                  backgroundColor: Colors.white,
                   onPressed: () {
                     if( isPlaying ) {
                       playAnimation?.reverse();
@@ -316,16 +378,18 @@ class _MusicControls extends StatelessWidget {
             InkWell(
               onLongPress: () =>  audioPlayer.seekBy( const Duration(seconds: 10) ),
               child: FloatingActionButton(
+                heroTag: 'fast_forward',
                 elevation: 0.0,
                 highlightElevation: 0.0,
                 backgroundColor: Colors.transparent,
                 child: const Icon( Icons.fast_forward ),
-                onPressed: () {
-                  if( audioPlayer.loopMode.value == LoopMode.none && controlProvider.currentIndex <= musicPlayerProvider.currentPlaylist.length - 2 ) {
-                    controlProvider.currentIndex += 1;
-                    musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[controlProvider.currentIndex];
-                    audioPlayer.next();
-                  }
+                onPressed: () async {
+                  final resp = await audioPlayer.next(stopIfLast: true);
+                  if( !resp ) return;
+                  final currentIndex = musicPlayerProvider.currentPlaylist.indexWhere((song) => song.id.toString() == audioPlayer.current.value?.audio.audio.metas.id);
+                  controlProvider.currentIndex = currentIndex;
+                  musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[currentIndex];
+                  UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
                 },
                 
               ),
@@ -333,6 +397,7 @@ class _MusicControls extends StatelessWidget {
           ]
         ),
         FloatingActionButton(
+          heroTag: 'shuffle',
           elevation: 0.0,
           highlightElevation: 0.0,
           backgroundColor: Colors.transparent,
@@ -346,23 +411,12 @@ class _MusicControls extends StatelessWidget {
               return Icon( Icons.shuffle, color: ( snapshot.data! ) ? Colors.white : Colors.grey );
             },
           ),
-          onPressed: () {
-            // musicPlayerProvider.audioPlayer.toggleShuffle();
-            // musicPlayerProvider.currentPlaylist = [];
-
-            // List<SongModel> tempList = [];
-
-            // for( var song in musicPlayerProvider.audioPlayer.playlist!.audios ) {
-            //   final index = musicPlayerProvider.songList.indexWhere((songStored) => songStored.data == song.path );
-            //   tempList.add( musicPlayerProvider.songList[index] );
-            // }
-
-            // musicPlayerProvider.currentPlaylist = tempList;
-            // final currentIndex = musicPlayerProvider.currentPlaylist.indexWhere((songStored) => songStored.data ==  musicPlayerProvider.audioPlayer.current.value!.audio.assetAudioPath);
-            // controlProvider.currentIndex = currentIndex;
-            // musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[currentIndex];
-            // print( musicPlayerProvider.songPlayed.title);
-          },
+          onPressed: ()  {
+            audioPlayer.toggleShuffle();
+            Fluttertoast.showToast(
+              msg: 'Shuffle ${ ( audioPlayer.isShuffling.value )  ? 'ON' : 'OFF' } ',
+            );
+          }
         ),
       ],
     );
@@ -386,12 +440,13 @@ class _SongTimeline extends StatelessWidget {
       thumbRadius: 8.0,
       barHeight: 3.0,
       progressBarColor: Colors.white,
-      thumbColor: Colors.amber,
+      thumbColor: Colors.white,
       progress: audioControlProvider.currentDuration,
       total: Duration(milliseconds: songPlayed.duration!),
       onSeek: (duration) {
         audioPlayer.seek(duration);
       },
+      timeLabelTextStyle: const TextStyle(color: AppTheme.lightTextColor, fontWeight: FontWeight.w500),
     );
   }
 }

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:music_player_app/audio_player_handler.dart';
-import 'package:music_player_app/widgets/artwork_image.dart';
+import 'package:focus_music_player/audio_player_handler.dart';
+import 'package:focus_music_player/screens/playlist_selected_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 import '../../helpers/custom_snackbar.dart';
 import '../../providers/music_player_provider.dart';
+import '../../widgets/widgets.dart';
 
 class PlaylistsScreen extends StatefulWidget {
   
@@ -28,38 +29,48 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> with AutomaticKeepAli
     final playlists = musicPlayerProvider.playLists;
 
     return musicPlayerProvider.isLoading
-      ? const Center ( child: CircularProgressIndicator() )
+      ? CustomLoader(isCreatingArtworks: musicPlayerProvider.isCreatingArtworks)
       : playlists.isNotEmpty 
-        ? ListView.builder(
-          itemCount: playlists.length,
-          itemBuilder: ( _, int i ) {
-            final playlist = playlists[i];
-            return ListTile(
-              contentPadding: const EdgeInsets.symmetric( vertical: 10, horizontal: 15),
-              title: Text(playlist.playlist),
-              subtitle: Text(playlist.numOfSongs.toString()),
-              onLongPress: () async {
-                final resp = await onAudioQuery.removePlaylist(playlist.id);
-                if( resp ) {
-                  showSnackbar(
-                    context: context,
-                    message: '¡La playlist ${ playlist.playlist } eliminada con éxito!'
+        ? OrientationBuilder(
+          builder: ( _, orientation ) => GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: ( orientation == Orientation.landscape ) ?  2 : 1,
+              childAspectRatio: 5.5
+            ),
+            itemCount: playlists.length,
+            itemBuilder: ( _, int i ) {
+              final playlist = playlists[i];
+              return ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 15),
+                title: Text(playlist.playlist, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w400),),
+                subtitle: Text(playlist.numOfSongs.toString()),
+                onLongPress: () async {
+                  final resp = await onAudioQuery.removePlaylist(playlist.id);
+                  if( resp ) {
+                    showSnackbar(
+                      context: context,
+                      message: 'The ${ playlist.playlist } playlist was successfully removed!'
+                    );
+                    musicPlayerProvider.refreshPlaylist();
+                  }
+                },
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => PlaylistSelectedScreen( playlist: playlist))
                   );
-                  musicPlayerProvider.refreshPlaylist();
-                }
-              },
-              onTap: () {
-              },
-              leading: ArtworkImage(
-                artworkId: playlist.id,
-                type: ArtworkType.PLAYLIST,
-                width: 40,
-                height: 40,
-                radius: BorderRadius.circular(2.5),
-                size: 250,
-              ),
-            );
-          } 
+                },
+                leading: ArtworkImage(
+                  artworkId: playlist.id,
+                  type: ArtworkType.PLAYLIST,
+                  width: 55,
+                  height: 55,
+                  radius: BorderRadius.circular(2.5),
+                  size: 250,
+                ),
+              );
+            } 
+          )
         )
       : const Center( 
         child: Text('No Playlists', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))

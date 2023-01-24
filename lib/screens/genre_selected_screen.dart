@@ -1,13 +1,15 @@
 import 'dart:io';
 
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:focus_music_player/helpers/null_extension.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
 import '../helpers/music_actions.dart';
 import '../providers/music_player_provider.dart';
 import '../search/search_delegate.dart';
-import '../widgets/artwork_image.dart';
+import '../widgets/custom_icon_text_button.dart';
 import '../widgets/widgets.dart';
 
 class GenreSelectedScreen extends StatefulWidget {
@@ -23,15 +25,34 @@ class GenreSelectedScreen extends StatefulWidget {
 }
 
 class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
+  final ScrollController _scrollController = ScrollController();
+  String? appBarTitle;
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     getSongs();
+    _scrollController.addListener(() {
+      if( _scrollController.position.pixels >= 70 && appBarTitle == null ) {
+        setState(() => appBarTitle = widget.genreSelected.genre);
+      }
+    });
   }
 
-  void getSongs() async {
-    await Provider.of<MusicPlayerProvider>(this.context, listen: false).searchByGenreId( widget.genreSelected.id );
+  @override
+  void dispose() {
+    super.dispose();
+    _scrollController.removeListener(() { });
+    _scrollController.dispose();
+  }
+
+  void getSongs() {
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await musicPlayerProvider.searchByGenreId( widget.genreSelected.id, force: (musicPlayerProvider.genreCollection[widget.genreSelected.id]?.length ?? 0) != widget.genreSelected.numOfSongs);
+      setState(() => isLoading = false);
+    });
   }
 
   @override
@@ -39,8 +60,12 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
-        title: const Text('Genre Details'),
+        title: appBarTitle == null 
+          ? null
+          : FadeInUp(
+            duration: const Duration(milliseconds: 350),
+            child: Text(appBarTitle!, maxLines: 1, overflow: TextOverflow.ellipsis)
+          ),
         actions: <Widget>[
           IconButton(
             splashRadius: 20,
@@ -49,88 +74,101 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
           ),
         ],
       ),
-      body: musicPlayerProvider.isLoading
-        ? const Center( child: CircularProgressIndicator(color: Colors.black) )
-        : Stack(
-          children: [
-            const CustomBackground(),
-            SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  
-                  Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: 
-                      [
-                        ArtworkImage(
-                          artworkId: widget.genreSelected.id,
-                          type: ArtworkType.GENRE,
-                          width: 150,
-                          height: 150,
-                          size: 600,
-                        ),
-                        const SizedBox(width: 10),
-                        Flexible(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                widget.genreSelected.genre,
-                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                "${ widget.genreSelected.numOfSongs } ${ ( widget.genreSelected.numOfSongs > 1) ? 'Songs' : 'Song' }",
-                                style: const TextStyle(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.w400)
-                              ),
-                            ],
-                          ),
-                        )
-                      ]
+      body: isLoading
+        ? const Center( child: CircularProgressIndicator() )
+        : SingleChildScrollView(
+          controller: _scrollController,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: 
+                  [
+                    ArtworkImage(
+                      artworkId: widget.genreSelected.id,
+                      type: ArtworkType.GENRE,
+                      width: 150,
+                      height: 150,
+                      size: 600,
                     ),
-                  ),
-                  const Divider(color: Colors.white54, height: 15),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: musicPlayerProvider.genreCollection[widget.genreSelected.id]!.length,
-                    itemBuilder: (_, int i) {
-                      final song = musicPlayerProvider.genreCollection[widget.genreSelected.id]![i];
-                      final imageFile = File(song.uri ?? '');
-                      return RippleTile(
-                        child: ListTile(
-                          leading: imageFile.existsSync()
-                            ? Image.file(
-                              imageFile,
-                              width: 50,
-                              height: 50,
-                            )
-                            : ArtworkImage(
-                              artworkId: song.albumId ?? 1,
-                              type: ArtworkType.ALBUM,
-                              width: 50,
-                              height: 50,
-                              size: 250,
-                            ),
-                          title: Text(song.title),
-                          subtitle: Text(song.artist ?? 'No Artist')
-                        ),
-                        onTap: () {
-                          MusicActions.songPlayAndPause(context, song, TypePlaylist.genre, id: widget.genreSelected.id );
-                        },
+                    const SizedBox(width: 10),
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.genreSelected.genre,
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            "${ widget.genreSelected.numOfSongs } ${ ( widget.genreSelected.numOfSongs > 1) ? 'Songs' : 'Song' }",
+                            style: const TextStyle(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.w400)
+                          ),
+                        ],
+                      ),
+                    )
+                  ]
+                ),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                width: double.infinity,
+                height: 50,
+                child: CustomIconTextButton(
+                  label: 'PLAY ALL',
+                  icon: Icons.play_arrow,
+                  onPressed: () {
+                    final song = musicPlayerProvider.genreCollection[widget.genreSelected.id]![0];
+                    final heroId = 'genre-song-${ song.id }';
+
+                    MusicActions.songPlayAndPause(
+                      context,
+                      song,
+                      TypePlaylist.genre,
+                      id: widget.genreSelected.id,
+                      heroId: heroId
+                    );
+                  }
+                ),
+              ),
+              const SizedBox(height: 5),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: ( musicPlayerProvider.genreCollection[widget.genreSelected.id] ?? [] ).length,
+                itemBuilder: (_, int i) {
+                  final song = musicPlayerProvider.genreCollection[widget.genreSelected.id]![i];
+                  final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
+                  final heroId = 'genre-song-${ song.id }';
+
+                  return RippleTile(
+                    child: CustomListTile(
+                      imageFile: imageFile,
+                      title: song.title.value(i),
+                      subtitle: song.artist.valueEmpty('No Artist'),
+                      artworkId: song.id,
+                      tag: heroId,
+                    ),
+                    onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.genre, id: widget.genreSelected.id, heroId: heroId),
+                    onLongPress: () {
+                      showModalBottomSheet(
+                        context: context,
+                        builder:( _ ) => MoreSongOptionsModal(song: song, disabledDeleteButton: true)
                       );
                     },
-                  ),
-                  const SizedBox(height: 5),
-                ],
+                  );
+                },
               ),
-            )
-          ],
+              const SizedBox(height: 5),
+            ],
+          ),
         ),
-      bottomNavigationBar: (musicPlayerProvider.isLoading || musicPlayerProvider.songPlayed.title.isEmpty)
+      bottomNavigationBar: (musicPlayerProvider.isLoading || musicPlayerProvider.songPlayed.title.value().isEmpty)
           ? null
           : const CurrentSongTile()
     );

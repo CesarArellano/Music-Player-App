@@ -1,11 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:music_player_app/theme/app_theme.dart';
-import 'package:on_audio_query/on_audio_query.dart' show ArtworkType, AudioModel;
+import 'package:focus_music_player/helpers/null_extension.dart';
+import 'package:focus_music_player/theme/app_theme.dart';
+import 'package:on_audio_query/on_audio_query.dart' show SongModel;
 import 'package:provider/provider.dart';
 
 import '../helpers/music_actions.dart';
 import '../providers/music_player_provider.dart';
-import '../widgets/artwork_image.dart';
 import '../widgets/widgets.dart';
 
 class MusicSearchDelegate extends SearchDelegate {
@@ -13,13 +15,12 @@ class MusicSearchDelegate extends SearchDelegate {
   @override
   ThemeData appBarTheme(BuildContext context) {
     return Theme.of(context).copyWith(
-      useMaterial3: true,
       colorScheme: const ColorScheme.dark(
         primary: Colors.white
       ),
       hintColor: Colors.white,
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF001F42),
+        backgroundColor: AppTheme.primaryColor,
       ),
       scaffoldBackgroundColor: AppTheme.primaryColor
     );
@@ -62,15 +63,34 @@ class MusicSearchDelegate extends SearchDelegate {
     
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     return FutureBuilder(
-      future: musicPlayerProvider.searchSongByQuery(query),
-      builder: ( _, AsyncSnapshot<List<AudioModel>> asyncSnapshot) {
+      future: musicPlayerProvider.searchSongByQuery(query.toLowerCase()),
+      builder: ( _, AsyncSnapshot<List<SongModel>> asyncSnapshot) {
         if( !asyncSnapshot.hasData) {
           return _emptyContainer();
         }
         final songs = asyncSnapshot.data;
-        return ListView.builder(
-          itemCount: songs!.length,
-          itemBuilder: (_, int i) => _songItem(context, songs[i], musicPlayerProvider)
+        return ListView(
+          shrinkWrap: true,
+          children: [
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              child: RichText(
+                  text: TextSpan(
+                  style: const TextStyle(fontSize: 18),
+                  children: [
+                    const TextSpan(text: 'Songs', style: TextStyle(fontWeight: FontWeight.w500)),
+                    TextSpan(text: ' (${ songs?.length })', style: const TextStyle(color: AppTheme.lightTextColor))
+                  ]
+                ),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 15),
+              child: Divider(color: AppTheme.lightTextColor),
+            ),
+            ...songs!.map((song) => _songItem(context, song, musicPlayerProvider))
+          ]
         );
       }
     );
@@ -86,23 +106,25 @@ class MusicSearchDelegate extends SearchDelegate {
     );
   }
 
-  Widget _songItem(BuildContext context, AudioModel song, MusicPlayerProvider musicPlayerProvider ) {
+  Widget _songItem(BuildContext context, SongModel song, MusicPlayerProvider musicPlayerProvider ) {
+    final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
+    final heroId = 'search-song-${ song.id }';
+    
     return RippleTile(
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-        leading: ArtworkImage(
-          artworkId: song.id,
-          type: ArtworkType.AUDIO,
-          width: 60,
-          height: 60,
-          size: 250,
-          radius: BorderRadius.circular(2.5),
-        ),
-        title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-        subtitle: Text(song.artist ?? 'No Artist', maxLines: 1, overflow: TextOverflow.ellipsis),
-        // onTap: () => Navigator.pushNamed(context, 'details', arguments: song),
+      child: CustomListTile(
+        imageFile: imageFile,
+        title: song.title.value(),
+        subtitle: song.artist.valueEmpty('No Artist'),
+        artworkId: song.id,
+        tag: heroId,
       ),
-      onTap: () =>  MusicActions.songPlayAndPause(context, song, TypePlaylist.songs),
+      onTap: () =>  MusicActions.songPlayAndPause(context, song, TypePlaylist.songs, heroId: heroId),
+      onLongPress: () {
+        showModalBottomSheet(
+          context: context,
+          builder:(context) => MoreSongOptionsModal(song: song)
+        );
+      },
     );
   } 
 }

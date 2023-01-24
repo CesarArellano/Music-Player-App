@@ -2,37 +2,46 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
 
-  static const Color primaryColor = Color(0xFF0E3158);
+  static const Color primaryColor = Color(0xFF104674);
   static const Color accentColor = Colors.amber;
+  static const Color lightTextColor = Colors.white54;
 
   static ThemeData lightTheme = ThemeData.light().copyWith(
     useMaterial3: true,
-    splashFactory: InkSparkle.splashFactory,
+    splashFactory: InkSparkle.constantTurbulenceSeedSplashFactory,
     textTheme: Typography.whiteCupertino,
+    scaffoldBackgroundColor: primaryColor,
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: accentColor
     ), 
+    iconTheme: const IconThemeData(
+      color: lightTextColor
+    ),
     appBarTheme: const AppBarTheme(
       elevation: 0.0,
-      backgroundColor: Color(0xFF001F42),
+      backgroundColor: primaryColor,
+      iconTheme: IconThemeData(color: lightTextColor)
     ),
     colorScheme: const ColorScheme.dark(
       primary: Colors.white,
       onPrimary: Colors.white,
+      secondary: Colors.white
     ).copyWith(secondary: accentColor),
-    navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: const Color(0xFF001F42),
-      indicatorColor: Colors.blue.shade100,
-      labelTextStyle: MaterialStateProperty.all(
-        const TextStyle( fontSize: 12, fontWeight: FontWeight.w400, color: Colors.white54 )
-      )
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: primaryColor,
+      selectedItemColor: Colors.white,
+      unselectedItemColor: lightTextColor,
+      selectedLabelStyle: TextStyle(fontSize: 12),
+      unselectedLabelStyle: TextStyle(fontSize: 12),
+    ),
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: AppTheme.primaryColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(5),
+          topRight: Radius.circular(5),
+        )
+      ),
     )
-  );
-
-  static ThemeData darkTheme = ThemeData.dark().copyWith(
-    useMaterial3: true,
-    splashFactory: InkSparkle.splashFactory,
-    textTheme: Typography().white,
-    brightness: Brightness.dark
   );
 }

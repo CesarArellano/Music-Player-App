@@ -1,4 +1,6 @@
+
 import 'package:flutter/material.dart';
+import 'package:focus_music_player/share_prefs/user_preferences.dart';
 import 'package:provider/provider.dart';
 
 import 'audio_player_handler.dart';
@@ -8,7 +10,10 @@ import 'providers/ui_provider.dart';
 import 'routes/app_router.dart';
 import 'theme/app_theme.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = UserPreferences();
+  await prefs.initPrefs();
   setupAudioHandlers();
   runApp(const MyApp());
 }
@@ -21,16 +26,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider( create: ( _ ) => MusicPlayerProvider(), lazy: false ),
-        ChangeNotifierProvider( create: ( _ ) => AudioControlProvider(), lazy: false),
+        ChangeNotifierProvider( create: ( _ ) => MusicPlayerProvider() ),
+        ChangeNotifierProvider( create: ( _ ) => AudioControlProvider()),
         ChangeNotifierProvider( create: ( _ ) => UIProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Music Player App',
+        title: 'Focus Music Player',
         initialRoute: 'home',
         theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
         routes: AppRouter.routes,
         onGenerateRoute: AppRouter.onGenerateRoute,
       ),
