@@ -47,6 +47,7 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> with AutomaticKeepAli
                 onLongPress: () async {
                   final resp = await onAudioQuery.removePlaylist(playlist.id);
                   if( resp ) {
+                    if( !mounted ) return;
                     showSnackbar(
                       context: context,
                       message: 'The ${ playlist.playlist } playlist was successfully removed!'

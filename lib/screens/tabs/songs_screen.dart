@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:focus_music_player/helpers/null_extension.dart';
-import 'package:on_audio_query/on_audio_query.dart' show SongModel;
+import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
 import '../../helpers/music_actions.dart';
@@ -34,6 +34,8 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
       Future.delayed(const Duration(milliseconds: 400), () {
         final int lastSongId = UserPreferences().lastSongId;
         final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
+        
+        MusicActions.initStreams(context);
         
         if( lastSongId == 0 ) return;
           

@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:focus_music_player/helpers/null_extension.dart';
 import 'package:focus_music_player/providers/ui_provider.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 
 import '../audio_player_handler.dart';
@@ -69,7 +69,7 @@ class _SelectorSongTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
+    final audioPlayer = audioPlayerHandler<AudioPlayer>();
     final audioControlProvider = Provider.of<AudioControlProvider>(context);
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final uiProvider = Provider.of<UIProvider>(context);
@@ -95,7 +95,7 @@ class _SelectorSongTitle extends StatelessWidget {
             tag: heroId,
           ),
           trailing: StreamBuilder<bool>(
-            stream: audioPlayer.isPlaying,
+            stream: audioPlayer.playingStream,
             builder: (context, snapshot) {
               final isPlaying = snapshot.data ?? false;
               
@@ -110,7 +110,6 @@ class _SelectorSongTitle extends StatelessWidget {
                 children: [
                   IconButton(
                     onPressed: () {
-                      final isPlaying = audioPlayer.isPlaying.value;
                       if( isPlaying ) {
                         _playAnimation.reverse();
                         audioPlayer.pause();

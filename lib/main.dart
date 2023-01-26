@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:focus_music_player/share_prefs/user_preferences.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
 
 import 'audio_player_handler.dart';
@@ -15,6 +16,11 @@ void main() async {
   final prefs = UserPreferences();
   await prefs.initPrefs();
   setupAudioHandlers();
+  await JustAudioBackground.init(
+    androidNotificationChannelId: 'com.ryanheise.bg_demo.channel.audio',
+    androidNotificationChannelName: 'Audio playback',
+    androidNotificationOngoing: true,
+  );
   runApp(const MyApp());
 }
 

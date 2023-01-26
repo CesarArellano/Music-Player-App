@@ -1,6 +1,6 @@
-import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -34,8 +34,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return WillPopScope(
       onWillPop: () async {
         if( _isSnackbarActive ) {
-          audioPlayerHandler<AssetsAudioPlayer>().stop();
-          audioPlayerHandler<AssetsAudioPlayer>().dispose();
+          audioPlayerHandler<AudioPlayer>().stop();
+          audioPlayerHandler<AudioPlayer>().dispose();
           SystemNavigator.pop();
           return true;
         }
@@ -49,8 +49,8 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'EXIT',
             textColor: AppTheme.accentColor,
             onPressed: () {
-              audioPlayerHandler<AssetsAudioPlayer>().stop();
-              audioPlayerHandler<AssetsAudioPlayer>().dispose();
+              audioPlayerHandler<AudioPlayer>().stop();
+              audioPlayerHandler<AudioPlayer>().dispose();
               SystemNavigator.pop();
             },
           )
@@ -83,6 +83,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 final onAudioQuery = audioPlayerHandler<OnAudioQuery>();
                 await onAudioQuery.createPlaylist(dialogResp.playlistName.value());
                 
+                if( !mounted ) return;
+
                 showSnackbar(
                   context: context,
                   message: 'The ${ dialogResp.playlistName.value() } playlist was successfully added!'
@@ -130,7 +132,7 @@ class _Body extends StatelessWidget {
   }
 }
 
-class _CustomAppBar extends StatelessWidget {
+class _CustomAppBar extends StatefulWidget {
   const _CustomAppBar({
     Key? key,
     required this.forceElevated,
@@ -138,11 +140,16 @@ class _CustomAppBar extends StatelessWidget {
   final bool forceElevated;
 
   @override
+  State<_CustomAppBar> createState() => _CustomAppBarState();
+}
+
+class _CustomAppBarState extends State<_CustomAppBar> {
+  @override
   Widget build(BuildContext context) {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
 
     return SliverAppBar(
-      forceElevated: forceElevated,
+      forceElevated: widget.forceElevated,
       title: const Text('Focus Music Player'),
       pinned: true,
       floating: true,
@@ -185,10 +192,16 @@ class _CustomAppBar extends StatelessWidget {
             ),
             PopupMenuItem(
               child: const Text('Scan media', style: TextStyle(color: Colors.black)),
-              onTap: () async => await _getAllSongs(
-                context: context,
-                musicPlayerProvider: musicPlayerProvider,
-              )
+              onTap: () async {
+                await _getAllSongs(
+                  context: context,
+                  musicPlayerProvider: musicPlayerProvider,
+                );
+                
+                if(!mounted ) return;
+                
+                showSnackbar(context: context, message: 'Task successfully completed');
+              }
             ),
           ],
         ),
@@ -202,6 +215,6 @@ class _CustomAppBar extends StatelessWidget {
     bool forceCreatingArtworks = false
   }) async {
     await musicPlayerProvider.getAllSongs(forceCreatingArtworks: forceCreatingArtworks);
-    showSnackbar(context: context, message: 'Task successfully completed');
   }
 }
+

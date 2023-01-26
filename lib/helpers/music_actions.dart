@@ -3,10 +3,10 @@
 
 import 'dart:io';
 
-import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:focus_music_player/models/artist_content_model.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -36,7 +36,7 @@ class MusicActions {
       required String heroId,
     }
   ) {
-    final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
+    final audioPlayer = audioPlayerHandler<AudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
     Provider.of<UIProvider>(context, listen: false).currentHeroId = heroId;
@@ -47,26 +47,29 @@ class MusicActions {
     
     audioControlProvider.currentIndex = index;
 
-    _openAudios(
+    openAudios(
       index: index,
-      autoStart: false,
       audioPlayer: audioPlayer,
-      appDirectory: musicPlayerProvider.appDirectory,
-      currentPlaylist: musicPlayerProvider.currentPlaylist,
+      audioControlProvider: audioControlProvider,
+      musicPlayerProvider: musicPlayerProvider,
       seek: Duration(milliseconds: UserPreferences().lastSongDuration),
     );
 
-    audioPlayer.currentPosition.listen((duration) async {
+  }
+
+  static void initStreams(BuildContext context) {
+    final audioPlayer = audioPlayerHandler<AudioPlayer>();
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
+    final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
+
+    audioPlayer.positionStream.listen((duration) async {
       audioControlProvider.currentDuration = duration;
       UserPreferences().lastSongDuration = duration.inMilliseconds;
     });
 
-    audioPlayer.playlistAudioFinished.listen((playing) {
-      if( musicPlayerProvider.songPlayed.title == song.title || !playing.hasNext ) return;
-      if( audioPlayer.loopMode.value == LoopMode.single ) return;
-
-      audioControlProvider.currentIndex = playing.playlist.nextIndex ?? audioControlProvider.currentIndex + 1;
-      musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ audioControlProvider.currentIndex ];
+    audioPlayer.currentIndexStream.listen((currentIndex) {
+      audioControlProvider.currentIndex = currentIndex.value();
+      musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ currentIndex.value() ];
       UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
     });
   }
@@ -80,9 +83,9 @@ class MusicActions {
     }
   ) {
     
-    final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
+    final audioPlayer = audioPlayerHandler<AudioPlayer>();
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     
     Provider.of<UIProvider>(context, listen: false).currentHeroId = heroId;
 
@@ -112,40 +115,25 @@ class MusicActions {
         break;
     }
 
-    final index = musicPlayerProvider.currentPlaylist.indexWhere((songOfList) => songOfList.id == song.id );
-    audioControlProvider.currentIndex = index;
+    final index = musicPlayerProvider.currentPlaylist.indexWhere(
+      (songOfList) => songOfList.id == song.id 
+    );
 
     if( musicPlayerProvider.songPlayed.id != song.id || playlistToLength != musicPlayerProvider.currentPlaylist.length ) {
 
       audioPlayer.stop();
       
-      _openAudios(
+      openAudios(
         index: index,
         audioPlayer: audioPlayer,
-        appDirectory: musicPlayerProvider.appDirectory,
-        currentPlaylist: musicPlayerProvider.currentPlaylist,
+        audioControlProvider: audioControlProvider,
+        musicPlayerProvider: musicPlayerProvider,
       );
-      
-      audioPlayer.currentPosition.listen((duration) {
-        audioControlProvider.currentDuration = duration;
-        UserPreferences().lastSongDuration = duration.inMilliseconds;
-      });
-
-      audioPlayer.playlistAudioFinished.listen((playing) {
-        if( musicPlayerProvider.songPlayed.title == song.title || !playing.hasNext ) return;
-        if( audioPlayer.loopMode.value == LoopMode.single ) return;
-
-        audioControlProvider.currentIndex = playing.playlist.nextIndex ?? audioControlProvider.currentIndex + 1;
-        musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ audioControlProvider.currentIndex ];
-        UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
-
-      });
-
-      musicPlayerProvider.songPlayed = song;
-      UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
     } else {
       audioPlayer.seek( const Duration( seconds: 0 ));
     }
+
+    audioPlayer.play();
 
     Navigator.push(
       context,
@@ -159,28 +147,31 @@ class MusicActions {
   }
 
   static void showCurrentPlayList(BuildContext context, ){
-    final audioPlayer = audioPlayerHandler.get<AssetsAudioPlayer>();
+    final audioPlayer = audioPlayerHandler.get<AudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
-    
+
     showModalBottomSheet(
       context: context,
       builder: ( ctx ) => ListView.builder(
         shrinkWrap: true,
-        itemCount: audioPlayer.playlist?.audios.length,
+        itemCount: musicPlayerProvider.currentPlaylist.length,
         itemBuilder: (_, int i) {
-          final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
-          final audio = audioPlayer.playlist?.audios[i];
-          final currentColor = ( musicPlayerProvider.songPlayed.id.toString() == audio?.metas.id ) ? AppTheme.accentColor : Colors.white;
+          final currentSequence = musicPlayerProvider.currentPlaylist[ ( audioPlayer.effectiveIndices?[i] ).value() ];
+
+          final audio = SongModel({
+            '_id': currentSequence.id,
+            'title':currentSequence.title,
+            'artist': currentSequence.artist,
+          });
+          final currentColor = ( musicPlayerProvider.songPlayed.id == audio.id) ? AppTheme.accentColor : Colors.white;
           
           return ListTile(
             leading: Icon( Icons.music_note, color: currentColor ),
-            title: Text(audio!.metas.title!, maxLines: 1, style: TextStyle(color: currentColor)),
-            subtitle: Text(audio.metas.artist!, maxLines: 1, style: TextStyle(color: currentColor)),
+            title: Text(audio.title.value(), maxLines: 1, style: TextStyle(color: currentColor)),
+            subtitle: Text(audio.artist.valueEmpty('No Artists'), maxLines: 1, style: TextStyle(color: currentColor)),
             onTap: () {
-              audioPlayer.playlistPlayAtIndex(i);
-              audioControlProvider.currentIndex = i;
-              musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[i];
-              UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
+              audioPlayer.seek(Duration.zero, index: i);
+              audioPlayer.play();
               Navigator.pop(ctx);
             },            
           );
@@ -215,49 +206,32 @@ class MusicActions {
     }
   }
 
-  static void _openAudios({
-    required AssetsAudioPlayer audioPlayer,
-    required List<SongModel> currentPlaylist,
-    required String appDirectory,
+  static void openAudios({
     required int index,
-    bool autoStart = true,
+    required AudioPlayer audioPlayer,
+    required AudioControlProvider audioControlProvider,
+    required MusicPlayerProvider musicPlayerProvider,
     Duration? seek
   }) {
-    audioPlayer.open(
-      Playlist(
-        audios: [
-          ...currentPlaylist.map((song) => Audio.file(
-              song.data,
-              metas: Metas(
-                album: song.album,
-                artist: song.artist,
-                title: song.title,
-                id: song.id.toString(),
-                image: MetasImage.file('$appDirectory/${ song.albumId }.jpg'),
-                onImageLoadFail: const MetasImage.asset('assets/images/background.jpg'),
-              )
-            )
-          )
-        ],
-        startIndex: index,
-      ),
-      seek: seek,
-      autoStart: autoStart,
-      showNotification: true,
-      headPhoneStrategy: HeadPhoneStrategy.pauseOnUnplugPlayOnPlug,
-      playInBackground: PlayInBackground.enabled,
-      notificationSettings: NotificationSettings(
-        customStopAction: (player) {
-          player.stop();
-          player.dispose();
-          if( Platform.isAndroid ) {
-            SystemNavigator.pop();
-          } else {
-            exit(0);
-          }
-        },
-      )
+    final playlist = ConcatenatingAudioSource(
+      children: musicPlayerProvider.currentPlaylist.map((song) => AudioSource.file(
+        song.data,
+        tag: MediaItem(
+          id: song.id.value().toString(),
+          title: song.title.value(),
+          album: song.album,
+          artist: song.artist,
+          duration: Duration(milliseconds: song.duration.value()),
+          genre: song.genre,
+          artUri: Uri.file('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg'),
+        )
+      )).toList(),
     );
+
+    audioPlayer.setAudioSource(playlist, initialIndex: index, initialPosition: seek);
+    audioControlProvider.currentIndex = index;
+    musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ index ];
+    UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
   }
 
 }

@@ -49,8 +49,12 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
   }
 
   void getSongs() {
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await Provider.of<MusicPlayerProvider>(context, listen: false).searchByAlbumId( widget.albumSelected.id );
+      await musicPlayerProvider.searchByAlbumId( 
+        widget.albumSelected.id,
+        force: (musicPlayerProvider.albumCollection[widget.albumSelected.id]?.length ?? 0) != widget.albumSelected.numOfSongs
+      );
       setState(() => isLoading = false);
     });
   }

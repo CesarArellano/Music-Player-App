@@ -18,7 +18,7 @@ class CustomIconTextButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton.icon(
       style: TextButton.styleFrom(
-        shape: RoundedRectangleBorder( borderRadius: BorderRadius.circular(5) ),
+        shape: RoundedRectangleBorder( borderRadius: BorderRadius.circular(4) ),
         backgroundColor: AppTheme.lightTextColor.withOpacity(0.15),
       ),
       icon: Icon(icon, color: AppTheme.lightTextColor),
