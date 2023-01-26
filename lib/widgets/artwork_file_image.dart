@@ -24,12 +24,14 @@ class ArtworkFileImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(5);
+
     return (imageFile ?? File('')).existsSync() 
       ? tag != null
         ? Hero(
           tag: tag!,
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(2.5),
+            borderRadius: radius,
             child: Image.file(
               imageFile!,
               width: width,
@@ -44,14 +46,14 @@ class ArtworkFileImage extends StatelessWidget {
                   width: width,
                   height: height,
                   size: 250,
-                  radius: BorderRadius.circular(2.5),
+                  radius: BorderRadius.circular(4),
                 );
               },
             ),
           ),
         )
         : ClipRRect(
-          borderRadius: BorderRadius.circular(2.5),
+          borderRadius: radius,
           child: Image.file(
             imageFile!,
             width: width,
@@ -66,7 +68,7 @@ class ArtworkFileImage extends StatelessWidget {
                 width: width,
                 height: height,
                 size: 250,
-                radius: BorderRadius.circular(2.5),
+                radius: radius,
               );
             },
           ),
@@ -77,7 +79,7 @@ class ArtworkFileImage extends StatelessWidget {
       width: width,
       height: height,
       size: 250,
-      radius: BorderRadius.circular(2.5),
+      radius: radius,
     );
   }
 }

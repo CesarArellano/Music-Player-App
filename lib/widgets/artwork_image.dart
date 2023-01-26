@@ -36,7 +36,7 @@ class ArtworkImage extends StatelessWidget {
       nullArtworkWidget: Container(
         decoration: BoxDecoration(
           color: Colors.white24,
-          borderRadius: BorderRadius.circular(2.5)
+          borderRadius: radius
         ),
         width: height,
         height: height,

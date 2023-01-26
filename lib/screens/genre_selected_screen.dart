@@ -93,6 +93,7 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
                       width: 150,
                       height: 150,
                       size: 600,
+                      radius: BorderRadius.circular(4),
                     ),
                     const SizedBox(width: 10),
                     Flexible(
