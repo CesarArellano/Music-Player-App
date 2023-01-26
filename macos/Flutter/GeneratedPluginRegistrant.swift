@@ -7,9 +7,9 @@ import Foundation
 
 import assets_audio_player
 import assets_audio_player_web
-import path_provider_macos
+import path_provider_foundation
 import share_plus
-import shared_preferences_macos
+import shared_preferences_foundation
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   AssetsAudioPlayerPlugin.register(with: registry.registrar(forPlugin: "AssetsAudioPlayerPlugin"))

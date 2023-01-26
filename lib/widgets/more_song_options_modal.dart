@@ -214,7 +214,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
               
               final isDeleted = await MusicActions.deleteFile(File(songPlayed.data));
               
-              if( !context.mounted ) return;
+              if( !mounted ) return;
 
               Navigator.pop(context);
 
@@ -229,6 +229,8 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                   await musicPlayerProvider.searchByArtistId(artistId, force: true);
                 }
 
+                if( !mounted ) return;
+                
                 showSnackbar(
                   context: context,
                   message: 'Successfully removed'
@@ -267,16 +269,5 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
     );
     musicPlayerProvider.currentPlaylist = [ ...musicPlayerProvider.currentPlaylist, song ];
     Navigator.pop(context);
-  }
-}
-
-extension ContextExtensions on BuildContext {
-  bool get mounted {
-    try {
-      widget;
-      return true;
-    } catch (e) {
-      return false;
-    }
   }
 }

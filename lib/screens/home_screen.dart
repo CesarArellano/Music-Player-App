@@ -83,6 +83,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 final onAudioQuery = audioPlayerHandler<OnAudioQuery>();
                 await onAudioQuery.createPlaylist(dialogResp.playlistName.value());
                 
+                if( !mounted ) return;
+
                 showSnackbar(
                   context: context,
                   message: 'The ${ dialogResp.playlistName.value() } playlist was successfully added!'
@@ -130,7 +132,7 @@ class _Body extends StatelessWidget {
   }
 }
 
-class _CustomAppBar extends StatelessWidget {
+class _CustomAppBar extends StatefulWidget {
   const _CustomAppBar({
     Key? key,
     required this.forceElevated,
@@ -138,11 +140,16 @@ class _CustomAppBar extends StatelessWidget {
   final bool forceElevated;
 
   @override
+  State<_CustomAppBar> createState() => _CustomAppBarState();
+}
+
+class _CustomAppBarState extends State<_CustomAppBar> {
+  @override
   Widget build(BuildContext context) {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
 
     return SliverAppBar(
-      forceElevated: forceElevated,
+      forceElevated: widget.forceElevated,
       title: const Text('Focus Music Player'),
       pinned: true,
       floating: true,
@@ -185,10 +192,16 @@ class _CustomAppBar extends StatelessWidget {
             ),
             PopupMenuItem(
               child: const Text('Scan media', style: TextStyle(color: Colors.black)),
-              onTap: () async => await _getAllSongs(
-                context: context,
-                musicPlayerProvider: musicPlayerProvider,
-              )
+              onTap: () async {
+                await _getAllSongs(
+                  context: context,
+                  musicPlayerProvider: musicPlayerProvider,
+                );
+                
+                if(!mounted ) return;
+                
+                showSnackbar(context: context, message: 'Task successfully completed');
+              }
             ),
           ],
         ),
@@ -202,6 +215,6 @@ class _CustomAppBar extends StatelessWidget {
     bool forceCreatingArtworks = false
   }) async {
     await musicPlayerProvider.getAllSongs(forceCreatingArtworks: forceCreatingArtworks);
-    showSnackbar(context: context, message: 'Task successfully completed');
   }
 }
+
