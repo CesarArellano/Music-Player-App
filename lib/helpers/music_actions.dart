@@ -49,12 +49,18 @@ class MusicActions {
 
     openAudios(
       index: index,
-      autoStart: false,
       audioPlayer: audioPlayer,
-      appDirectory: musicPlayerProvider.appDirectory,
-      currentPlaylist: musicPlayerProvider.currentPlaylist,
+      audioControlProvider: audioControlProvider,
+      musicPlayerProvider: musicPlayerProvider,
       seek: Duration(milliseconds: UserPreferences().lastSongDuration),
     );
+
+  }
+
+  static void initStreams(BuildContext context) {
+    final audioPlayer = audioPlayerHandler<AudioPlayer>();
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
+    final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
 
     audioPlayer.positionStream.listen((duration) async {
       audioControlProvider.currentDuration = duration;
@@ -62,13 +68,10 @@ class MusicActions {
     });
 
     audioPlayer.currentIndexStream.listen((currentIndex) {
-      if( !audioPlayer.hasNext || audioPlayer.loopMode == LoopMode.one ) return;
-
-      audioControlProvider.currentIndex =  currentIndex.value();
-      musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ audioControlProvider.currentIndex ];
+      audioControlProvider.currentIndex = currentIndex.value();
+      musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ currentIndex.value() ];
       UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
     });
-
   }
 
   static void songPlayAndPause(
@@ -81,8 +84,8 @@ class MusicActions {
   ) {
     
     final audioPlayer = audioPlayerHandler<AudioPlayer>();
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     
     Provider.of<UIProvider>(context, listen: false).currentHeroId = heroId;
 
@@ -112,8 +115,9 @@ class MusicActions {
         break;
     }
 
-    final index = musicPlayerProvider.currentPlaylist.indexWhere((songOfList) => songOfList.id == song.id );
-    audioControlProvider.currentIndex = index;
+    final index = musicPlayerProvider.currentPlaylist.indexWhere(
+      (songOfList) => songOfList.id == song.id 
+    );
 
     if( musicPlayerProvider.songPlayed.id != song.id || playlistToLength != musicPlayerProvider.currentPlaylist.length ) {
 
@@ -122,30 +126,14 @@ class MusicActions {
       openAudios(
         index: index,
         audioPlayer: audioPlayer,
-        appDirectory: musicPlayerProvider.appDirectory,
-        currentPlaylist: musicPlayerProvider.currentPlaylist,
+        audioControlProvider: audioControlProvider,
+        musicPlayerProvider: musicPlayerProvider,
       );
-
-      audioPlayer.play();
-      
-      audioPlayer.positionStream.listen((duration) {
-        audioControlProvider.currentDuration = duration;
-        UserPreferences().lastSongDuration = duration.inMilliseconds;
-      });
-
-      audioPlayer.currentIndexStream.listen((currentIndex) {
-        if( audioPlayer.loopMode == LoopMode.one ) return;
-
-        audioControlProvider.currentIndex =  currentIndex.value();
-        musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ audioControlProvider.currentIndex ];
-        UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
-      });
-
-      musicPlayerProvider.songPlayed = song;
-      UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
     } else {
       audioPlayer.seek( const Duration( seconds: 0 ));
     }
+
+    audioPlayer.play();
 
     Navigator.push(
       context,
@@ -161,18 +149,19 @@ class MusicActions {
   static void showCurrentPlayList(BuildContext context, ){
     final audioPlayer = audioPlayerHandler.get<AudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
-    
+
     showModalBottomSheet(
       context: context,
       builder: ( ctx ) => ListView.builder(
         shrinkWrap: true,
         itemCount: musicPlayerProvider.currentPlaylist.length,
         itemBuilder: (_, int i) {
-          final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
+          final currentSequence = musicPlayerProvider.currentPlaylist[ ( audioPlayer.effectiveIndices?[i] ).value() ];
+
           final audio = SongModel({
-            '_id': int.tryParse(audioPlayer.sequence?[i].tag.id) ?? 0,
-            'title': audioPlayer.sequence?[i].tag.title,
-            'artist': audioPlayer.sequence?[i].tag.artist,
+            '_id': currentSequence.id,
+            'title':currentSequence.title,
+            'artist': currentSequence.artist,
           });
           final currentColor = ( musicPlayerProvider.songPlayed.id == audio.id) ? AppTheme.accentColor : Colors.white;
           
@@ -182,9 +171,7 @@ class MusicActions {
             subtitle: Text(audio.artist.valueEmpty('No Artists'), maxLines: 1, style: TextStyle(color: currentColor)),
             onTap: () {
               audioPlayer.seek(Duration.zero, index: i);
-              audioControlProvider.currentIndex = i;
-              musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[i];
-              UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
+              audioPlayer.play();
               Navigator.pop(ctx);
             },            
           );
@@ -220,15 +207,14 @@ class MusicActions {
   }
 
   static void openAudios({
-    required AudioPlayer audioPlayer,
-    required List<SongModel> currentPlaylist,
-    required String appDirectory,
     required int index,
-    bool autoStart = true,
+    required AudioPlayer audioPlayer,
+    required AudioControlProvider audioControlProvider,
+    required MusicPlayerProvider musicPlayerProvider,
     Duration? seek
   }) {
     final playlist = ConcatenatingAudioSource(
-      children: currentPlaylist.map((song) => AudioSource.file(
+      children: musicPlayerProvider.currentPlaylist.map((song) => AudioSource.file(
         song.data,
         tag: MediaItem(
           id: song.id.value().toString(),
@@ -237,13 +223,15 @@ class MusicActions {
           artist: song.artist,
           duration: Duration(milliseconds: song.duration.value()),
           genre: song.genre,
-          artUri: Uri.file('$appDirectory/${ song.albumId }.jpg'),
+          artUri: Uri.file('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg'),
         )
       )).toList(),
     );
 
     audioPlayer.setAudioSource(playlist, initialIndex: index, initialPosition: seek);
-    
+    audioControlProvider.currentIndex = index;
+    musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ index ];
+    UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
   }
 
 }

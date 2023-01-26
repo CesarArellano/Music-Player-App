@@ -103,10 +103,10 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
             musicPlayerProvider.currentPlaylist = tempList;
             MusicActions.openAudios(
               audioPlayer: audioPlayer,
-              currentPlaylist: musicPlayerProvider.currentPlaylist,
-              appDirectory: musicPlayerProvider.appDirectory,
               index: currentIndex,
-              seek: audioControlProvider.currentDuration
+              seek: audioControlProvider.currentDuration,
+              audioControlProvider: audioControlProvider,
+              musicPlayerProvider: musicPlayerProvider
             );
             Navigator.pop(context);
           },
@@ -252,8 +252,8 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
     musicPlayerProvider.currentPlaylist = [ ...musicPlayerProvider.currentPlaylist, song ];
     MusicActions.openAudios(
       audioPlayer: audioPlayer,
-      currentPlaylist: musicPlayerProvider.currentPlaylist,
-      appDirectory: musicPlayerProvider.appDirectory,
+      audioControlProvider: audioControlProvider,
+      musicPlayerProvider: musicPlayerProvider,
       index: audioControlProvider.currentIndex,
       seek: audioControlProvider.currentDuration
     );

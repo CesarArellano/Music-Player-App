@@ -158,7 +158,7 @@ class _SongPlayedBody extends StatelessWidget {
               Hero(
                 tag: currentHeroId,
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(3.5),
+                  borderRadius: BorderRadius.circular(15),
                   child: Image.file(
                     imageFile,
                     width: double.infinity,
@@ -172,7 +172,7 @@ class _SongPlayedBody extends StatelessWidget {
                       width: double.infinity,
                       height: 350,
                       size: 500,
-                      radius: BorderRadius.circular(6),
+                      radius: BorderRadius.circular(15),
                     )
                   ),
                 ),
@@ -287,6 +287,7 @@ class _MusicControls extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final audioPlayer = audioPlayerHandler<AudioPlayer>();
+    final audioControlProvider = Provider.of<AudioControlProvider>(context);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -302,17 +303,23 @@ class _MusicControls extends StatelessWidget {
               if( !snapshot.hasData ) {
                 return const Icon( Icons.forward );
               }
-              return Icon( ( snapshot.data == LoopMode.off ) ? Icons.forward : Icons.repeat_one );
+              return Icon( ( snapshot.data == LoopMode.off ) ? Icons.forward : ( snapshot.data == LoopMode.one ) ? Icons.repeat_one :  Icons.repeat);
             },
           ),
           onPressed: () async {
             final isLoppNone = ( audioPlayer.loopMode == LoopMode.off )
               ? LoopMode.one
-              : LoopMode.off;
+              : ( audioPlayer.loopMode == LoopMode.one )
+                ? LoopMode.all
+                : LoopMode.off;
 
             await audioPlayer.setLoopMode( isLoppNone );
             Fluttertoast.showToast(
-              msg: ( isLoppNone == LoopMode.off ) ? 'Order' : 'Repeat Current'
+              msg: ( isLoppNone == LoopMode.off ) 
+                ? 'Order'
+                : ( isLoppNone == LoopMode.one ) 
+                  ? 'Repeat Current'
+                  : 'Repeat On'
             );
           },
         ),
@@ -320,7 +327,10 @@ class _MusicControls extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             InkWell(
-              onLongPress: () =>  audioPlayer.seek( const Duration(seconds: -10) ),
+              onLongPress: () {
+                final secondsResult = audioControlProvider.currentDuration.inSeconds - 10;
+                audioPlayer.seek( Duration(seconds: ( secondsResult >= 0) ? secondsResult : 0) );
+              },
               child: FloatingActionButton(
                 heroTag: 'fast_rewind',
                 elevation: 0.0,
@@ -334,11 +344,11 @@ class _MusicControls extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 15),
-            StreamBuilder<PlayerState>(
-              stream: audioPlayer.playerStateStream,
+            StreamBuilder<bool>(
+              stream: audioPlayer.playingStream,
               builder: (context, snapshot) {
 
-                final isPlaying = snapshot.data?.playing ?? false;
+                final isPlaying = snapshot.data ?? false;
                 
                 if( isPlaying ) {
                   playAnimation?.forward();
@@ -368,7 +378,7 @@ class _MusicControls extends StatelessWidget {
             ),
             const SizedBox(width: 15),
             InkWell(
-              onLongPress: () =>  audioPlayer.seek( const Duration(seconds: 10) ),
+              onLongPress: () =>  audioPlayer.seek( Duration(seconds: audioControlProvider.currentDuration.inSeconds + 10) ),
               child: FloatingActionButton(
                 heroTag: 'fast_forward',
                 elevation: 0.0,

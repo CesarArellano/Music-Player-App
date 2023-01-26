@@ -52,8 +52,12 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
   }
 
   void getSongs() {
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await Provider.of<MusicPlayerProvider>(context, listen: false).searchByArtistId( widget.artistSelected.id );
+      await musicPlayerProvider.searchByArtistId( 
+        widget.artistSelected.id,
+        force: (musicPlayerProvider.artistCollection[widget.artistSelected.id]?.songs ?? 0) != widget.artistSelected.numberOfTracks
+      );
       setState(() => isLoading = false);
     });
   }
@@ -247,7 +251,7 @@ class _AlbumHeader extends StatelessWidget {
             width: 175,
             height: 175,
             size: 500,
-            radius: BorderRadius.circular(2.5),
+            radius: BorderRadius.circular(4),
           ),
           const SizedBox(width: 10),
           Flexible(

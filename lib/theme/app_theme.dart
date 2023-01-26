@@ -38,8 +38,8 @@ class AppTheme {
       backgroundColor: AppTheme.primaryColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(5),
-          topRight: Radius.circular(5),
+          topLeft: Radius.circular(15),
+          topRight: Radius.circular(15),
         )
       ),
     )
