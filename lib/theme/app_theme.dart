@@ -35,13 +35,7 @@ class AppTheme {
       unselectedLabelStyle: TextStyle(fontSize: 12),
     ),
     bottomSheetTheme: const BottomSheetThemeData(
-      backgroundColor: AppTheme.primaryColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(15),
-          topRight: Radius.circular(15),
-        )
-      ),
+      backgroundColor: AppTheme.primaryColor
     )
   );
 }
