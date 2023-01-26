@@ -47,7 +47,7 @@ class MusicActions {
     
     audioControlProvider.currentIndex = index;
 
-    _openAudios(
+    openAudios(
       index: index,
       autoStart: false,
       audioPlayer: audioPlayer,
@@ -119,7 +119,7 @@ class MusicActions {
 
       audioPlayer.stop();
       
-      _openAudios(
+      openAudios(
         index: index,
         audioPlayer: audioPlayer,
         appDirectory: musicPlayerProvider.appDirectory,
@@ -134,7 +134,7 @@ class MusicActions {
       });
 
       audioPlayer.currentIndexStream.listen((currentIndex) {
-        if( !audioPlayer.hasNext || audioPlayer.loopMode == LoopMode.one ) return;
+        if( audioPlayer.loopMode == LoopMode.one ) return;
 
         audioControlProvider.currentIndex =  currentIndex.value();
         musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ audioControlProvider.currentIndex ];
@@ -169,7 +169,11 @@ class MusicActions {
         itemCount: musicPlayerProvider.currentPlaylist.length,
         itemBuilder: (_, int i) {
           final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
-          final audio = musicPlayerProvider.currentPlaylist[i];
+          final audio = SongModel({
+            '_id': int.tryParse(audioPlayer.sequence?[i].tag.id) ?? 0,
+            'title': audioPlayer.sequence?[i].tag.title,
+            'artist': audioPlayer.sequence?[i].tag.artist,
+          });
           final currentColor = ( musicPlayerProvider.songPlayed.id == audio.id) ? AppTheme.accentColor : Colors.white;
           
           return ListTile(
@@ -215,7 +219,7 @@ class MusicActions {
     }
   }
 
-  static void _openAudios({
+  static void openAudios({
     required AudioPlayer audioPlayer,
     required List<SongModel> currentPlaylist,
     required String appDirectory,
@@ -223,18 +227,16 @@ class MusicActions {
     bool autoStart = true,
     Duration? seek
   }) {
-    // Define the playlist
     final playlist = ConcatenatingAudioSource(
-      // Start loading next item just before reaching it
-      useLazyPreparation: true,
-      // Specify the playlist items
       children: currentPlaylist.map((song) => AudioSource.file(
         song.data,
         tag: MediaItem(
-          id: song.id.toString(),
+          id: song.id.value().toString(),
           title: song.title.value(),
-          artist: song.artist,
           album: song.album,
+          artist: song.artist,
+          duration: Duration(milliseconds: song.duration.value()),
+          genre: song.genre,
           artUri: Uri.file('$appDirectory/${ song.albumId }.jpg'),
         )
       )).toList(),

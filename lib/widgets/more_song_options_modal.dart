@@ -9,7 +9,6 @@ import 'package:focus_music_player/providers/audio_control_provider.dart';
 import 'package:focus_music_player/widgets/custom_list_tile.dart';
 import 'package:focus_music_player/widgets/song_details_dialog.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:just_audio_background/just_audio_background.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -92,7 +91,8 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
               return _addToQueue(
                 audioPlayer: audioPlayer,
                 musicPlayerProvider: musicPlayerProvider,
-                song: songPlayed
+                audioControlProvider: audioControlProvider,
+                song: songPlayed,
               );
             }
 
@@ -101,21 +101,13 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
               songPlayed
             );
             musicPlayerProvider.currentPlaylist = tempList;
-
-            audioPlayer.sequenceState?.effectiveSequence.insert(
-              currentIndex + 1, 
-              AudioSource.file(
-                songPlayed.data,
-                tag: MediaItem(
-                  id: songPlayed.id.toString(),
-                  title: songPlayed.title.value(),
-                  artist: songPlayed.artist,
-                  album: songPlayed.album,
-                  artUri: Uri.file('${ musicPlayerProvider.appDirectory }/${ songPlayed.albumId }.jpg'),
-                )
-              )
+            MusicActions.openAudios(
+              audioPlayer: audioPlayer,
+              currentPlaylist: musicPlayerProvider.currentPlaylist,
+              appDirectory: musicPlayerProvider.appDirectory,
+              index: currentIndex,
+              seek: audioControlProvider.currentDuration
             );
-
             Navigator.pop(context);
           },
         ),
@@ -125,6 +117,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
           onTap: () => _addToQueue(
             audioPlayer: audioPlayer,
             musicPlayerProvider: musicPlayerProvider,
+            audioControlProvider: audioControlProvider,
             song: songPlayed
           ),
         ),
@@ -253,21 +246,17 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
   void _addToQueue({
     required SongModel song,
     required AudioPlayer audioPlayer,
-    required MusicPlayerProvider musicPlayerProvider
+    required MusicPlayerProvider musicPlayerProvider,
+    required AudioControlProvider audioControlProvider,
   }) {
-    audioPlayer.sequenceState?.effectiveSequence.add(
-      AudioSource.file(
-        song.data,
-        tag: MediaItem(
-          id: song.id.toString(),
-          title: song.title.value(),
-          artist: song.artist,
-          album: song.album,
-          artUri: Uri.file('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg'),
-        )
-      )
-    );
     musicPlayerProvider.currentPlaylist = [ ...musicPlayerProvider.currentPlaylist, song ];
+    MusicActions.openAudios(
+      audioPlayer: audioPlayer,
+      currentPlaylist: musicPlayerProvider.currentPlaylist,
+      appDirectory: musicPlayerProvider.appDirectory,
+      index: audioControlProvider.currentIndex,
+      seek: audioControlProvider.currentDuration
+    );
     Navigator.pop(context);
   }
 }
