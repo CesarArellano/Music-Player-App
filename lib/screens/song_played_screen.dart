@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:marquee/marquee.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
@@ -286,9 +286,7 @@ class _MusicControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
-    final controlProvider = Provider.of<AudioControlProvider>(context, listen: false);
+    final audioPlayer = audioPlayerHandler<AudioPlayer>();
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -299,22 +297,22 @@ class _MusicControls extends StatelessWidget {
           highlightElevation: 0.0,
           backgroundColor: Colors.transparent,
           child: StreamBuilder(
-            stream: audioPlayer.loopMode,
+            stream: audioPlayer.loopModeStream,
             builder: (BuildContext context, AsyncSnapshot<LoopMode> snapshot) {  
               if( !snapshot.hasData ) {
                 return const Icon( Icons.forward );
               }
-              return Icon( ( snapshot.data == LoopMode.none ) ? Icons.forward : Icons.repeat_one );
+              return Icon( ( snapshot.data == LoopMode.off ) ? Icons.forward : Icons.repeat_one );
             },
           ),
           onPressed: () async {
-            final isLoppNone = ( audioPlayer.loopMode.value == LoopMode.none )
-              ? LoopMode.single
-              : LoopMode.none;
+            final isLoppNone = ( audioPlayer.loopMode == LoopMode.off )
+              ? LoopMode.one
+              : LoopMode.off;
 
             await audioPlayer.setLoopMode( isLoppNone );
             Fluttertoast.showToast(
-              msg: ( isLoppNone == LoopMode.none ) ? 'Order' : 'Repeat Current'
+              msg: ( isLoppNone == LoopMode.off ) ? 'Order' : 'Repeat Current'
             );
           },
         ),
@@ -322,7 +320,7 @@ class _MusicControls extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             InkWell(
-              onLongPress: () =>  audioPlayer.seekBy( const Duration(seconds: -10) ),
+              onLongPress: () =>  audioPlayer.seek( const Duration(seconds: -10) ),
               child: FloatingActionButton(
                 heroTag: 'fast_rewind',
                 elevation: 0.0,
@@ -330,23 +328,17 @@ class _MusicControls extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 child: const Icon( Icons.fast_rewind),
                 onPressed: () async {
-                  final resp = await audioPlayer.previous();
-                  if( !resp ) return;
-
-                  final currentIndex = musicPlayerProvider.currentPlaylist.indexWhere((song) => song.id.toString() == audioPlayer.current.value?.audio.audio.metas.id);
-                  controlProvider.currentIndex = currentIndex;
-                  musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[currentIndex];
-                  UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
+                  await audioPlayer.seekToPrevious();
                 },
                 
               ),
             ),
             const SizedBox(width: 15),
-            StreamBuilder<bool>(
-              stream: audioPlayer.isPlaying,
+            StreamBuilder<PlayerState>(
+              stream: audioPlayer.playerStateStream,
               builder: (context, snapshot) {
 
-                final isPlaying = snapshot.data ?? false;
+                final isPlaying = snapshot.data?.playing ?? false;
                 
                 if( isPlaying ) {
                   playAnimation?.forward();
@@ -376,7 +368,7 @@ class _MusicControls extends StatelessWidget {
             ),
             const SizedBox(width: 15),
             InkWell(
-              onLongPress: () =>  audioPlayer.seekBy( const Duration(seconds: 10) ),
+              onLongPress: () =>  audioPlayer.seek( const Duration(seconds: 10) ),
               child: FloatingActionButton(
                 heroTag: 'fast_forward',
                 elevation: 0.0,
@@ -384,12 +376,7 @@ class _MusicControls extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 child: const Icon( Icons.fast_forward ),
                 onPressed: () async {
-                  final resp = await audioPlayer.next(stopIfLast: true);
-                  if( !resp ) return;
-                  final currentIndex = musicPlayerProvider.currentPlaylist.indexWhere((song) => song.id.toString() == audioPlayer.current.value?.audio.audio.metas.id);
-                  controlProvider.currentIndex = currentIndex;
-                  musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[currentIndex];
-                  UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
+                  await audioPlayer.seekToNext();
                 },
                 
               ),
@@ -402,7 +389,7 @@ class _MusicControls extends StatelessWidget {
           highlightElevation: 0.0,
           backgroundColor: Colors.transparent,
           child: StreamBuilder(
-            stream: audioPlayer.isShuffling,
+            stream: audioPlayer.shuffleModeEnabledStream,
             builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
               if( !snapshot.hasData ) {
                 return const Icon( Icons.shuffle, color: Colors.grey );
@@ -412,9 +399,9 @@ class _MusicControls extends StatelessWidget {
             },
           ),
           onPressed: ()  {
-            audioPlayer.toggleShuffle();
+            audioPlayer.setShuffleModeEnabled(!audioPlayer.shuffleModeEnabled);
             Fluttertoast.showToast(
-              msg: 'Shuffle ${ ( audioPlayer.isShuffling.value )  ? 'ON' : 'OFF' } ',
+              msg: 'Shuffle ${ ( audioPlayer.shuffleModeEnabled )  ? 'ON' : 'OFF' } ',
             );
           }
         ),
@@ -430,7 +417,7 @@ class _SongTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final audioPlayer = audioPlayerHandler<AssetsAudioPlayer>();
+    final audioPlayer = audioPlayerHandler<AudioPlayer>();
     final audioControlProvider = Provider.of<AudioControlProvider>(context);
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final songPlayed = musicPlayerProvider.songPlayed;

@@ -1,6 +1,6 @@
-import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -34,8 +34,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return WillPopScope(
       onWillPop: () async {
         if( _isSnackbarActive ) {
-          audioPlayerHandler<AssetsAudioPlayer>().stop();
-          audioPlayerHandler<AssetsAudioPlayer>().dispose();
+          audioPlayerHandler<AudioPlayer>().stop();
+          audioPlayerHandler<AudioPlayer>().dispose();
           SystemNavigator.pop();
           return true;
         }
@@ -49,8 +49,8 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'EXIT',
             textColor: AppTheme.accentColor,
             onPressed: () {
-              audioPlayerHandler<AssetsAudioPlayer>().stop();
-              audioPlayerHandler<AssetsAudioPlayer>().dispose();
+              audioPlayerHandler<AudioPlayer>().stop();
+              audioPlayerHandler<AudioPlayer>().dispose();
               SystemNavigator.pop();
             },
           )

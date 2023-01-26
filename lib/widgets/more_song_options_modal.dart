@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:assets_audio_player/assets_audio_player.dart';
+
 import 'package:flutter/material.dart';
 import 'package:focus_music_player/audio_player_handler.dart';
 import 'package:focus_music_player/helpers/format_extension.dart';
@@ -8,6 +8,8 @@ import 'package:focus_music_player/helpers/null_extension.dart';
 import 'package:focus_music_player/providers/audio_control_provider.dart';
 import 'package:focus_music_player/widgets/custom_list_tile.dart';
 import 'package:focus_music_player/widgets/song_details_dialog.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -43,7 +45,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
   Widget build(BuildContext context) {
     final songPlayed = widget.song;
     final onAudioQuery = audioPlayerHandler.get<OnAudioQuery>();
-    final audioPlayer = audioPlayerHandler.get<AssetsAudioPlayer>();
+    final audioPlayer = audioPlayerHandler.get<AudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final audioControlProvider = Provider.of<AudioControlProvider>(context);
     final duration = Duration(milliseconds: widget.song.duration ?? 0);
@@ -100,17 +102,16 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
             );
             musicPlayerProvider.currentPlaylist = tempList;
 
-            audioPlayer.playlist?.insert(
+            audioPlayer.sequenceState?.effectiveSequence.insert(
               currentIndex + 1, 
-              Audio.file(
+              AudioSource.file(
                 songPlayed.data,
-                metas: Metas(
-                  album: songPlayed.album,
-                  artist: songPlayed.artist,
-                  title: songPlayed.title,
+                tag: MediaItem(
                   id: songPlayed.id.toString(),
-                  image: MetasImage.file('${musicPlayerProvider.appDirectory }/${ songPlayed.albumId }.jpg'),
-                  onImageLoadFail: const MetasImage.asset('assets/images/background.jpg'),
+                  title: songPlayed.title.value(),
+                  artist: songPlayed.artist,
+                  album: songPlayed.album,
+                  artUri: Uri.file('${ musicPlayerProvider.appDirectory }/${ songPlayed.albumId }.jpg'),
                 )
               )
             );
@@ -251,19 +252,18 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
 
   void _addToQueue({
     required SongModel song,
-    required AssetsAudioPlayer audioPlayer,
+    required AudioPlayer audioPlayer,
     required MusicPlayerProvider musicPlayerProvider
   }) {
-    audioPlayer.playlist?.add(
-      Audio.file(
+    audioPlayer.sequenceState?.effectiveSequence.add(
+      AudioSource.file(
         song.data,
-        metas: Metas(
-          album: song.album,
-          artist: song.artist,
-          title: song.title,
+        tag: MediaItem(
           id: song.id.toString(),
-          image: MetasImage.file('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg'),
-          onImageLoadFail: const MetasImage.asset('assets/images/background.jpg'),
+          title: song.title.value(),
+          artist: song.artist,
+          album: song.album,
+          artUri: Uri.file('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg'),
         )
       )
     );
