@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
@@ -64,35 +66,37 @@ class _HomeScreenState extends State<HomeScreen> {
           systemNavigationBarColor: AppTheme.primaryColor,
         ),
         child: DefaultTabController(
-          length: 6,
+          length: ( Platform.isAndroid ) ? 6 : 5,
           child: Scaffold(
             body: const _Body(),
-            floatingActionButton: FloatingActionButton(
-              heroTag: 'fab',
-              backgroundColor: AppTheme.accentColor,
-              child: const Icon(Icons.add, color: Colors.black),
-              onPressed: () async {
-                
-                final CreatePlaylistResp dialogResp = await showDialog<CreatePlaylistResp>(
-                  context: context,
-                  builder: (_) => CreatePlaylistDialog()
-                ) ?? const CreatePlaylistResp(isCancel: true);
-      
-                if( dialogResp.isCancel ) return;
-      
-                final onAudioQuery = audioPlayerHandler<OnAudioQuery>();
-                await onAudioQuery.createPlaylist(dialogResp.playlistName.value());
-                
-                if( !mounted ) return;
+            floatingActionButton: ( Platform.isAndroid )
+            ? FloatingActionButton(
+                heroTag: 'fab',
+                backgroundColor: AppTheme.accentColor,
+                child: const Icon( Icons.add, color: Colors.black),
+                onPressed: () async {
+                  
+                  final CreatePlaylistResp dialogResp = await showDialog<CreatePlaylistResp>(
+                    context: context,
+                    builder: (_) => CreatePlaylistDialog()
+                  ) ?? const CreatePlaylistResp(isCancel: true);
+        
+                  if( dialogResp.isCancel ) return;
+        
+                  final onAudioQuery = audioPlayerHandler<OnAudioQuery>();
+                  await onAudioQuery.createPlaylist(dialogResp.playlistName.value());
+                  
+                  if( !mounted ) return;
 
-                showSnackbar(
-                  context: context,
-                  message: 'The ${ dialogResp.playlistName.value() } playlist was successfully added!'
-                );
-                
-                musicPlayerProvider.refreshPlaylist();
-              }
-            ),
+                  showSnackbar(
+                    context: context,
+                    message: 'The ${ dialogResp.playlistName.value() } playlist was successfully added!'
+                  );
+                  
+                  musicPlayerProvider.refreshPlaylist();
+                }
+              )
+            : null,
             bottomNavigationBar: (musicPlayerProvider.isLoading || ( musicPlayerProvider.songPlayed.title.value() ).isEmpty)
               ? null
               : const CurrentSongTile()
@@ -117,14 +121,15 @@ class _Body extends StatelessWidget {
       body: MediaQuery.removePadding(
         removeTop: true,
         context: context,
-        child: const TabBarView(
+        child: TabBarView(
           children: <Widget>[
-            SongsScreen(),
-            AlbumsScreen(),
-            ArtistScreen(),
-            PlaylistsScreen(),
-            FavoriteScreen(),
-            GenresScreen(),
+            const SongsScreen(),
+            const AlbumsScreen(),
+            const ArtistScreen(),
+            if( Platform.isAndroid )
+              const PlaylistsScreen(),
+            const FavoriteScreen(),
+            const GenresScreen(),
           ],
         ),
       ),
@@ -155,20 +160,21 @@ class _CustomAppBarState extends State<_CustomAppBar> {
       floating: true,
       snap: true,
       shape: const Border(bottom: BorderSide(color: Colors.white24)),
-      bottom: const TabBar(
+      bottom: TabBar(
         isScrollable: true,
         indicatorColor: AppTheme.accentColor,
         labelColor: Colors.white,
-        labelStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+        labelStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         unselectedLabelColor: AppTheme.lightTextColor,
         indicatorWeight: 3.0,
         tabs: <Widget> [
-          Tab(text: 'Songs'),
-          Tab(text: 'Albums'),
-          Tab(text: 'Artists'),
-          Tab(text: 'Playlist'),
-          Tab(text: 'Favorites'),
-          Tab(text: 'Genres'),
+          const Tab(text: 'Songs'),
+          const Tab(text: 'Albums'),
+          const Tab(text: 'Artists'),
+          if( Platform.isAndroid )
+            const Tab(text: 'Playlist'),
+          const Tab(text: 'Favorites'),
+          const Tab(text: 'Genres'),
         ], 
         
       ),

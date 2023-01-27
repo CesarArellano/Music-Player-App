@@ -40,8 +40,6 @@ class MusicActions {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
     Provider.of<UIProvider>(context, listen: false).currentHeroId = heroId;
-    
-    musicPlayerProvider.currentPlaylist = musicPlayerProvider.songList;
 
     final index = musicPlayerProvider.currentPlaylist.indexWhere((songOfList) => songOfList.id == song.id );
     
@@ -62,7 +60,7 @@ class MusicActions {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
 
-    audioPlayer.positionStream.listen((duration) async {
+    audioPlayer.positionStream.listen((duration) {
       audioControlProvider.currentDuration = duration;
       UserPreferences().lastSongDuration = duration.inMilliseconds;
     });

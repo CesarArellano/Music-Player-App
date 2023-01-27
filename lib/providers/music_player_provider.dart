@@ -90,7 +90,11 @@ class MusicPlayerProvider extends ChangeNotifier {
     albumList = await onAudioQuery.queryAlbums();
     genreList = await onAudioQuery.queryGenres();
     artistList = await onAudioQuery.queryArtists();
-    playLists = await onAudioQuery.queryPlaylists();
+
+    if( Platform.isAndroid ) {
+      playLists = await onAudioQuery.queryPlaylists();
+    }
+    
     appDirectory = (await getApplicationDocumentsDirectory()).path;
 
     decodeFavoriteSongs();

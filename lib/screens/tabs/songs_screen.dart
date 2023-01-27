@@ -35,6 +35,7 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
         final int lastSongId = UserPreferences().lastSongId;
         final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
         
+        musicPlayerProvider.currentPlaylist = musicPlayerProvider.songList;
         MusicActions.initStreams(context);
         
         if( lastSongId == 0 ) return;

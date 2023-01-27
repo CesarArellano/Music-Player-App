@@ -99,7 +99,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                   song: songPlayed
                 ),
               ),
-              if( musicPlayerProvider.playLists.isNotEmpty ) ...[
+              if( musicPlayerProvider.playLists.isNotEmpty && Platform.isAndroid ) ...[
                 ListTile(
                   leading: const Icon(Icons.playlist_add, color: AppTheme.lightTextColor,),
                   title: const Text('Add to Playlist'),
