@@ -30,56 +30,74 @@ class ArtworkFileImage extends StatelessWidget {
       ? tag != null
         ? Hero(
           tag: tag!,
-          child: ClipRRect(
-            borderRadius: radius,
-            child: Image.file(
-              imageFile!,
-              width: width,
-              height: height,
-              fit: BoxFit.cover,
-              filterQuality: FilterQuality.low,
-              gaplessPlayback: true,
-              errorBuilder: (context, error, stackTrace) {
-                return ArtworkImage(
-                  artworkId: artworkId,
-                  type: artworkType,
-                  width: width,
-                  height: height,
-                  size: 250,
-                  radius: BorderRadius.circular(4),
-                );
-              },
-            ),
+          child: _ImageWithBorder(
+            radius: radius,
+            imageFile: imageFile,
+            width: width, 
+            height: height,
+            artworkId: artworkId,
+            artworkType: artworkType
           ),
         )
-        : ClipRRect(
-          borderRadius: radius,
-          child: Image.file(
-            imageFile!,
+        : _ImageWithBorder(
+            radius: radius,
+            imageFile: imageFile,
+            width: width, 
+            height: height,
+            artworkId: artworkId,
+            artworkType: artworkType
+          )
+      : ArtworkImage(
+        artworkId: artworkId,
+        type: artworkType,
+        width: width,
+        height: height,
+        size: 250,
+        radius: radius,
+      );
+  }
+}
+
+class _ImageWithBorder extends StatelessWidget {
+  const _ImageWithBorder({
+    Key? key,
+    required this.radius,
+    required this.imageFile,
+    required this.width,
+    required this.height,
+    required this.artworkId,
+    required this.artworkType,
+  }) : super(key: key);
+
+  final BorderRadius radius;
+  final File? imageFile;
+  final double width;
+  final double height;
+  final int artworkId;
+  final ArtworkType artworkType;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: radius,
+      child: Image.file(
+        imageFile!,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        filterQuality: FilterQuality.low,
+        gaplessPlayback: true,
+        errorBuilder: (context, error, stackTrace) {
+          return ArtworkImage(
+            artworkId: artworkId,
+            type: artworkType,
             width: width,
             height: height,
-            fit: BoxFit.cover,
-            filterQuality: FilterQuality.low,
-            gaplessPlayback: true,
-            errorBuilder: (context, error, stackTrace) {
-              return ArtworkImage(
-                artworkId: artworkId,
-                type: artworkType,
-                width: width,
-                height: height,
-                size: 250,
-                radius: radius,
-              );
-            },
-          ),
-        )
-    : ArtworkImage(
-      artworkId: artworkId,
-      type: artworkType,
-      width: width,
-      height: height,
-      size: 250,
-      radius: radius,
+            size: 250,
+            radius: BorderRadius.circular(4),
+          );
+        },
+      ),
     );
   }
 }
