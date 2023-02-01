@@ -62,12 +62,15 @@ class MusicActions {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
 
+    musicPlayerProvider.currentPlaylist = musicPlayerProvider.songList;
+    
     audioPlayer.positionStream.listen((duration) async {
       audioControlProvider.currentDuration = duration;
       UserPreferences().lastSongDuration = duration.inMilliseconds;
     });
 
     audioPlayer.currentIndexStream.listen((currentIndex) {
+      if( musicPlayerProvider.currentPlaylist.isEmpty ) return;
       audioControlProvider.currentIndex = currentIndex.value();
       musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ currentIndex.value() ];
       UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
