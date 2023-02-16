@@ -9,6 +9,7 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart' show getApplicationDocumentsDirectory;
 
 import '../models/artist_content_model.dart';
+import '../models/multiple_search_model.dart';
 
 
 class MusicPlayerProvider extends ChangeNotifier {
@@ -113,8 +114,16 @@ class MusicPlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<SongModel>> searchSongByQuery(String query) async {
-    return songList.where((song) => song.title.value().toLowerCase().contains(query)).toList();
+  MultipleSearchModel searchByQuery(String query) {
+    final songs = songList.where((song) => song.title.value().toLowerCase().contains(query)).toList();
+    final albums = albumList.where((album) => album.album.value().toLowerCase().contains(query)).toList();
+    final artists = artistList.where((artist) => artist.artist.value().toLowerCase().contains(query)).toList();
+
+    return MultipleSearchModel(
+      songs: songs,
+      albums: albums,
+      artists: artists,
+    );
   }
 
   Future<void> searchByAlbumId(int albumId, { bool force = false }) async {

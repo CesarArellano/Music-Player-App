@@ -1,13 +1,15 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:focus_music_player/helpers/null_extension.dart';
-import 'package:focus_music_player/theme/app_theme.dart';
-import 'package:on_audio_query/on_audio_query.dart' show SongModel;
+import 'package:on_audio_query/on_audio_query.dart' show SongModel, ArtworkType;
 import 'package:provider/provider.dart';
 
 import '../helpers/music_actions.dart';
+import '../helpers/null_extension.dart';
 import '../providers/music_player_provider.dart';
+import '../screens/album_selected_screen.dart';
+import '../screens/artist_selected_screen.dart';
+import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
 
 class MusicSearchDelegate extends SearchDelegate {
@@ -62,37 +64,71 @@ class MusicSearchDelegate extends SearchDelegate {
     }
     
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
-    return FutureBuilder(
-      future: musicPlayerProvider.searchSongByQuery(query.toLowerCase()),
-      builder: ( _, AsyncSnapshot<List<SongModel>> asyncSnapshot) {
-        if( !asyncSnapshot.hasData) {
-          return _emptyContainer();
-        }
-        final songs = asyncSnapshot.data;
-        return ListView(
-          shrinkWrap: true,
-          children: [
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15),
-              child: RichText(
-                  text: TextSpan(
-                  style: const TextStyle(fontSize: 18),
-                  children: [
-                    const TextSpan(text: 'Songs', style: TextStyle(fontWeight: FontWeight.w500)),
-                    TextSpan(text: ' (${ songs?.length })', style: const TextStyle(color: AppTheme.lightTextColor))
-                  ]
-                ),
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 15),
-              child: Divider(color: AppTheme.lightTextColor),
-            ),
-            ...songs!.map((song) => _songItem(context, song, musicPlayerProvider))
-          ]
-        );
-      }
+    final searchResult = musicPlayerProvider.searchByQuery(query);
+    final songs = searchResult.songs;
+    final albums = searchResult.albums;
+    final artists = searchResult.artists;
+
+    if( searchResult.songs.isEmpty && searchResult.albums.isEmpty && searchResult.artists.isEmpty ) {
+      return _emptyContainer();
+    }
+
+    return CustomScrollView(
+      slivers: [
+        if( songs.isNotEmpty ) 
+          _SectionTitle(title: 'Songs', length: songs.length),
+        SliverList(
+          delegate: SliverChildBuilderDelegate((context, index) {
+            final song = songs[index];
+            return _songItem(context, song, musicPlayerProvider);
+          },
+          childCount: songs.length
+        )),
+        if( artists.isNotEmpty ) 
+          _SectionTitle(title: 'Artists', length: artists.length),
+        SliverList(
+          delegate: SliverChildBuilderDelegate((context, index) {
+            final artist = artists[index];
+            return RippleTile(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => ArtistSelectedScreen( artistSelected: artist ))
+                );
+              },
+              child: CustomListTile(
+                artworkId: artist.id,
+                artworkType: ArtworkType.ARTIST,
+                title: artist.artist,
+                subtitle: '${ artist.numberOfAlbums } ${ artist.numberOfAlbums.value() > 1 ? 'Albums' : 'Album' } • ${ artist.numberOfTracks } Songs'
+              )
+            );
+          },
+          childCount: artists.length
+        )),
+        if( albums.isNotEmpty ) 
+          _SectionTitle(title: 'Albums', length: albums.length),
+        SliverList(
+          delegate: SliverChildBuilderDelegate((context, index) {
+            final album = albums[index];
+            return RippleTile(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => AlbumSelectedScreen( albumSelected: album ))
+                );
+              },
+              child: CustomListTile(
+                artworkId: album.id,
+                imageFile: File('${ musicPlayerProvider.appDirectory }/${ album.id }.jpg'),
+                title: album.album,
+                subtitle: "${ album.numOfSongs } ${ (album.numOfSongs > 1) ? 'songs' : 'song' }",
+              )
+            );
+          },
+          childCount: albums.length
+        )),
+      ],
     );
   }
 
@@ -127,4 +163,39 @@ class MusicSearchDelegate extends SearchDelegate {
       },
     );
   } 
+}
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle({
+    required this.title,
+    required this.length,
+  });
+
+  final String title;
+  final int length;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 10),
+            RichText(
+                text: TextSpan(
+                style: const TextStyle(fontSize: 18),
+                children: [
+                  TextSpan(text: title, style: const TextStyle(fontWeight: FontWeight.w500)),
+                  TextSpan(text: ' ($length)', style: const TextStyle(color: AppTheme.lightTextColor))
+                ]
+              ),
+            ),
+            const Divider(color: AppTheme.lightTextColor)
+          ],
+        ),
+      ),
+    );
+  }
 }

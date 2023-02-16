@@ -85,7 +85,6 @@ class _ImageWithBorder extends StatelessWidget {
         width: width,
         height: height,
         fit: BoxFit.cover,
-        filterQuality: FilterQuality.low,
         gaplessPlayback: true,
         errorBuilder: (context, error, stackTrace) {
           return ArtworkImage(
