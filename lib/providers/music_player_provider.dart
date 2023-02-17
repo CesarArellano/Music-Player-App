@@ -8,13 +8,14 @@ import 'package:focus_music_player/share_prefs/user_preferences.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart' show getApplicationDocumentsDirectory;
 
+import '../audio_player_handler.dart';
 import '../models/artist_content_model.dart';
 import '../models/multiple_search_model.dart';
 
 
 class MusicPlayerProvider extends ChangeNotifier {
 
-  final OnAudioQuery onAudioQuery = OnAudioQuery();
+  final OnAudioQuery onAudioQuery = audioPlayerHandler.get<OnAudioQuery>();
 
   SongModel _songPlayed = SongModel({ '_id': 0 });
   
