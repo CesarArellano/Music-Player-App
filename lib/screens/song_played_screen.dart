@@ -313,7 +313,7 @@ class _SongPlayedPortraitBody extends StatelessWidget {
                                 
                                 if( artistSelected.id == 0) return;
                                 
-                                Navigator.pushReplacement(
+                                Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) => ArtistSelectedScreen(artistSelected: artistSelected)
