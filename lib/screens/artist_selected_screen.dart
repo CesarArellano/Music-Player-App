@@ -12,7 +12,6 @@ import '../helpers/music_actions.dart';
 import '../models/artist_content_model.dart';
 import '../providers/music_player_provider.dart';
 import '../search/search_delegate.dart';
-import '../widgets/custom_icon_text_button.dart';
 import '../widgets/widgets.dart';
 
 class ArtistSelectedScreen extends StatefulWidget {
@@ -37,7 +36,11 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(() {
-      if( _scrollController.position.pixels >= 70 && appBarTitle == null ) {
+      if( _scrollController.position.pixels < 40 && appBarTitle != null ) {
+        setState(() => appBarTitle = null);
+      }
+
+      if( _scrollController.position.pixels >= 40 && appBarTitle == null ) {
         setState(() => appBarTitle = widget.artistSelected.artist);
       }
     });
@@ -90,51 +93,42 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
       ),
       body: isLoading
         ? const Center( child: CircularProgressIndicator() )
-        : ListView(
+        : CustomScrollView(
           controller: _scrollController,
-          children: [
-            _AlbumHeader(
-              artistSelected: widget.artistSelected,
-              artistContentModel: artistContentModel
-            ),
-            Container(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                width: double.infinity,
-                height: 50,
-                child: CustomIconTextButton(
-                  label: 'PLAY ALL',
-                  icon: Icons.play_arrow,
-                  onPressed: () {
-                    final song = artistContentModel.songs.first;
-                    final heroId = 'artist-song-${ song.id }';
-
-                    MusicActions.songPlayAndPause(
-                      context,
-                      song,
-                      TypePlaylist.artist,
+          slivers: [
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _AlbumHeader(
+                    artistSelected: widget.artistSelected,
+                    artistContentModel: artistContentModel
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                    child: PlayShuffleButtons(
+                      heroId: 'artist-song-',
                       id: widget.artistSelected.id,
-                      heroId: heroId
-                    );
-                  }
-                ),
+                      songList: artistContentModel.songs,
+                      typePlaylist: TypePlaylist.artist,
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.only(left: 15.0, top: 15),
+                    child: Text('Albums', style: TextStyle(fontSize: 16)),
+                  ),
+                  _AlbumList(
+                    artistContentModel: artistContentModel,
+                    musicPlayerProvider: musicPlayerProvider,
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.only(left: 15.0, bottom: 5),
+                    child: Text('Songs', style: TextStyle(fontSize: 16)),
+                  ),
+                ],
               ),
-            const Padding(
-              padding: EdgeInsets.only(left: 15.0, top: 15),
-              child: Text('Albums', style: TextStyle(fontSize: 16)),
             ),
-            _AlbumList(
-              artistContentModel: artistContentModel,
-              musicPlayerProvider: musicPlayerProvider,
-            ),
-            const Padding(
-              padding: EdgeInsets.only(left: 15.0, bottom: 5),
-              child: Text('Songs', style: TextStyle(fontSize: 16)),
-            ),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: artistContentModel.songs.length,
-              itemBuilder: (_, int i) {
+            SliverList(delegate: SliverChildBuilderDelegate((context, i) {
                 final song = artistContentModel.songs[i];
                 final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
                 final heroId = 'artist-song-${ song.id }';
@@ -158,8 +152,8 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
                   },
                 );
               },
-            ),
-            const SizedBox(height: 5),
+              childCount: artistContentModel.songs.length
+            ))
           ],
         ),
       bottomNavigationBar: (musicPlayerProvider.isLoading || musicPlayerProvider.songPlayed.title.value().isEmpty)
@@ -184,7 +178,6 @@ class _AlbumList extends StatelessWidget {
     return SizedBox(
       height: 175,
       child: ListView.separated(
-        shrinkWrap: true,
         scrollDirection: Axis.horizontal,
         itemCount: artistContentModel.albums.length,
         separatorBuilder: (_ , __) => const SizedBox(width: 5),
@@ -196,25 +189,26 @@ class _AlbumList extends StatelessWidget {
             children: [
               if( i == 0 )
                 const SizedBox(width: 15),
-              RippleTile(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AlbumSelectedScreen(albumSelected: album))),
-                child: SizedBox(
-                  width: 130,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ArtworkFileImage(
+              SizedBox(
+                width: 130,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    RippleTile(
+                      borderRadius: BorderRadius.circular(5),
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AlbumSelectedScreen(albumSelected: album))),
+                      child: ArtworkFileImage(
                         artworkId: album.id,
                         height: 130,
                         width: 130,
                         imageFile: File('${ musicPlayerProvider.appDirectory }/${ album.id }.jpg'),
                       ),
-                      const SizedBox(height: 5),
-                      Text(album.album, maxLines: 1, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400), overflow: TextOverflow.ellipsis,),
-                      const SizedBox(height: 5),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(album.album, maxLines: 1, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400), overflow: TextOverflow.ellipsis,),
+                    const SizedBox(height: 5),
+                  ],
                 ),
               ),
               if( i == artistContentModel.albums.length - 1 )

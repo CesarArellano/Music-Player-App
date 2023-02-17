@@ -81,6 +81,7 @@ class MusicActions {
     TypePlaylist type, { 
       required String heroId,
       int id = 0,
+      bool activateShuffle = false
     }
   ) {
     
@@ -135,6 +136,7 @@ class MusicActions {
     }
 
     audioPlayer.play();
+    audioPlayer.setShuffleModeEnabled(activateShuffle);
 
     Navigator.push(
       context,
@@ -214,6 +216,7 @@ class MusicActions {
     required MusicPlayerProvider musicPlayerProvider,
     Duration? seek
   }) {
+
     final playlist = ConcatenatingAudioSource(
       children: musicPlayerProvider.currentPlaylist.map((song) => AudioSource.file(
         song.data,

@@ -5,6 +5,7 @@ import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:focus_music_player/screens/album_selected_screen.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:marquee/marquee.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -180,13 +181,23 @@ class _AppBarTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
+    final albumSelected = musicPlayerProvider.albumList.firstWhere((album) => album.id == songPlayed.albumId.value(), orElse: () => AlbumModel({ "_id": 0 }));
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         const SizedBox(height: 10,),
         const Text('PLAYING FROM', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppTheme.lightTextColor, letterSpacing: 1) ),
         const SizedBox(height: 4),
-        Text(songPlayed.album.valueEmpty('No Album'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white), maxLines: 1,),
+        InkWell(
+          child: Text(
+            songPlayed.album.valueEmpty('No Album'),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+            maxLines: 1,
+          ),
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: ( _ ) => AlbumSelectedScreen(albumSelected: albumSelected))),
+        ),
       ]
     );
   }
@@ -290,28 +301,31 @@ class _SongPlayedPortraitBody extends StatelessWidget {
                           ),
                           if( songPlayed.artist.value().length > 30 )
                             const SizedBox(height: 5),
-                          InkWell(
-                            onTap: () {
-                              final artistId = songPlayed.artistId;
-
-                              if( artistId == null || artistId == 0) return;
-
-                              final artistSelected = musicPlayerProvider.artistList.firstWhere((artist) => artist.id == artistId.value(), orElse: () => ArtistModel({ "_id": 0 }));
-                              
-                              if( artistSelected.id == 0) return;
-                              
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => ArtistSelectedScreen(artistSelected: artistSelected)
-                                )
-                              );
-                            },
-                            child: Text(
-                              songPlayed.artist.valueEmpty('No Artist'),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 16, color: Colors.white54)
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                final artistId = songPlayed.artistId;
+                          
+                                if( artistId == null || artistId == 0) return;
+                          
+                                final artistSelected = musicPlayerProvider.artistList.firstWhere((artist) => artist.id == artistId.value(), orElse: () => ArtistModel({ "_id": 0 }));
+                                
+                                if( artistSelected.id == 0) return;
+                                
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ArtistSelectedScreen(artistSelected: artistSelected)
+                                  )
+                                );
+                              },
+                              child: Text(
+                                songPlayed.artist.valueEmpty('No Artist'),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 16, color: Colors.white54)
+                              ),
                             ),
                           ),
                         ],
