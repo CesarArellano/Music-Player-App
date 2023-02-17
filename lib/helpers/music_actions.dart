@@ -8,7 +8,6 @@ import 'package:focus_music_player/models/artist_content_model.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import '../helpers/null_extension.dart';
@@ -25,7 +24,6 @@ enum TypePlaylist {
   album,
   artist,
   genre,
-  playlist,
   favorites,
 }
 class MusicActions {
@@ -66,7 +64,7 @@ class MusicActions {
       audioControlProvider.currentDuration = duration;
       UserPreferences().lastSongDuration = duration.inMilliseconds;
     });
-
+    
     audioPlayer.currentIndexStream.listen((currentIndex) {
       if( musicPlayerProvider.currentPlaylist.isEmpty ) return;
       audioControlProvider.currentIndex = currentIndex.value();
@@ -103,9 +101,6 @@ class MusicActions {
       case TypePlaylist.artist:
         musicPlayerProvider.currentPlaylist = (musicPlayerProvider.artistCollection[id] ?? ArtistContentModel()).songs;
         break;
-      case TypePlaylist.playlist:
-        musicPlayerProvider.currentPlaylist = musicPlayerProvider.playlistCollection[id].value();
-        break;
       case TypePlaylist.genre:
         musicPlayerProvider.currentPlaylist = musicPlayerProvider.genreCollection[id].value();
         break;
@@ -141,10 +136,7 @@ class MusicActions {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => SongPlayedScreen(
-          playlistId: ( TypePlaylist.playlist == type ) ? id : null,
-          isPlaylist: ( TypePlaylist.playlist == type ),
-        )
+        builder: (_) => const SongPlayedScreen()
       )
     );
   }
@@ -184,7 +176,7 @@ class MusicActions {
   }
 
   static Future<bool> createArtwork(File imageTempFile, int songId) async {
-    final artworkBytes = await OnAudioQuery().queryArtwork(songId, ArtworkType.AUDIO, size: 500);
+    final artworkBytes = await audioPlayerHandler.get<OnAudioQuery>().queryArtwork(songId, ArtworkType.AUDIO, size: 500);
     
     if( artworkBytes != null ) {
       await imageTempFile.writeAsBytes(artworkBytes);
@@ -193,22 +185,6 @@ class MusicActions {
 
     return false;
   }
-
-  static Future<bool> deleteFile(File file) async {
-    try {
-      final permissionStatus = await Permission.manageExternalStorage.request();
-
-      if( permissionStatus.isGranted && await file.exists()) {
-        await file.delete(recursive: true);
-        return true;
-      }
-      
-      return false;
-    } catch (e) {
-      return false;
-    }
-  }
-
   static void openAudios({
     required int index,
     required AudioPlayer audioPlayer,

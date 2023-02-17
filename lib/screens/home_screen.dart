@@ -1,9 +1,9 @@
-import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:focus_music_player/helpers/music_actions.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -13,7 +13,6 @@ import '../helpers/null_extension.dart';
 import '../providers/music_player_provider.dart';
 import '../search/search_delegate.dart';
 import '../theme/app_theme.dart';
-import '../widgets/create_playlist_dialog.dart';
 import '../widgets/widgets.dart';
 import 'screens.dart';
 import 'tabs/favorite_screen.dart';
@@ -66,35 +65,29 @@ class _HomeScreenState extends State<HomeScreen> {
           systemNavigationBarColor: AppTheme.primaryColor,
         ),
         child: DefaultTabController(
-          length: ( Platform.isAndroid ) ? 6 : 5,
+          length: 5,
           child: Scaffold(
             body: const _Body(),
-            floatingActionButton: ( Platform.isAndroid )
+            floatingActionButton: ( musicPlayerProvider.songList.isNotEmpty )
             ? FloatingActionButton(
                 heroTag: 'fab',
                 backgroundColor: AppTheme.accentColor,
-                child: const Icon( Icons.add, color: Colors.black),
-                onPressed: () async {
-                  
-                  final CreatePlaylistResp dialogResp = await showDialog<CreatePlaylistResp>(
-                    context: context,
-                    builder: (_) => CreatePlaylistDialog()
-                  ) ?? const CreatePlaylistResp(isCancel: true);
-        
-                  if( dialogResp.isCancel ) return;
-        
-                  final onAudioQuery = audioPlayerHandler<OnAudioQuery>();
-                  await onAudioQuery.createPlaylist(dialogResp.playlistName.value());
-                  
-                  if( !mounted ) return;
-
-                  showSnackbar(
-                    context: context,
-                    message: 'The ${ dialogResp.playlistName.value() } playlist was successfully added!'
-                  );
-                  
-                  musicPlayerProvider.refreshPlaylist();
-                }
+                onPressed: musicPlayerProvider.isCreatingArtworks
+                  ? null
+                  : () {
+                    int index = Random().nextInt(musicPlayerProvider.songList.length);
+                    final song = musicPlayerProvider.songList[index];
+                    MusicActions.songPlayAndPause(
+                      context,
+                      song,
+                      TypePlaylist.songs,
+                      heroId: 'songs-${ song.id }',
+                      activateShuffle: true,
+                    );
+                  },
+                child: musicPlayerProvider.isCreatingArtworks 
+                  ? const CircularProgressIndicator(color: Colors.black,)
+                  : const Icon( Icons.shuffle, color: Colors.black)
               )
             : null,
             bottomNavigationBar: (musicPlayerProvider.isLoading || ( musicPlayerProvider.songPlayed.title.value() ).isEmpty)
@@ -121,15 +114,13 @@ class _Body extends StatelessWidget {
       body: MediaQuery.removePadding(
         removeTop: true,
         context: context,
-        child: TabBarView(
+        child: const TabBarView(
           children: <Widget>[
-            const SongsScreen(),
-            const AlbumsScreen(),
-            const ArtistScreen(),
-            if( Platform.isAndroid )
-              const PlaylistsScreen(),
-            const FavoriteScreen(),
-            const GenresScreen(),
+            SongsScreen(),
+            AlbumsScreen(),
+            ArtistScreen(),
+            FavoriteScreen(),
+            GenresScreen(),
           ],
         ),
       ),
@@ -160,21 +151,19 @@ class _CustomAppBarState extends State<_CustomAppBar> {
       floating: true,
       snap: true,
       shape: const Border(bottom: BorderSide(color: Colors.white24)),
-      bottom: TabBar(
+      bottom: const TabBar(
         isScrollable: true,
         indicatorColor: AppTheme.accentColor,
         labelColor: Colors.white,
-        labelStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+        labelStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         unselectedLabelColor: AppTheme.lightTextColor,
         indicatorWeight: 3.0,
         tabs: <Widget> [
-          const Tab(text: 'Songs'),
-          const Tab(text: 'Albums'),
-          const Tab(text: 'Artists'),
-          if( Platform.isAndroid )
-            const Tab(text: 'Playlist'),
-          const Tab(text: 'Favorites'),
-          const Tab(text: 'Genres'),
+          Tab(text: 'Songs'),
+          Tab(text: 'Albums'),
+          Tab(text: 'Artists'),
+          Tab(text: 'Favorites'),
+          Tab(text: 'Genres'),
         ], 
         
       ),

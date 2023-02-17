@@ -27,12 +27,7 @@ class SongPlayedScreen extends StatefulWidget {
   
   const SongPlayedScreen({
     Key? key,
-    this.isPlaylist = false,
-    this.playlistId
   }) : super(key: key);
-
-  final bool isPlaylist;
-  final int? playlistId;
 
   @override
   State<SongPlayedScreen> createState() => _SongPlayedScreenState();
@@ -77,8 +72,6 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
                 actions: <Widget>[
                   _MoreOptionsModal(
                     songPlayed: songPlayed,
-                    isPlaylist: widget.isPlaylist,
-                    playlistId: widget.playlistId.value(),
                   ),
                 ],
               )
@@ -113,8 +106,6 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
                 if( orientation == Orientation.landscape )
                   _SongPlayedLandscapeBody(
                     playAnimation: _playAnimation,
-                    isPlaylist: widget.isPlaylist,
-                    playlistId: widget.playlistId.value(),
                   ),
               ]
             ),
@@ -129,13 +120,9 @@ class _MoreOptionsModal extends StatelessWidget {
   const _MoreOptionsModal({
     Key? key,
     required this.songPlayed,
-    required this.isPlaylist,
-    required this.playlistId,
   }) : super(key: key);
 
   final SongModel songPlayed;
-  final bool isPlaylist;
-  final int playlistId;
 
   @override
   Widget build(BuildContext context) {
@@ -147,8 +134,6 @@ class _MoreOptionsModal extends StatelessWidget {
           context: context,
           builder: (_) => MoreSongOptionsModal(
             song: songPlayed,
-            isPlaylist: isPlaylist,
-            playlistId: playlistId,
           )
         );
       },
@@ -528,13 +513,9 @@ class _SongPlayedLandscapeBody extends StatelessWidget {
   const _SongPlayedLandscapeBody({
     Key? key,
     required this.playAnimation,
-    required this.isPlaylist,
-    required this.playlistId
   }) : super(key: key);
 
   final AnimationController? playAnimation;
-  final bool isPlaylist;
-  final int playlistId;
 
   @override
   Widget build(BuildContext context) {
@@ -593,8 +574,6 @@ class _SongPlayedLandscapeBody extends StatelessWidget {
                             Flexible(child: _AppBarTitle(songPlayed: songPlayed)),
                             _MoreOptionsModal(
                               songPlayed: songPlayed,
-                              isPlaylist: isPlaylist,
-                              playlistId: playlistId
                             )
                           ],
                         ),

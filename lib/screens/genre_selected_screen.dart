@@ -156,7 +156,7 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
                   onLongPress: () {
                     showModalBottomSheet(
                       context: context,
-                      builder:( _ ) => MoreSongOptionsModal(song: song, disabledDeleteButton: true)
+                      builder:( _ ) => MoreSongOptionsModal(song: song)
                     );
                   },
                 );

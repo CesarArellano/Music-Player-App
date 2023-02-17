@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:focus_music_player/audio_player_handler.dart';
 import 'package:focus_music_player/helpers/format_extension.dart';
 import 'package:focus_music_player/helpers/music_actions.dart';
 import 'package:focus_music_player/helpers/null_extension.dart';
@@ -14,7 +15,7 @@ import '../models/multiple_search_model.dart';
 
 class MusicPlayerProvider extends ChangeNotifier {
 
-  final OnAudioQuery onAudioQuery = OnAudioQuery();
+  final OnAudioQuery onAudioQuery = audioPlayerHandler.get<OnAudioQuery>();
 
   SongModel _songPlayed = SongModel({ '_id': 0 });
   
@@ -26,13 +27,11 @@ class MusicPlayerProvider extends ChangeNotifier {
   Map<int, List<SongModel>> albumCollection = {};
   Map<int, ArtistContentModel> artistCollection = {};
   Map<int, List<SongModel>> genreCollection = {};
-  Map<int, List<SongModel>> playlistCollection = {};
 
   List<SongModel> songList = [];
   List<AlbumModel> albumList = [];
   List<GenreModel> genreList = [];
   List<ArtistModel> artistList = [];
-  List<PlaylistModel> playLists = [];
   List<SongModel> _favoriteList = [];
 
   List<SongModel> currentPlaylist = [];
@@ -92,24 +91,12 @@ class MusicPlayerProvider extends ChangeNotifier {
     genreList = await onAudioQuery.queryGenres();
     artistList = await onAudioQuery.queryArtists();
 
-    if( Platform.isAndroid ) {
-      playLists = await onAudioQuery.queryPlaylists();
-    }
-    
     appDirectory = (await getApplicationDocumentsDirectory()).path;
 
     decodeFavoriteSongs();
     await createAllArtworks(createArtworks);
     
     UserPreferences().numberOfSongs = songList.length;
-    isLoading = false;
-    notifyListeners();
-  }
-
-  Future<void> refreshPlaylist() async {
-    isLoading = true;
-    notifyListeners();
-    playLists = await onAudioQuery.queryPlaylists();
     isLoading = false;
     notifyListeners();
   }
@@ -171,17 +158,6 @@ class MusicPlayerProvider extends ChangeNotifier {
     List<SongModel> tempGenreList = await onAudioQuery.queryAudiosFrom( AudiosFromType.GENRE_ID, genreId );
     tempGenreList.sort((a, b) => a.id.compareTo(b.id));
     genreCollection[genreId] = tempGenreList;
-  }
-
-  Future<void> searchByPlaylistId(int playlistId, { bool force = false }) async {
-    
-    if( playlistCollection.containsKey(playlistId) && !force ) return;
-
-    isLoading = true;
-    notifyListeners();
-    playlistCollection[playlistId] = await onAudioQuery.queryAudiosFrom( AudiosFromType.PLAYLIST, playlistId );
-    isLoading = false;
-    notifyListeners();
   }
 
   void decodeFavoriteSongs() {

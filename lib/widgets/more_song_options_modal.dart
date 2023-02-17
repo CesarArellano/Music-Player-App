@@ -12,7 +12,6 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../helpers/custom_snackbar.dart';
 import '../helpers/music_actions.dart';
 import '../providers/music_player_provider.dart';
 import '../share_prefs/user_preferences.dart';
@@ -23,27 +22,19 @@ class MoreSongOptionsModal extends StatefulWidget {
   const MoreSongOptionsModal({
     super.key,
     required this.song,
-    this.isPlaylist = false,
-    this.disabledDeleteButton = false,
-    this.playlistId,
   });
 
   final SongModel song;
-  final int? playlistId;
-  final bool isPlaylist;
-  final bool disabledDeleteButton;
 
   @override
   State<MoreSongOptionsModal> createState() => _MoreSongOptionsModalState();
 }
 
 class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
-  int? playListId;
 
   @override
   Widget build(BuildContext context) {
     final songPlayed = widget.song;
-    final onAudioQuery = audioPlayerHandler.get<OnAudioQuery>();
     final audioPlayer = audioPlayerHandler.get<AudioPlayer>();
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final audioControlProvider = Provider.of<AudioControlProvider>(context);
@@ -99,48 +90,6 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                   song: songPlayed
                 ),
               ),
-              if( musicPlayerProvider.playLists.isNotEmpty && Platform.isAndroid ) ...[
-                ListTile(
-                  leading: const Icon(Icons.playlist_add, color: AppTheme.lightTextColor,),
-                  title: const Text('Add to Playlist'),
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return StatefulBuilder(
-                          builder: (_, setInnerState) {
-                              return AlertDialog(
-                                backgroundColor: AppTheme.primaryColor,
-                                title: const Text('Add to playlist'),
-                                content: DropdownButton<int?>(
-                                  isExpanded: true,
-                                  value: playListId,
-                                  dropdownColor: AppTheme.primaryColor,
-                                  hint: const Text('Seleccionar una playlist', style: TextStyle(color: Colors.white)),
-                                  items: musicPlayerProvider.playLists.map((e) => DropdownMenuItem<int?>(value: e.id,child: Text(e.playlist, style: const TextStyle(color: Colors.white)),)).toList(),
-                                  onChanged: (int? value) => setInnerState(() => playListId = value),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: playListId == null
-                                      ? null
-                                      : () {
-                                        onAudioQuery.addToPlaylist(playListId!, widget.song.id);
-                                        musicPlayerProvider.refreshPlaylist();
-                                        Navigator.pop(context);
-                                      },
-                                    child: const Text('Add')
-                                  )
-                                ],
-                              );
-                          }
-                        );
-                      }
-                    );
-                  },
-                ),
-                const Divider(color: AppTheme.lightTextColor, height: 1),
-              ],
               ListTile(
                 leading: const Icon(Icons.share, color: AppTheme.lightTextColor,),
                 title: const Text('Share Audio'),
@@ -164,59 +113,6 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                   showDialog(context: context, builder: (_) => SongDetailsDialog(song: widget.song));
                 },
               ),
-              if( !widget.disabledDeleteButton )
-                ListTile(
-                  leading: Icon(widget.isPlaylist ? Icons.playlist_remove : Icons.delete_forever, color: AppTheme.lightTextColor,),
-                  title: Text(widget.isPlaylist ? 'Remove from this playlist' : 'Delete from device'),
-                  onTap: () async {
-                    final albumId = songPlayed.albumId;
-                    final artistId = songPlayed.artistId;
-    
-                    if( widget.isPlaylist ) {
-                      onAudioQuery.removeFromPlaylist(widget.playlistId!, songPlayed.id);
-                      return await musicPlayerProvider.searchByPlaylistId(widget.playlistId!, force: true);
-                    }
-    
-                    if( albumId != null ) {
-                      await musicPlayerProvider.searchByAlbumId(albumId);
-                      if( musicPlayerProvider.albumCollection[albumId]?.length == 1  && await imageFile.exists() ) {
-                        MusicActions.deleteFile(imageFile);
-                      }
-                    }
-                    
-                    final isDeleted = await MusicActions.deleteFile(File(songPlayed.data));
-                    
-                    if( !mounted ) return;
-    
-                    Navigator.pop(context);
-    
-                    if( isDeleted ) {
-                      Provider.of<MusicPlayerProvider>(context, listen: false).getAllSongs();
-                      
-                      if( albumId != null ) {
-                        await musicPlayerProvider.searchByAlbumId(albumId, force: true);
-                      }
-    
-                      if( artistId != null ) {
-                        await musicPlayerProvider.searchByArtistId(artistId, force: true);
-                      }
-    
-                      if( !mounted ) return;
-                      
-                      showSnackbar(
-                        context: context,
-                        message: 'Successfully removed'
-                      );
-                      
-                      return;
-                    }
-                    showSnackbar(
-                      context: context,
-                      message: 'Error when deleting',
-                      backgroundColor: Colors.red
-                    );
-                  },
-                ),
             ],
           ),
           

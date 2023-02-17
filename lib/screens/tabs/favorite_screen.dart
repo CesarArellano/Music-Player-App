@@ -47,7 +47,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> with AutomaticKeepAlive
                 onLongPress: () {
                   showModalBottomSheet(
                     context: context,
-                    builder:(context) => MoreSongOptionsModal(song: song, disabledDeleteButton: true)
+                    builder:(context) => MoreSongOptionsModal(song: song)
                   );
                 },
                 child: CustomListTile(
