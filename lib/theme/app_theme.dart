@@ -25,8 +25,8 @@ class AppTheme {
     colorScheme: const ColorScheme.dark(
       primary: Colors.white,
       onPrimary: Colors.white,
-      secondary: Colors.white
-    ).copyWith(secondary: accentColor),
+      secondary: accentColor
+    ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: primaryColor,
       selectedItemColor: Colors.white,

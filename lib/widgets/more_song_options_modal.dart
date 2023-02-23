@@ -1,6 +1,7 @@
 import 'dart:io' show Platform, File;
 
 import 'package:flutter/material.dart';
+import 'package:focus_music_player/providers/ui_provider.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
@@ -43,6 +44,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
     final songPlayed = widget.song;
     final onAudioQuery = audioPlayerHandler.get<OnAudioQuery>();
     final audioPlayer = audioPlayerHandler.get<AudioPlayer>();
+    final uiProvider = Provider.of<UIProvider>(context, listen: false);
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final audioControlProvider = Provider.of<AudioControlProvider>(context);
     final duration = Duration(milliseconds: widget.song.duration ?? 0);
@@ -69,6 +71,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                       musicPlayerProvider: musicPlayerProvider,
                       audioControlProvider: audioControlProvider,
                       song: songPlayed,
+                      uiProvider: uiProvider
                     );
                   }
     
@@ -82,7 +85,8 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                     index: currentIndex,
                     seek: audioControlProvider.currentDuration,
                     audioControlProvider: audioControlProvider,
-                    musicPlayerProvider: musicPlayerProvider
+                    musicPlayerProvider: musicPlayerProvider,
+                    uiProvider: uiProvider
                   );
                   Navigator.pop(context);
                 },
@@ -94,7 +98,8 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                   audioPlayer: audioPlayer,
                   musicPlayerProvider: musicPlayerProvider,
                   audioControlProvider: audioControlProvider,
-                  song: songPlayed
+                  song: songPlayed,
+                  uiProvider: uiProvider
                 ),
               ),
               if( musicPlayerProvider.playLists.isNotEmpty && Platform.isAndroid ) ...[
@@ -262,6 +267,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
     required AudioPlayer audioPlayer,
     required MusicPlayerProvider musicPlayerProvider,
     required AudioControlProvider audioControlProvider,
+    required UIProvider uiProvider,
   }) {
     musicPlayerProvider.currentPlaylist = [ ...musicPlayerProvider.currentPlaylist, song ];
     MusicActions.openAudios(
@@ -269,7 +275,8 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
       audioControlProvider: audioControlProvider,
       musicPlayerProvider: musicPlayerProvider,
       index: audioControlProvider.currentIndex,
-      seek: audioControlProvider.currentDuration
+      seek: audioControlProvider.currentDuration,
+      uiProvider: uiProvider,
     );
     Navigator.pop(context);
   }

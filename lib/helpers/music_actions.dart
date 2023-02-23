@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:palette_generator/palette_generator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
@@ -53,6 +54,7 @@ class MusicActions {
     }
   ) {
     final audioPlayer = audioPlayerHandler<AudioPlayer>();
+    final uiProvider = Provider.of<UIProvider>(context, listen: false);
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
     Provider.of<UIProvider>(context, listen: false).currentHeroId = heroId;
@@ -66,6 +68,7 @@ class MusicActions {
       audioPlayer: audioPlayer,
       audioControlProvider: audioControlProvider,
       musicPlayerProvider: musicPlayerProvider,
+      uiProvider: uiProvider,
       seek: Duration(milliseconds: UserPreferences().lastSongDuration),
     );
 
@@ -73,6 +76,7 @@ class MusicActions {
 
   static void initStreams(BuildContext context) {
     final audioPlayer = audioPlayerHandler<AudioPlayer>();
+    final uiProvider = Provider.of<UIProvider>(context, listen: false);
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
 
@@ -83,11 +87,16 @@ class MusicActions {
       UserPreferences().lastSongDuration = duration.inMilliseconds;
     });
 
-    audioPlayer.currentIndexStream.listen((currentIndex) {
+    audioPlayer.currentIndexStream.listen((currentIndex) async {
       if( musicPlayerProvider.currentPlaylist.isEmpty ) return;
+
       audioControlProvider.currentIndex = currentIndex.value();
       musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ currentIndex.value() ];
       UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
+      
+      uiProvider.paletteGenerator = await PaletteGenerator.fromImageProvider(
+        FileImage(File('${ musicPlayerProvider.appDirectory }/${ musicPlayerProvider.songPlayed.albumId }.jpg'))
+      );
     });
   }
 
@@ -104,6 +113,7 @@ class MusicActions {
     final audioPlayer = audioPlayerHandler<AudioPlayer>();
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
+    final uiProvider = Provider.of<UIProvider>(context, listen: false);
     
     Provider.of<UIProvider>(context, listen: false).currentHeroId = heroId;
 
@@ -128,7 +138,9 @@ class MusicActions {
         audioPlayer: audioPlayer,
         audioControlProvider: audioControlProvider,
         musicPlayerProvider: musicPlayerProvider,
+        uiProvider: uiProvider
       );
+
     } else {
       audioPlayer.seek( const Duration( seconds: 0 ));
     }
@@ -212,6 +224,7 @@ class MusicActions {
     required AudioPlayer audioPlayer,
     required AudioControlProvider audioControlProvider,
     required MusicPlayerProvider musicPlayerProvider,
+    required UIProvider uiProvider,
     Duration? seek
   }) {
 
@@ -234,6 +247,11 @@ class MusicActions {
     audioControlProvider.currentIndex = index;
     musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ index ];
     UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
+
+    PaletteGenerator.fromImageProvider(
+      FileImage(File('${ musicPlayerProvider.appDirectory }/${ musicPlayerProvider.songPlayed.albumId }.jpg'))
+    ).then((value) => uiProvider.paletteGenerator = value);
+
   }
 
 }

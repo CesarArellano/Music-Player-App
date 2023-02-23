@@ -36,6 +36,7 @@ dependencies:
   marquee: ^2.2.3
   get_it: ^7.2.0
   share_plus: ^6.3.0
+  palette_generator: ^0.3.3+2
   permission_handler: ^10.2.0
   animate_do: ^3.0.2
   path_provider: ^2.0.12
