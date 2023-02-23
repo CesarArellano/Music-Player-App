@@ -1,10 +1,10 @@
-import 'dart:io';
+import 'dart:io' show File;
 
 import 'package:flutter/material.dart';
-import 'package:focus_music_player/helpers/null_extension.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
+import '../../extensions/extensions.dart';
 import '../../helpers/music_actions.dart';
 import '../../providers/music_player_provider.dart';
 import '../../share_prefs/user_preferences.dart';
@@ -86,7 +86,7 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
                   imageFile: imageFile,
                   tag: heroId,
                 ),
-                onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.songs, heroId: heroId),
+                onTap: () => MusicActions.songPlayAndPause(context, song, PlaylistType.songs, heroId: heroId),
                 onLongPress: () {
                   showModalBottomSheet(
                     context: context,

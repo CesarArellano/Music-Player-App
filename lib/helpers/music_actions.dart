@@ -1,18 +1,15 @@
-
-
-
-import 'dart:io';
+import 'dart:io' show File;
 
 import 'package:flutter/material.dart';
-import 'package:focus_music_player/models/artist_content_model.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
-import '../helpers/null_extension.dart';
 import '../audio_player_handler.dart';
+import '../extensions/extensions.dart';
+import '../models/artist_content_model.dart';
 import '../providers/audio_control_provider.dart';
 import '../providers/music_player_provider.dart';
 import '../providers/ui_provider.dart';
@@ -20,7 +17,8 @@ import '../screens/song_played_screen.dart';
 import '../share_prefs/user_preferences.dart';
 import '../theme/app_theme.dart';
 
-enum TypePlaylist {
+
+enum PlaylistType {
   songs,
   album,
   artist,
@@ -28,7 +26,25 @@ enum TypePlaylist {
   playlist,
   favorites,
 }
+
 class MusicActions {
+  
+  static List<SongModel> getPlaylistType({ 
+    int? id,
+    required PlaylistType type,
+    required MusicPlayerProvider musicPlayerProvider,
+  }) {
+    final playlistTypeMap = {
+      PlaylistType.songs: musicPlayerProvider.songList,
+      PlaylistType.album: musicPlayerProvider.albumCollection[id].value(),
+      PlaylistType.artist: (musicPlayerProvider.artistCollection[id] ?? ArtistContentModel()).songs,
+      PlaylistType.playlist: musicPlayerProvider.playlistCollection[id].value(),
+      PlaylistType.genre: musicPlayerProvider.genreCollection[id].value(),
+      PlaylistType.favorites: musicPlayerProvider.favoriteList
+    };
+
+    return playlistTypeMap[type] ?? musicPlayerProvider.songList;
+  }
 
   static void initSongs(
     BuildContext context,
@@ -78,9 +94,9 @@ class MusicActions {
   static void songPlayAndPause(
     BuildContext context,
     SongModel song,
-    TypePlaylist type, { 
+    PlaylistType type, { 
       required String heroId,
-      int id = 0,
+      int? id,
       bool activateShuffle = false
     }
   ) {
@@ -93,29 +109,11 @@ class MusicActions {
 
     final playlistToLength = musicPlayerProvider.currentPlaylist.length;
     
-    switch (type) {
-      case TypePlaylist.songs:
-        musicPlayerProvider.currentPlaylist = musicPlayerProvider.songList;
-        break;
-      case TypePlaylist.album:
-        musicPlayerProvider.currentPlaylist = musicPlayerProvider.albumCollection[id].value();
-        break;
-      case TypePlaylist.artist:
-        musicPlayerProvider.currentPlaylist = (musicPlayerProvider.artistCollection[id] ?? ArtistContentModel()).songs;
-        break;
-      case TypePlaylist.playlist:
-        musicPlayerProvider.currentPlaylist = musicPlayerProvider.playlistCollection[id].value();
-        break;
-      case TypePlaylist.genre:
-        musicPlayerProvider.currentPlaylist = musicPlayerProvider.genreCollection[id].value();
-        break;
-      case TypePlaylist.favorites:
-        musicPlayerProvider.currentPlaylist = musicPlayerProvider.favoriteList;
-        break;
-      default:
-        musicPlayerProvider.currentPlaylist = musicPlayerProvider.songList;
-        break;
-    }
+    musicPlayerProvider.currentPlaylist = getPlaylistType(
+      id: id,
+      type: type,
+      musicPlayerProvider: musicPlayerProvider,
+    );
 
     final index = musicPlayerProvider.currentPlaylist.indexWhere(
       (songOfList) => songOfList.id == song.id 
@@ -142,8 +140,8 @@ class MusicActions {
       context,
       MaterialPageRoute(
         builder: (_) => SongPlayedScreen(
-          playlistId: ( TypePlaylist.playlist == type ) ? id : null,
-          isPlaylist: ( TypePlaylist.playlist == type ),
+          playlistId: ( PlaylistType.playlist == type ) ? id : null,
+          isPlaylist: ( PlaylistType.playlist == type ),
         )
       )
     );

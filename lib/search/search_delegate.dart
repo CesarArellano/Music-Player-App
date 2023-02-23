@@ -1,11 +1,11 @@
-import 'dart:io';
+import 'dart:io' show File;
 
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart' show SongModel, ArtworkType;
 import 'package:provider/provider.dart';
 
 import '../helpers/music_actions.dart';
-import '../helpers/null_extension.dart';
+import '../extensions/extensions.dart';
 import '../providers/music_player_provider.dart';
 import '../screens/album_selected_screen.dart';
 import '../screens/artist_selected_screen.dart';
@@ -154,7 +154,7 @@ class MusicSearchDelegate extends SearchDelegate {
         artworkId: song.id,
         tag: heroId,
       ),
-      onTap: () =>  MusicActions.songPlayAndPause(context, song, TypePlaylist.songs, heroId: heroId),
+      onTap: () =>  MusicActions.songPlayAndPause(context, song, PlaylistType.songs, heroId: heroId),
       onLongPress: () {
         showModalBottomSheet(
           context: context,

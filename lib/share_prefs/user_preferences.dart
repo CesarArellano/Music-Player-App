@@ -14,13 +14,13 @@ class UserPreferences {
     _prefs = await SharedPreferences.getInstance();
   }
 
-  // GET y SET del isFirstTime.
-  bool get isFirstTime {
-    return _prefs.getBool('isFirstTime') ?? false;
+  // GET y SET del isNotFirstTime.
+  bool get isNotFirstTime {
+    return _prefs.getBool('isNotFirstTime') ?? false;
   }
 
-  set isFirstTime(bool value) {
-    _prefs.setBool('isFirstTime', value);
+  set isNotFirstTime(bool value) {
+    _prefs.setBool('isNotFirstTime', value);
   }
 
   // GET y SET del favoriteSongList.
@@ -59,4 +59,13 @@ class UserPreferences {
     _prefs.setInt('numberOfSongs', value);
   }
   
+
+  // GET y SET appDirectory.
+  String get appDirectory {
+    return _prefs.getString('appDirectory') ?? '';
+  }
+
+  set appDirectory(String value) {
+    _prefs.setString('appDirectory', value);
+  }
 }

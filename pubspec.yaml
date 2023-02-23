@@ -54,17 +54,17 @@ dev_dependencies:
 
 flutter_native_splash:
   color: '#ffffff'
-  image: 'assets/icon/icon.png'
+  image: 'assets/icon/new_icon.png'
   colorDark: '#1a1a1a'
-  imageDark: 'assets/icon/icon.png'
+  imageDark: 'assets/icon/new_icon.png'
   android: true
   ios: true
   
 flutter_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/icon/icon.png"
-  adaptative_icon_background: "assets/icon/icon.png"
+  image_path: "assets/icon/new_icon.png"
+  adaptative_icon_background: "assets/icon/new_icon.png"
   
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

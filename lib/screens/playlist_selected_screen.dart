@@ -1,12 +1,12 @@
-import 'dart:io';
+import 'dart:io' show File;
 
 import 'package:flutter/material.dart';
-import 'package:focus_music_player/helpers/null_extension.dart';
 import 'package:focus_music_player/theme/app_theme.dart';
 import 'package:focus_music_player/widgets/custom_icon_text_button.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
+import '../extensions/extensions.dart';
 import '../helpers/music_actions.dart';
 import '../providers/music_player_provider.dart';
 import '../widgets/widgets.dart';
@@ -75,7 +75,7 @@ class _PlaylistSelectedScreenState extends State<PlaylistSelectedScreen> {
                     imageFile: imageFile,
                     tag: heroId,
                   ),
-                  onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.playlist, id: widget.playlist.id, heroId: heroId),
+                  onTap: () => MusicActions.songPlayAndPause(context, song, PlaylistType.playlist, id: widget.playlist.id, heroId: heroId),
                   onLongPress: () {
                     showModalBottomSheet(
                       context: context,

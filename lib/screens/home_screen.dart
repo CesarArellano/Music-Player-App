@@ -1,5 +1,5 @@
-import 'dart:io';
-import 'dart:math';
+import 'dart:io' show Platform;
+import 'dart:math' show Random;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,9 +9,9 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../audio_player_handler.dart';
-import '../helpers/custom_snackbar.dart';
+import '../extensions/extensions.dart';
+import '../helpers/helpers.dart';
 import '../helpers/music_actions.dart';
-import '../helpers/null_extension.dart';
 import '../providers/music_player_provider.dart';
 import '../search/search_delegate.dart';
 import '../theme/app_theme.dart';
@@ -64,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
         _isSnackbarActive = true;
         
-        showSnackbar(
+        Helpers.showSnackbar(
           context: context,
           message: 'Please back again to exit',
           snackBarAction: SnackBarAction(
@@ -120,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     
     if( !mounted ) return;
 
-    showSnackbar(
+    Helpers.showSnackbar(
       context: context,
       message: 'The ${ dialogResp.playlistName.value() } playlist was successfully added!'
     );
@@ -134,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     MusicActions.songPlayAndPause(
       context,
       song,
-      TypePlaylist.songs,
+      PlaylistType.songs,
       heroId: 'songs-${ song.id }',
       activateShuffle: true,
     );
@@ -249,7 +249,7 @@ class _CustomAppBar extends StatelessWidget {
                   musicPlayerProvider: musicPlayerProvider,
                 );
 
-                showSnackbar(context: context, message: 'Task successfully completed');
+                Helpers.showSnackbar(context: context, message: 'Task successfully completed');
               }
             ),
           ],

@@ -16,7 +16,7 @@ class PlayShuffleButtons extends StatelessWidget {
   });
 
   final int id;
-  final TypePlaylist typePlaylist;
+  final PlaylistType typePlaylist;
   final List<SongModel> songList;
   final String heroId;
 

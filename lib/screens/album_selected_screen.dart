@@ -1,11 +1,11 @@
-import 'dart:io';
+import 'dart:io' show File;
 
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
-import 'package:focus_music_player/helpers/null_extension.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
+import '../extensions/extensions.dart';
 import '../helpers/music_actions.dart';
 import '../providers/music_player_provider.dart';
 import '../search/search_delegate.dart';
@@ -131,7 +131,7 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                       heroId: 'album-song-',
                       id: widget.albumSelected.id,
                       songList: ( musicPlayerProvider.albumCollection[widget.albumSelected.id] ?? [] ),
-                      typePlaylist: TypePlaylist.album,
+                      typePlaylist: PlaylistType.album,
                     ),
                     const SizedBox(height: 5),
                   ],
@@ -161,7 +161,7 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                     title: Text(song.title.value(), maxLines: 1, overflow: TextOverflow.ellipsis),
                     subtitle: Text(song.artist.valueEmpty('No Artist'), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppTheme.lightTextColor, fontSize: 12)),
                   ),
-                  onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.album, id: widget.albumSelected.id, heroId: heroId),
+                  onTap: () => MusicActions.songPlayAndPause(context, song, PlaylistType.album, id: widget.albumSelected.id, heroId: heroId),
                   onLongPress: () {
                     showModalBottomSheet(
                       context: context,

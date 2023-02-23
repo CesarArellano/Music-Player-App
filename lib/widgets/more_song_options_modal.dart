@@ -1,23 +1,21 @@
-import 'dart:io';
-
+import 'dart:io' show Platform, File;
 
 import 'package:flutter/material.dart';
-import 'package:focus_music_player/audio_player_handler.dart';
-import 'package:focus_music_player/helpers/format_extension.dart';
-import 'package:focus_music_player/helpers/null_extension.dart';
-import 'package:focus_music_player/providers/audio_control_provider.dart';
-import 'package:focus_music_player/widgets/song_details_dialog.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../helpers/custom_snackbar.dart';
+import '../audio_player_handler.dart';
+import '../extensions/extensions.dart';
+import '../helpers/helpers.dart';
 import '../helpers/music_actions.dart';
+import '../providers/audio_control_provider.dart';
 import '../providers/music_player_provider.dart';
 import '../share_prefs/user_preferences.dart';
 import '../theme/app_theme.dart';
 import 'custom_list_tile.dart';
+import 'song_details_dialog.dart';
 
 class MoreSongOptionsModal extends StatefulWidget {
   const MoreSongOptionsModal({
@@ -200,17 +198,16 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                       if( artistId != null ) {
                         await musicPlayerProvider.searchByArtistId(artistId, force: true);
                       }
-    
-                      if( !mounted ) return;
                       
-                      showSnackbar(
+                      Helpers.showSnackbar(
                         context: context,
                         message: 'Successfully removed'
                       );
                       
                       return;
                     }
-                    showSnackbar(
+
+                    Helpers.showSnackbar(
                       context: context,
                       message: 'Error when deleting',
                       backgroundColor: Colors.red

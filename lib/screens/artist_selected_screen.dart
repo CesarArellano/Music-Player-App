@@ -1,18 +1,17 @@
-import 'dart:io';
-
+import 'dart:io' show File;
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
-import 'package:focus_music_player/helpers/null_extension.dart';
-import 'package:focus_music_player/screens/album_selected_screen.dart';
-import 'package:focus_music_player/theme/app_theme.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
+import '../extensions/extensions.dart';
 import '../helpers/music_actions.dart';
 import '../models/artist_content_model.dart';
 import '../providers/music_player_provider.dart';
 import '../search/search_delegate.dart';
+import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
+import 'album_selected_screen.dart';
 
 class ArtistSelectedScreen extends StatefulWidget {
   const ArtistSelectedScreen({
@@ -110,7 +109,7 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
                       heroId: 'artist-song-',
                       id: widget.artistSelected.id,
                       songList: artistContentModel.songs,
-                      typePlaylist: TypePlaylist.artist,
+                      typePlaylist: PlaylistType.artist,
                     ),
                   ),
                   const Padding(
@@ -142,7 +141,7 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
                     tag: heroId,
                   ),
                   onTap: () {
-                    MusicActions.songPlayAndPause(context, song, TypePlaylist.artist, id: widget.artistSelected.id, heroId: heroId);
+                    MusicActions.songPlayAndPause(context, song, PlaylistType.artist, id: widget.artistSelected.id, heroId: heroId);
                   },
                   onLongPress: () {
                     showModalBottomSheet(

@@ -1,12 +1,12 @@
-import 'dart:io';
+import 'dart:io' show File;
 
 import 'package:flutter/material.dart';
-import 'package:focus_music_player/helpers/null_extension.dart';
-import 'package:focus_music_player/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
+import '../../extensions/extensions.dart';
 import '../../helpers/music_actions.dart';
 import '../../providers/music_player_provider.dart';
+import '../../widgets/widgets.dart';
 
 class FavoriteScreen extends StatefulWidget {
   
@@ -43,7 +43,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> with AutomaticKeepAlive
               final heroId = 'favorite-song-${ song.id }';
         
               return RippleTile(
-                onTap: () => MusicActions.songPlayAndPause(context, song, TypePlaylist.favorites, heroId: heroId ),
+                onTap: () => MusicActions.songPlayAndPause(context, song, PlaylistType.favorites, heroId: heroId ),
                 onLongPress: () {
                   showModalBottomSheet(
                     context: context,

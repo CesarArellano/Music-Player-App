@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io' show File;
 import 'dart:ui';
 
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
@@ -13,7 +13,7 @@ import 'package:provider/provider.dart';
 
 import '../audio_player_handler.dart';
 import '../helpers/music_actions.dart';
-import '../helpers/null_extension.dart';
+import '../extensions/extensions.dart';
 import '../providers/audio_control_provider.dart';
 import '../providers/music_player_provider.dart';
 import '../providers/ui_provider.dart';
@@ -141,7 +141,7 @@ class _MoreOptionsModal extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       splashRadius: 20,
-      icon: const Icon(Icons.drag_indicator, color: Colors.white),
+      icon: const Icon(Icons.more_vert, color: Colors.white),
       onPressed: () {
         showModalBottomSheet(
           context: context,
@@ -255,9 +255,9 @@ class _SongPlayedPortraitBody extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    IconButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: () {
+                    _CustomIconButton(
+                      icon: isFavoriteSong ? Icons.favorite : Icons.favorite_border,
+                      onTap: () {
                         List<String> favoriteSongList = [ ...musicPlayerProvider.favoriteSongList ];
                         List<SongModel> favoriteList = [ ...musicPlayerProvider.favoriteList ];
 
@@ -274,33 +274,38 @@ class _SongPlayedPortraitBody extends StatelessWidget {
                         musicPlayerProvider.favoriteSongList = favoriteSongList;
                         UserPreferences().favoriteSongList = favoriteSongList;
                       },
-                      icon: Icon( isFavoriteSong ? Icons.favorite : Icons.favorite_border)
                     ),
+                    const SizedBox(width: 5),
                     Flexible(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Flexible (
                             child: ( songPlayed.title.value().length > 25 )
-                            ? Marquee(
-                              velocity: 50.0,
-                              text: songPlayed.title.value(),
-                              blankSpace: 30,
-                              fadingEdgeEndFraction: 0.1,
-                              fadingEdgeStartFraction: 0.1,
-                              style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18),
+                            ? SizedBox(
+                              height: 40,
+                              child: Marquee(
+                                velocity: 45.0,
+                                text: songPlayed.title.value(),
+                                blankSpace: 20,
+                                fadingEdgeEndFraction: 0.1,
+                                fadingEdgeStartFraction: 0.1,
+                                style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18),
+                                textScaleFactor: 1,
+                              ),
                             )
                             : Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 const SizedBox(height: 10),
-                                Text( songPlayed.title.value(), style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18) ),
+                                Text(
+                                  songPlayed.title.value(),
+                                  style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18),
+                                ),
                                 const SizedBox(height: 9)
                               ],
                             )
                           ),
-                          if( songPlayed.artist.value().length > 30 )
-                            const SizedBox(height: 5),
                           Material(
                             color: Colors.transparent,
                             child: InkWell(
@@ -323,25 +328,30 @@ class _SongPlayedPortraitBody extends StatelessWidget {
                               child: Text(
                                 songPlayed.artist.valueEmpty('No Artist'),
                                 maxLines: 1,
+                                textAlign: TextAlign.center,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 16, color: Colors.white54)
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 16,
+                                  color: Colors.white54
+                                )
                               ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    IconButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: () => MusicActions.showCurrentPlayList(context),
-                      icon: const Icon(Icons.playlist_play)
+                    const SizedBox(width: 5),
+                    _CustomIconButton(
+                      icon: Icons.playlist_play_rounded,
+                      onTap: () => MusicActions.showCurrentPlayList(context),
                     )
                   ],
                 ),
               ),
-              SizedBox(height: size.height * 0.1),
-              const _SongTimeline(),
               SizedBox(height: size.height * 0.09),
+              const _SongTimeline(),
+              SizedBox(height: size.height * 0.1),
               _MusicControls(playAnimation: playAnimation)
             ],
           ),
@@ -351,7 +361,34 @@ class _SongPlayedPortraitBody extends StatelessWidget {
   }
 }
 
-class _MusicControls extends StatelessWidget {
+class _CustomIconButton extends StatelessWidget {
+  const _CustomIconButton({
+    Key? key,
+    required this.icon,
+    this.onTap
+  }) : super(key: key);
+
+  final IconData icon;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(100),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Icon(icon, size: 24, color: Colors.white,),
+        )
+      ),
+    );
+  }
+}
+
+class _MusicControls extends StatefulWidget {
   const _MusicControls({
     Key? key,
     required this.playAnimation,
@@ -360,10 +397,20 @@ class _MusicControls extends StatelessWidget {
   final AnimationController? playAnimation;
 
   @override
+  State<_MusicControls> createState() => _MusicControlsState();
+}
+
+class _MusicControlsState extends State<_MusicControls> {
+  
+  bool _buttonPressed = false;
+  bool _loopActive = false;
+
+  @override
   Widget build(BuildContext context) {
     final audioPlayer = audioPlayerHandler<AudioPlayer>();
+    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final audioControlProvider = Provider.of<AudioControlProvider>(context);
-
+    
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -378,7 +425,7 @@ class _MusicControls extends StatelessWidget {
               if( !snapshot.hasData ) {
                 return const Icon( Icons.forward );
               }
-              return Icon( ( snapshot.data == LoopMode.off ) ? Icons.forward : ( snapshot.data == LoopMode.one ) ? Icons.repeat_one :  Icons.repeat);
+              return Icon( ( snapshot.data == LoopMode.off ) ? Icons.repeat : ( snapshot.data == LoopMode.one ) ? Icons.repeat_one :  Icons.keyboard_double_arrow_right);
             },
           ),
           onPressed: () async {
@@ -401,18 +448,26 @@ class _MusicControls extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            InkWell(
-              onLongPress: () {
-                final secondsResult = audioControlProvider.currentDuration.inSeconds - 10;
-                audioPlayer.seek( Duration(seconds: ( secondsResult >= 0) ? secondsResult : 0) );
+            GestureDetector(
+              onLongPressDown: (_) {
+                setState(() => _buttonPressed = true);
+                _whilePressed(
+                  audioControlProvider: audioControlProvider,
+                  audioPlayer: audioPlayer,
+                  currentIndex: audioControlProvider.currentIndex,
+                  songDurationSeconds: Duration(milliseconds: musicPlayerProvider.songPlayed.duration.value() ).inSeconds,
+                  goToSeconds: -10
+                );
               },
+              onLongPressUp: () => setState(() => _buttonPressed = false),
               child: FloatingActionButton(
                 heroTag: 'fast_rewind',
                 elevation: 0.0,
                 highlightElevation: 0.0,
                 backgroundColor: Colors.transparent,
-                child: const Icon( Icons.fast_rewind),
+                child: const Icon( Icons.skip_previous ),
                 onPressed: () async {
+                  setState(() => _buttonPressed = false);
                   await audioPlayer.seekToPrevious();
                 },
                 
@@ -426,9 +481,9 @@ class _MusicControls extends StatelessWidget {
                 final isPlaying = snapshot.data ?? false;
                 
                 if( isPlaying ) {
-                  playAnimation?.forward();
+                  widget.playAnimation?.forward();
                 } else {
-                  playAnimation?.reverse();
+                  widget.playAnimation?.reverse();
                 }
                 
                 return FloatingActionButton(
@@ -436,15 +491,15 @@ class _MusicControls extends StatelessWidget {
                   backgroundColor: Colors.white,
                   onPressed: () {
                     if( isPlaying ) {
-                      playAnimation?.reverse();
+                      widget.playAnimation?.reverse();
                       audioPlayer.pause();
                     } else {
-                      playAnimation?.forward();
+                      widget.playAnimation?.forward();
                       audioPlayer.play();
                     }
                   },
                   child: AnimatedIcon( 
-                    progress: playAnimation!,
+                    progress: widget.playAnimation!,
                     icon: AnimatedIcons.play_pause,
                     color: Colors.black,
                   )
@@ -452,15 +507,26 @@ class _MusicControls extends StatelessWidget {
               }
             ),
             const SizedBox(width: 15),
-            InkWell(
-              onLongPress: () =>  audioPlayer.seek( Duration(seconds: audioControlProvider.currentDuration.inSeconds + 10) ),
+            GestureDetector(
+              onLongPressDown: (_) {
+                setState(() => _buttonPressed = true);
+                _whilePressed(
+                  audioControlProvider: audioControlProvider,
+                  audioPlayer: audioPlayer,
+                  currentIndex: audioControlProvider.currentIndex,
+                  songDurationSeconds: Duration(milliseconds: musicPlayerProvider.songPlayed.duration.value() ).inSeconds,
+                  goToSeconds: 10
+                );
+              },
+              onLongPressUp: () => setState(() => _buttonPressed = false),
               child: FloatingActionButton(
                 heroTag: 'fast_forward',
                 elevation: 0.0,
                 highlightElevation: 0.0,
                 backgroundColor: Colors.transparent,
-                child: const Icon( Icons.fast_forward ),
+                child: const Icon( Icons.skip_next_sharp ),
                 onPressed: () async {
+                  setState(() => _buttonPressed = false);
                   await audioPlayer.seekToNext();
                 },
                 
@@ -492,6 +558,36 @@ class _MusicControls extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  void _whilePressed({
+    required AudioControlProvider audioControlProvider,
+    required AudioPlayer audioPlayer,
+    required int currentIndex,
+    required int songDurationSeconds,
+    required int goToSeconds
+  }) async {
+    
+    if (_loopActive) return;// check if loop is active
+
+    _loopActive = true;
+
+    while (_buttonPressed) {
+
+      final secondsResult = audioControlProvider.currentDuration.inSeconds + goToSeconds;
+
+      if( currentIndex != audioPlayer.currentIndex ) {
+        _buttonPressed = false;
+        break;
+      }
+      if( secondsResult <= 0 ) {
+        _buttonPressed = false;
+      }
+      audioPlayer.seek( Duration(seconds: ( secondsResult >= 0) ? secondsResult : 0) );
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+
+    _loopActive = false;
   }
 }
 

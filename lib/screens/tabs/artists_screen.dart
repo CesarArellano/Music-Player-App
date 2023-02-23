@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../helpers/null_extension.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
-
+import '../../extensions/extensions.dart';
 import '../../providers/music_player_provider.dart';
 import '../../widgets/widgets.dart';
 import '../artist_selected_screen.dart';
