@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:palette_generator/palette_generator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
@@ -94,8 +93,9 @@ class MusicActions {
       musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ currentIndex.value() ];
       UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
       
-      uiProvider.paletteGenerator = await PaletteGenerator.fromImageProvider(
-        FileImage(File('${ musicPlayerProvider.appDirectory }/${ musicPlayerProvider.songPlayed.albumId }.jpg'))
+      await uiProvider.searchDominantColorByAlbumId(
+        albumId: musicPlayerProvider.songPlayed.albumId,
+        appDirectory: musicPlayerProvider.appDirectory
       );
     });
   }
@@ -247,11 +247,11 @@ class MusicActions {
     audioControlProvider.currentIndex = index;
     musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ index ];
     UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
-
-    PaletteGenerator.fromImageProvider(
-      FileImage(File('${ musicPlayerProvider.appDirectory }/${ musicPlayerProvider.songPlayed.albumId }.jpg'))
-    ).then((value) => uiProvider.paletteGenerator = value);
-
+    
+    uiProvider.searchDominantColorByAlbumId(
+      albumId: musicPlayerProvider.songPlayed.albumId,
+      appDirectory: musicPlayerProvider.appDirectory
+    );
   }
 
 }
