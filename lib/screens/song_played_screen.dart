@@ -74,7 +74,7 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
         return AnnotatedRegion<SystemUiOverlayStyle>(
           value: SystemUiOverlayStyle(
             systemNavigationBarColor: currentDominantColor,
-            statusBarIconBrightness: songPlayedBrightness
+            statusBarIconBrightness: songPlayedBrightness,
           ),
           child: Theme(
             data: AppTheme.lightTheme.copyWith(
@@ -251,138 +251,137 @@ class _SongPlayedPortraitBody extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              SizedBox(height: size.height * 0.015),
-              Hero(
-                tag: currentHeroId,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(15),
-                  child: Image.file(
-                    imageFile,
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            Hero(
+              tag: currentHeroId,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(15),
+                child: Image.file(
+                  imageFile,
+                  width: double.infinity,
+                  height: 350,
+                  fit: BoxFit.cover,
+                  filterQuality: FilterQuality.medium,
+                  gaplessPlayback: true,
+                  errorBuilder: ( _, __, ___ ) => ArtworkImage(
+                    artworkId: songPlayed.id,
+                    type: ArtworkType.AUDIO,
                     width: double.infinity,
                     height: 350,
-                    fit: BoxFit.cover,
-                    filterQuality: FilterQuality.medium,
-                    gaplessPlayback: true,
-                    errorBuilder: ( _, __, ___ ) => ArtworkImage(
-                      artworkId: songPlayed.id,
-                      type: ArtworkType.AUDIO,
-                      width: double.infinity,
-                      height: 350,
-                      size: 500,
-                      radius: BorderRadius.circular(15),
-                    )
-                  ),
+                    size: 500,
+                    radius: BorderRadius.circular(15),
+                  )
                 ),
               ),
-              SizedBox(height: size.height * 0.05),
-              SizedBox(
-                height: size.height * 0.08,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _CustomIconButton(
-                      icon: isFavoriteSong ? Icons.favorite : Icons.favorite_border,
-                      onTap: () {
-                        List<String> favoriteSongList = [ ...musicPlayerProvider.favoriteSongList ];
-                        List<SongModel> favoriteList = [ ...musicPlayerProvider.favoriteList ];
+            ),
+            const SizedBox(height: 40),
+            SizedBox(
+              height: size.height * 0.075,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _CustomIconButton(
+                    icon: isFavoriteSong ? Icons.favorite : Icons.favorite_border,
+                    onPressed: () {
+                      List<String> favoriteSongList = [ ...musicPlayerProvider.favoriteSongList ];
+                      List<SongModel> favoriteList = [ ...musicPlayerProvider.favoriteList ];
 
-                        if( isFavoriteSong ) {
-                          favoriteList.removeWhere(((song) => song.id == songPlayed.id));
-                          favoriteSongList.removeWhere(((songId) => songId == songPlayed.id.toString()));
-                        } else {
-                          final index = musicPlayerProvider.songList.indexWhere((song) => song.id == songPlayed.id);
-                          favoriteList.add( musicPlayerProvider.songList[index] );
-                          favoriteSongList.add(songPlayed.id.toString());
-                        }
+                      if( isFavoriteSong ) {
+                        favoriteList.removeWhere(((song) => song.id == songPlayed.id));
+                        favoriteSongList.removeWhere(((songId) => songId == songPlayed.id.toString()));
+                      } else {
+                        final index = musicPlayerProvider.songList.indexWhere((song) => song.id == songPlayed.id);
+                        favoriteList.add( musicPlayerProvider.songList[index] );
+                        favoriteSongList.add(songPlayed.id.toString());
+                      }
 
-                        musicPlayerProvider.favoriteList = favoriteList;
-                        musicPlayerProvider.favoriteSongList = favoriteSongList;
-                        UserPreferences().favoriteSongList = favoriteSongList;
-                      },
-                    ),
-                    const SizedBox(width: 5),
-                    Flexible(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Flexible (
-                            child: ( songPlayed.title.value().length > 25 )
-                            ? SizedBox(
-                              height: 40,
-                              child: Marquee(
-                                velocity: 45.0,
-                                text: songPlayed.title.value(),
-                                blankSpace: 20,
-                                fadingEdgeEndFraction: 0.1,
-                                fadingEdgeStartFraction: 0.1,
+                      musicPlayerProvider.favoriteList = favoriteList;
+                      musicPlayerProvider.favoriteSongList = favoriteSongList;
+                      UserPreferences().favoriteSongList = favoriteSongList;
+                    },
+                  ),
+                  const SizedBox(width: 5),
+                  Flexible(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Flexible (
+                          child: ( songPlayed.title.value().length > 25 )
+                          ? SizedBox(
+                            height: 40,
+                            child: Marquee(
+                              velocity: 45.0,
+                              text: songPlayed.title.value(),
+                              blankSpace: 20,
+                              fadingEdgeEndFraction: 0.1,
+                              fadingEdgeStartFraction: 0.1,
+                              style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18),
+                              textScaleFactor: 1,
+                            ),
+                          )
+                          : Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(height: 10),
+                              Text(
+                                songPlayed.title.value(),
                                 style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18),
-                                textScaleFactor: 1,
                               ),
-                            )
-                            : Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const SizedBox(height: 10),
-                                Text(
-                                  songPlayed.title.value(),
-                                  style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18),
-                                ),
-                                const SizedBox(height: 9)
-                              ],
-                            )
-                          ),
-                          Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                final artistId = songPlayed.artistId;
-                          
-                                if( artistId == null || artistId == 0) return;
-                          
-                                final artistSelected = musicPlayerProvider.artistList.firstWhere((artist) => artist.id == artistId.value(), orElse: () => ArtistModel({ "_id": 0 }));
-                                
-                                if( artistSelected.id == 0) return;
-                                
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ArtistSelectedScreen(artistSelected: artistSelected)
-                                  )
-                                );
-                              },
-                              child: Text(
-                                songPlayed.artist.valueEmpty('No Artist'),
-                                textScaleFactor: 1,
-                                maxLines: 1,
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 16,
-                                ).copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7))
-                              ),
+                              const SizedBox(height: 9)
+                            ],
+                          )
+                        ),
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              final artistId = songPlayed.artistId;
+                        
+                              if( artistId == null || artistId == 0) return;
+                        
+                              final artistSelected = musicPlayerProvider.artistList.firstWhere((artist) => artist.id == artistId.value(), orElse: () => ArtistModel({ "_id": 0 }));
+                              
+                              if( artistSelected.id == 0) return;
+                              
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ArtistSelectedScreen(artistSelected: artistSelected)
+                                )
+                              );
+                            },
+                            child: Text(
+                              songPlayed.artist.valueEmpty('No Artist'),
+                              textScaleFactor: 1,
+                              maxLines: 1,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w400,
+                                fontSize: 16,
+                              ).copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7))
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 5),
-                    _CustomIconButton(
-                      icon: Icons.playlist_play_rounded,
-                      onTap: () => MusicActions.showCurrentPlayList(context),
-                    )
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 5),
+                  _CustomIconButton(
+                    icon: Icons.playlist_play_rounded,
+                    onPressed: () => MusicActions.showCurrentPlayList(context),
+                  )
+                ],
               ),
-              SizedBox(height: size.height * 0.09),
-              const _SongTimeline(),
-              SizedBox(height: size.height * 0.1),
-              _MusicControls(playAnimation: playAnimation)
-            ],
-          ),
+            ),
+            const Spacer(),
+            const _SongTimeline(),
+            const Spacer(),
+            _MusicControls(playAnimation: playAnimation),
+            const SizedBox(height: 30)
+          ],
         ),
       ),
     );
@@ -393,26 +392,20 @@ class _CustomIconButton extends StatelessWidget {
   const _CustomIconButton({
     Key? key,
     required this.icon,
-    this.onTap
+    this.onPressed
   }) : super(key: key);
 
   final IconData icon;
-  final VoidCallback? onTap;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
     final songPlayedThemeColor = Provider.of<UIProvider>(context).songPlayedThemeColor;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(100),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Icon(icon, size: 24, color: songPlayedThemeColor),
-        )
-      ),
+    return IconButton(
+      padding: EdgeInsets.zero,
+      onPressed: onPressed,
+      icon: Icon(icon, color: songPlayedThemeColor),
     );
   }
 }
