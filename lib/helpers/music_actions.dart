@@ -94,7 +94,7 @@ class MusicActions {
       UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
       
       await uiProvider.searchDominantColorByAlbumId(
-        albumId: musicPlayerProvider.songPlayed.albumId,
+        albumId: musicPlayerProvider.songPlayed.albumId.toString(),
         appDirectory: musicPlayerProvider.appDirectory
       );
     });
@@ -249,7 +249,7 @@ class MusicActions {
     UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
     
     uiProvider.searchDominantColorByAlbumId(
-      albumId: musicPlayerProvider.songPlayed.albumId,
+      albumId: musicPlayerProvider.songPlayed.albumId.toString(),
       appDirectory: musicPlayerProvider.appDirectory
     );
   }

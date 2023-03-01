@@ -1,10 +1,12 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart' show Color, Colors, ChangeNotifier, FileImage, AnimationController;
+import 'package:flutter/material.dart';
+import 'package:focus_music_player/helpers/helpers.dart';
+import 'package:focus_music_player/share_prefs/user_preferences.dart';
 import 'package:palette_generator/palette_generator.dart';
 
 class UIProvider extends ChangeNotifier {
-  
+
   AnimationController? _animationController;
 
   AnimationController? get animationController => _animationController;
@@ -17,6 +19,8 @@ class UIProvider extends ChangeNotifier {
   Color? _currentDominantColor;
   Color get currentDominantColor => _currentDominantColor ?? Colors.black;
   Color get songPlayedThemeColor => ( currentDominantColor.computeLuminance() < 0.4 ) ? Colors.white : Colors.black;
+  Brightness get songPlayedBrightness => ( currentDominantColor.computeLuminance() < 0.4 ) ? Brightness.light : Brightness.dark;
+  TextTheme get songPlayedTypography => ( currentDominantColor.computeLuminance() < 0.4 ) ? Typography.whiteCupertino : Typography.blackCupertino;
 
   set currentDominantColor(Color? newValue) {
     _currentDominantColor = newValue;
@@ -31,10 +35,10 @@ class UIProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Map<int, Color> dominantColorCollection = {};
+  Map<String, String> dominantColorCollection = {};
 
   Future<void> searchDominantColorByAlbumId({
-    required int? albumId,
+    required String? albumId,
     required String appDirectory
   }) async {
     final fileImage = FileImage(File('$appDirectory/$albumId.jpg'));
@@ -46,16 +50,19 @@ class UIProvider extends ChangeNotifier {
     }
 
     if( dominantColorCollection.containsKey(albumId) ) {
-      _currentDominantColor = dominantColorCollection[albumId];
+      final dominantColor = dominantColorCollection[albumId];
+      _currentDominantColor = (dominantColor != null) ? Helpers.fromHex(dominantColor) : null;
       notifyListeners();
       return;
     }
 
-    dominantColorCollection[albumId] = (
+    dominantColorCollection[albumId] = ((
       await PaletteGenerator.fromImageProvider( fileImage )
-    ).dominantColor?.color ?? Colors.white;
+    ).dominantColor?.color ?? Colors.white).value.toRadixString(16);
 
-    _currentDominantColor = dominantColorCollection[albumId];
+    final dominantColor = dominantColorCollection[albumId];
+    _currentDominantColor = (dominantColor != null) ? Helpers.fromHex(dominantColor) : null;
+    UserPreferences().dominantColorCollection = dominantColorCollection;
 
     notifyListeners();
   }

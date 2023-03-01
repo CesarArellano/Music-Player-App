@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserPreferences {
@@ -67,5 +69,17 @@ class UserPreferences {
 
   set appDirectory(String value) {
     _prefs.setString('appDirectory', value);
+  }
+  
+  // GET y SET appDirectory.
+  Map<String, String> get dominantColorCollection {
+    final Map<String, String> dominantColorCollection = Map<String,String>.from( 
+      json.decode(_prefs.getString('dominantColorCollection') ?? '{}')
+    );
+    return dominantColorCollection;
+  }
+
+  set dominantColorCollection(Map<String, String> value) {
+    _prefs.setString('dominantColorCollection', json.encode(value));
   }
 }
