@@ -166,6 +166,7 @@ class MusicActions {
     showModalBottomSheet(
       context: context,
       builder: ( ctx ) => ListView.builder(
+        shrinkWrap: true,
         itemCount: musicPlayerProvider.currentPlaylist.length,
         itemBuilder: (_, int i) {
           final currentSequence = musicPlayerProvider.currentPlaylist[ ( audioPlayer.effectiveIndices?[i] ).value() ];
