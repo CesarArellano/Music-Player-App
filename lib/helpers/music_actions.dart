@@ -81,19 +81,19 @@ class MusicActions {
 
     musicPlayerProvider.currentPlaylist = musicPlayerProvider.songList;
     
-    audioPlayer.positionStream.listen((duration) async {
+    audioPlayer.positionStream.listen((duration) {
       audioControlProvider.currentDuration = duration;
       UserPreferences().lastSongDuration = duration.inMilliseconds;
     });
 
-    audioPlayer.currentIndexStream.listen((currentIndex) async {
+    audioPlayer.currentIndexStream.listen((currentIndex) {
       if( musicPlayerProvider.currentPlaylist.isEmpty ) return;
 
       audioControlProvider.currentIndex = currentIndex.value();
       musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ currentIndex.value() ];
       UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
       
-      await uiProvider.searchDominantColorByAlbumId(
+      uiProvider.searchDominantColorByAlbumId(
         albumId: musicPlayerProvider.songPlayed.albumId.toString(),
         appDirectory: musicPlayerProvider.appDirectory
       );
@@ -166,11 +166,10 @@ class MusicActions {
     showModalBottomSheet(
       context: context,
       builder: ( ctx ) => ListView.builder(
-        shrinkWrap: true,
         itemCount: musicPlayerProvider.currentPlaylist.length,
         itemBuilder: (_, int i) {
           final currentSequence = musicPlayerProvider.currentPlaylist[ ( audioPlayer.effectiveIndices?[i] ).value() ];
-
+      
           final audio = SongModel({
             '_id': currentSequence.id,
             'title':currentSequence.title,
