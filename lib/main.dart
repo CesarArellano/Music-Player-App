@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:focus_music_player/helpers/helpers.dart';
 import 'package:focus_music_player/share_prefs/user_preferences.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
@@ -40,6 +41,7 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'Focus Music Player',
         initialRoute: 'home',
+        scaffoldMessengerKey: Helpers.scaffoldKey,
         theme: AppTheme.lightTheme,
         routes: AppRouter.routes,
         onGenerateRoute: AppRouter.onGenerateRoute,

@@ -65,7 +65,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         _isSnackbarActive = true;
         
         Helpers.showSnackbar(
-          context: context,
           message: 'Please back again to exit',
           snackBarAction: SnackBarAction(
             label: 'EXIT',
@@ -121,7 +120,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     if( !mounted ) return;
 
     Helpers.showSnackbar(
-      context: context,
       message: 'The ${ dialogResp.playlistName.value() } playlist was successfully added!'
     );
     
@@ -249,7 +247,7 @@ class _CustomAppBar extends StatelessWidget {
                   musicPlayerProvider: musicPlayerProvider,
                 );
 
-                Helpers.showSnackbar(context: context, message: 'Task successfully completed');
+                Helpers.showSnackbar(message: 'Task successfully completed');
               }
             ),
           ],

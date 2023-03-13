@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Helpers {
+  static final GlobalKey<ScaffoldMessengerState> scaffoldKey = GlobalKey<ScaffoldMessengerState>();
 
   /// Removes common accents and diacritical signs from a string by replacing them with an equivalent character.
   static String removeDiacritics(String str) {
@@ -143,13 +144,12 @@ class Helpers {
   ];
 
   static ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showSnackbar({
-    required BuildContext context,
     required String message,
     Color backgroundColor = const Color(0xFF303030),
     SnackBarAction? snackBarAction
   }) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    return ScaffoldMessenger.of(context).showSnackBar(
+    scaffoldKey.currentState!.hideCurrentSnackBar();
+    return scaffoldKey.currentState!.showSnackBar(
       SnackBar(
         backgroundColor: backgroundColor,
         content: Text(message, style: const TextStyle(color: Colors.white)),

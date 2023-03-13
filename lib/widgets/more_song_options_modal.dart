@@ -207,7 +207,6 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                         }
                         
                         Helpers.showSnackbar(
-                          context: context,
                           message: 'Successfully removed'
                         );
                         
@@ -215,7 +214,6 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                       }
       
                       Helpers.showSnackbar(
-                        context: context,
                         message: 'Error when deleting',
                         backgroundColor: Colors.red
                       );
