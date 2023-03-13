@@ -65,7 +65,6 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
     final songPlayed = musicPlayerProvider.songPlayed;
     final imageFile = File('${ musicPlayerProvider.appDirectory }/${ songPlayed.albumId }.jpg');
     final uiProvider = Provider.of<UIProvider>(context);
-    final currentDominantColor = uiProvider.currentDominantColor;
     final songPlayedBrightness = uiProvider.songPlayedBrightness;
     final songPlayedThemeColor = uiProvider.songPlayedThemeColor;
 
@@ -73,7 +72,7 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
       builder: (context, orientation) {
         return AnnotatedRegion<SystemUiOverlayStyle>(
           value: SystemUiOverlayStyle(
-            systemNavigationBarColor: currentDominantColor,
+            systemNavigationBarColor: Colors.black,
             statusBarIconBrightness: songPlayedBrightness,
           ),
           child: Theme(
@@ -127,7 +126,7 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
                         child: BackdropFilter(
                             filter: ImageFilter.blur(sigmaX: 50.0, sigmaY: 50.0),
                             child: Container(
-                              decoration: BoxDecoration(color: currentDominantColor.withOpacity(0.65)),
+                              decoration: BoxDecoration(color: uiProvider.currentDominantColor.withOpacity(0.7)),
                             ),
                           ),
                       ),
@@ -668,151 +667,151 @@ class _SongPlayedLandscapeBody extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  height: size.height * 0.85,
-                  width: size.width * 0.38,
-                  child: Hero(
-                    tag: currentHeroId,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(15),
-                      child: Image.file(
-                        imageFile,
-                        width: double.maxFinite,
-                        height: 330,
-                        fit: BoxFit.cover,
-                        filterQuality: FilterQuality.medium,
-                        gaplessPlayback: true,
-                        errorBuilder: ( _, __, ___ ) => ArtworkImage(
-                          artworkId: songPlayed.id,
-                          type: ArtworkType.AUDIO,
-                          width: double.infinity,
-                          height: 350,
-                          size: 500,
-                          radius: BorderRadius.circular(15),
-                        )
-                      ),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: size.height * 0.85,
+                width: size.width * 0.38,
+                child: Hero(
+                  tag: currentHeroId,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: Image.file(
+                      imageFile,
+                      width: double.maxFinite,
+                      height: 330,
+                      fit: BoxFit.cover,
+                      filterQuality: FilterQuality.medium,
+                      gaplessPlayback: true,
+                      errorBuilder: ( _, __, ___ ) => ArtworkImage(
+                        artworkId: songPlayed.id,
+                        type: ArtworkType.AUDIO,
+                        width: double.infinity,
+                        height: 350,
+                        size: 500,
+                        radius: BorderRadius.circular(15),
+                      )
                     ),
                   ),
                 ),
-                const SizedBox(width: 15),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const _AppBarLeading(),
-                            Flexible(child: _AppBarTitle(songPlayed: songPlayed)),
-                            _MoreOptionsModal(
-                              songPlayed: songPlayed,
-                              isPlaylist: isPlaylist,
-                              playlistId: playlistId
-                            )
-                          ],
-                        ),
-                        SizedBox(height: size.height * 0.33,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            IconButton(
-                              padding: EdgeInsets.zero,
-                              onPressed: () {
-                                List<String> favoriteSongList = [ ...musicPlayerProvider.favoriteSongList ];
-                                List<SongModel> favoriteList = [ ...musicPlayerProvider.favoriteList ];
-
-                                if( isFavoriteSong ) {
-                                  favoriteList.removeWhere(((song) => song.id == songPlayed.id));
-                                  favoriteSongList.removeWhere(((songId) => songId == songPlayed.id.toString()));
-                                } else {
-                                  final index = musicPlayerProvider.songList.indexWhere((song) => song.id == songPlayed.id);
-                                  favoriteList.add( musicPlayerProvider.songList[index] );
-                                  favoriteSongList.add(songPlayed.id.toString());
-                                }
-
-                                musicPlayerProvider.favoriteList = favoriteList;
-                                musicPlayerProvider.favoriteSongList = favoriteSongList;
-                                UserPreferences().favoriteSongList = favoriteSongList;
-                              },
-                              icon: Icon( isFavoriteSong ? Icons.favorite : Icons.favorite_border)
-                            ),
-                            Flexible(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Flexible (
-                                    child: ( songPlayed.title.value().length > 25 )
-                                    ? Marquee(
-                                      velocity: 50.0,
-                                      text: songPlayed.title.value(),
-                                      blankSpace: 30,
-                                      fadingEdgeEndFraction: 0.1,
-                                      fadingEdgeStartFraction: 0.1,
-                                      style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18),
-                                    )
-                                    : Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const SizedBox(height: 10),
-                                        Text( songPlayed.title.value(), style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18) ),
-                                        const SizedBox(height: 9)
-                                      ],
-                                    )
-                                  ),
-                                  if( songPlayed.artist.value().length > 30 )
-                                    const SizedBox(height: 5),
-                                  InkWell(
-                                    onTap: () {
-                                      final artistId = songPlayed.artistId;
-
-                                      if( artistId == null || artistId == 0) return;
-
-                                      final artistSelected = musicPlayerProvider.artistList.firstWhere((artist) => artist.id == artistId.value(), orElse: () => ArtistModel({ "_id": 0 }));
-                                      
-                                      if( artistSelected.id == 0) return;
-                                      
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => ArtistSelectedScreen(artistSelected: artistSelected)
-                                        )
-                                      );
-                                    },
-                                    child: Text(
-                                      songPlayed.artist.valueEmpty('No Artist'),
-                                      textScaleFactor: 1,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 16)
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                              padding: EdgeInsets.zero,
-                              onPressed: () => MusicActions.showCurrentPlayList(context),
-                              icon: const Icon(Icons.playlist_play)
-                            )
-                          ],
-                        ),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const _AppBarLeading(),
+                          Flexible(child: _AppBarTitle(songPlayed: songPlayed)),
+                          _MoreOptionsModal(
+                            songPlayed: songPlayed,
+                            isPlaylist: isPlaylist,
+                            playlistId: playlistId
+                          )
+                        ],
                       ),
-                      SizedBox(height: size.height * 0.05),
-                      const _SongTimeline(),
-                      SizedBox(height: size.height * 0.09),
-                      _MusicControls(playAnimation: playAnimation)
-                    ],
-                  ),
-                )
-              ],
-            ),
+                      SizedBox(
+                        height: size.height * 0.34,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: () {
+                              List<String> favoriteSongList = [ ...musicPlayerProvider.favoriteSongList ];
+                              List<SongModel> favoriteList = [ ...musicPlayerProvider.favoriteList ];
+
+                              if( isFavoriteSong ) {
+                                favoriteList.removeWhere(((song) => song.id == songPlayed.id));
+                                favoriteSongList.removeWhere(((songId) => songId == songPlayed.id.toString()));
+                              } else {
+                                final index = musicPlayerProvider.songList.indexWhere((song) => song.id == songPlayed.id);
+                                favoriteList.add( musicPlayerProvider.songList[index] );
+                                favoriteSongList.add(songPlayed.id.toString());
+                              }
+
+                              musicPlayerProvider.favoriteList = favoriteList;
+                              musicPlayerProvider.favoriteSongList = favoriteSongList;
+                              UserPreferences().favoriteSongList = favoriteSongList;
+                            },
+                            icon: Icon( isFavoriteSong ? Icons.favorite : Icons.favorite_border)
+                          ),
+                          Flexible(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Flexible (
+                                  child: ( songPlayed.title.value().length > 25 )
+                                  ? Marquee(
+                                    velocity: 50.0,
+                                    text: songPlayed.title.value(),
+                                    blankSpace: 30,
+                                    fadingEdgeEndFraction: 0.1,
+                                    fadingEdgeStartFraction: 0.1,
+                                    style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18),
+                                  )
+                                  : Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const SizedBox(height: 10),
+                                      Text( songPlayed.title.value(), style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18) ),
+                                      const SizedBox(height: 9)
+                                    ],
+                                  )
+                                ),
+                                if( songPlayed.artist.value().length > 30 )
+                                  const SizedBox(height: 5),
+                                InkWell(
+                                  onTap: () {
+                                    final artistId = songPlayed.artistId;
+
+                                    if( artistId == null || artistId == 0) return;
+
+                                    final artistSelected = musicPlayerProvider.artistList.firstWhere((artist) => artist.id == artistId.value(), orElse: () => ArtistModel({ "_id": 0 }));
+                                    
+                                    if( artistSelected.id == 0) return;
+                                    
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => ArtistSelectedScreen(artistSelected: artistSelected)
+                                      )
+                                    );
+                                  },
+                                  child: Text(
+                                    songPlayed.artist.valueEmpty('No Artist'),
+                                    textScaleFactor: 1,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 16)
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: () => MusicActions.showCurrentPlayList(context),
+                            icon: const Icon(Icons.playlist_play)
+                          )
+                        ],
+                      ),
+                    ),
+                    const Spacer(),
+                    const _SongTimeline(),
+                    const Spacer(),
+                    _MusicControls(playAnimation: playAnimation),
+                    const SizedBox(height: 15),
+                  ],
+                ),
+              )
+            ],
           ),
         ),
       ),
