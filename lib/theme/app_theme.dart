@@ -13,7 +13,7 @@ class AppTheme {
     scaffoldBackgroundColor: primaryColor,
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: accentColor
-    ), 
+    ),
     iconTheme: const IconThemeData(
       color: lightTextColor
     ),

@@ -230,6 +230,7 @@ class _CustomAppBar extends StatelessWidget {
           tooltip: 'Search music',
         ),
         PopupMenuButton(
+          color: Colors.white,
           icon: const Icon(Icons.more_vert, color: AppTheme.lightTextColor),
           tooltip: 'More options',
           itemBuilder: (_) => [
