@@ -1,19 +1,20 @@
-import 'dart:io';
+import 'dart:io' show Platform, File;
 
 import 'package:flutter/material.dart';
-import 'package:focus_music_player/helpers/format_extension.dart';
-import 'package:focus_music_player/helpers/music_actions.dart';
-import 'package:focus_music_player/helpers/null_extension.dart';
-import 'package:focus_music_player/share_prefs/user_preferences.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart' show getApplicationDocumentsDirectory;
 
+import '../audio_player_handler.dart';
+import '../extensions/extensions.dart';
+import '../helpers/music_actions.dart';
 import '../models/artist_content_model.dart';
+import '../models/multiple_search_model.dart';
+import '../share_prefs/user_preferences.dart';
 
 
 class MusicPlayerProvider extends ChangeNotifier {
 
-  final OnAudioQuery onAudioQuery = OnAudioQuery();
+  final OnAudioQuery onAudioQuery = audioPlayerHandler.get<OnAudioQuery>();
 
   SongModel _songPlayed = SongModel({ '_id': 0 });
   
@@ -74,12 +75,20 @@ class MusicPlayerProvider extends ChangeNotifier {
   }
 
   Future<void> getAllSongs({ bool forceCreatingArtworks = false }) async {
-    bool createArtworks = ( !UserPreferences().isFirstTime || forceCreatingArtworks );
+    final userPrefs = UserPreferences();
+    bool createArtworks = forceCreatingArtworks;
+    
+    appDirectory = UserPreferences().appDirectory;
 
-    isLoading = true;
-    if( createArtworks ) {
-      isCreatingArtworks = true;
+    if( !userPrefs.isNotFirstTime ) {
+      appDirectory = (await getApplicationDocumentsDirectory()).path;
+      UserPreferences().appDirectory = appDirectory;
+      createArtworks = true;
     }
+    
+    isCreatingArtworks = createArtworks;
+    isLoading = true;
+    
     notifyListeners();
 
     if( ! await onAudioQuery.permissionsStatus() ) {
@@ -90,13 +99,15 @@ class MusicPlayerProvider extends ChangeNotifier {
     albumList = await onAudioQuery.queryAlbums();
     genreList = await onAudioQuery.queryGenres();
     artistList = await onAudioQuery.queryArtists();
-    playLists = await onAudioQuery.queryPlaylists();
-    appDirectory = (await getApplicationDocumentsDirectory()).path;
+
+    if( Platform.isAndroid ) {
+      playLists = await onAudioQuery.queryPlaylists();
+    }
 
     decodeFavoriteSongs();
     await createAllArtworks(createArtworks);
     
-    UserPreferences().numberOfSongs = songList.length;
+    userPrefs.numberOfSongs = songList.length;
     isLoading = false;
     notifyListeners();
   }
@@ -109,8 +120,18 @@ class MusicPlayerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<SongModel>> searchSongByQuery(String query) async {
-    return songList.where((song) => song.title.value().toLowerCase().contains(query)).toList();
+  MultipleSearchModel searchByQuery(String query) {
+    final newQuery = query.toLowerCase();
+    
+    final songs = songList.where((song) => song.title.value().toLowerCase().contains(newQuery)).toList();
+    final albums = albumList.where((album) => album.album.value().toLowerCase().contains(newQuery)).toList();
+    final artists = artistList.where((artist) => artist.artist.value().toLowerCase().contains(newQuery)).toList();
+
+    return MultipleSearchModel(
+      songs: songs,
+      albums: albums,
+      artists: artists,
+    );
   }
 
   Future<void> searchByAlbumId(int albumId, { bool force = false }) async {
@@ -196,7 +217,7 @@ class MusicPlayerProvider extends ChangeNotifier {
         await MusicActions.createArtwork(imageTempFile, songList[i].id);
       }
       isCreatingArtworks = false;
-      UserPreferences().isFirstTime = true;
+      UserPreferences().isNotFirstTime = true;
     }
   }
 }

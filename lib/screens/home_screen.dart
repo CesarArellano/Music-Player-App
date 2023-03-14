@@ -1,3 +1,6 @@
+import 'dart:io' show Platform;
+import 'dart:math' show Random;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
@@ -6,8 +9,9 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../audio_player_handler.dart';
-import '../helpers/custom_snackbar.dart';
-import '../helpers/null_extension.dart';
+import '../extensions/extensions.dart';
+import '../helpers/helpers.dart';
+import '../helpers/music_actions.dart';
 import '../providers/music_player_provider.dart';
 import '../search/search_delegate.dart';
 import '../theme/app_theme.dart';
@@ -24,8 +28,26 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   bool _isSnackbarActive = false;
+  int _selectedIndex = 0;
+
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(vsync: this, length: Platform.isAndroid ? 6 : 5);
+    _tabController.addListener(_handleTabSelection);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _tabController.removeListener(_handleTabSelection);
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -42,8 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
         _isSnackbarActive = true;
         
-        showSnackbar(
-          context: context,
+        Helpers.showSnackbar(
           message: 'Please back again to exit',
           snackBarAction: SnackBarAction(
             label: 'EXIT',
@@ -63,68 +84,96 @@ class _HomeScreenState extends State<HomeScreen> {
         value: SystemUiOverlayStyle.light.copyWith(
           systemNavigationBarColor: AppTheme.primaryColor,
         ),
-        child: DefaultTabController(
-          length: 6,
-          child: Scaffold(
-            body: const _Body(),
-            floatingActionButton: FloatingActionButton(
+        child: Scaffold(
+          body: _Body(tabController: _tabController),
+          floatingActionButton: FloatingActionButton(
               heroTag: 'fab',
               backgroundColor: AppTheme.accentColor,
-              child: const Icon(Icons.add, color: Colors.black),
-              onPressed: () async {
-                
-                final CreatePlaylistResp dialogResp = await showDialog<CreatePlaylistResp>(
-                  context: context,
-                  builder: (_) => CreatePlaylistDialog()
-                ) ?? const CreatePlaylistResp(isCancel: true);
-      
-                if( dialogResp.isCancel ) return;
-      
-                final onAudioQuery = audioPlayerHandler<OnAudioQuery>();
-                await onAudioQuery.createPlaylist(dialogResp.playlistName.value());
-                
-                if( !mounted ) return;
-
-                showSnackbar(
-                  context: context,
-                  message: 'The ${ dialogResp.playlistName.value() } playlist was successfully added!'
-                );
-                
-                musicPlayerProvider.refreshPlaylist();
-              }
+              onPressed: musicPlayerProvider.isCreatingArtworks
+                  ? null
+                  : _selectedIndex == 3
+                    ? () => _addPlaylist(musicPlayerProvider) 
+                    : () => _shuffleAction(musicPlayerProvider),
+              child: musicPlayerProvider.isCreatingArtworks 
+                  ? const CircularProgressIndicator(color: Colors.black,)
+                  : Icon( _selectedIndex == 3 ? Icons.add : Icons.shuffle, color: Colors.black)
             ),
-            bottomNavigationBar: (musicPlayerProvider.isLoading || ( musicPlayerProvider.songPlayed.title.value() ).isEmpty)
-              ? null
-              : const CurrentSongTile()
-          ),
+          bottomNavigationBar: (musicPlayerProvider.isLoading || ( musicPlayerProvider.songPlayed.title.value() ).isEmpty)
+            ? null
+            : const CurrentSongTile()
         ),
       ),
     );
   }
+
+  Future<void> _addPlaylist(MusicPlayerProvider musicPlayerProvider) async {
+    final CreatePlaylistResp dialogResp = await showDialog<CreatePlaylistResp>(
+      context: context,
+      builder: (_) => CreatePlaylistDialog()
+    ) ?? const CreatePlaylistResp(isCancel: true);
+
+    if( dialogResp.isCancel ) return;
+
+    final onAudioQuery = audioPlayerHandler<OnAudioQuery>();
+    await onAudioQuery.createPlaylist(dialogResp.playlistName.value());
+    
+    if( !mounted ) return;
+
+    Helpers.showSnackbar(
+      message: 'The ${ dialogResp.playlistName.value() } playlist was successfully added!'
+    );
+    
+    musicPlayerProvider.refreshPlaylist();
+  }
+
+  void _shuffleAction(MusicPlayerProvider musicPlayerProvider) {
+    int index = Random().nextInt(musicPlayerProvider.songList.length);
+    final song = musicPlayerProvider.songList[index];
+    MusicActions.songPlayAndPause(
+      context,
+      song,
+      PlaylistType.songs,
+      heroId: 'songs-${ song.id }',
+      activateShuffle: true,
+    );
+  }
+
+  void _handleTabSelection() {
+    setState(() { 
+      _selectedIndex = _tabController.index;
+    });
+  }
 }
 
 class _Body extends StatelessWidget {
-  const _Body();
+  const _Body({
+    Key? key,
+    required this.tabController
+  }): super(key: key);
+
+  final TabController tabController;
 
   @override
   Widget build(BuildContext context) {
     return NestedScrollView(
       headerSliverBuilder: ( _, innerBoxIsScrolled ) {
         return <Widget> [
-          _CustomAppBar( forceElevated: innerBoxIsScrolled ),
+          _CustomAppBar( forceElevated: innerBoxIsScrolled, tabController: tabController ),
         ];
       },
       body: MediaQuery.removePadding(
         removeTop: true,
         context: context,
-        child: const TabBarView(
+        child: TabBarView(
+          controller: tabController,
           children: <Widget>[
-            SongsScreen(),
-            AlbumsScreen(),
-            ArtistScreen(),
-            PlaylistsScreen(),
-            FavoriteScreen(),
-            GenresScreen(),
+            const SongsScreen(),
+            const AlbumsScreen(),
+            const ArtistScreen(),
+            if( Platform.isAndroid )
+              const PlaylistsScreen(),
+            const FavoriteScreen(),
+            const GenresScreen(),
           ],
         ),
       ),
@@ -132,43 +181,43 @@ class _Body extends StatelessWidget {
   }
 }
 
-class _CustomAppBar extends StatefulWidget {
+class _CustomAppBar extends StatelessWidget {
   const _CustomAppBar({
     Key? key,
     required this.forceElevated,
+    required this.tabController
   }) : super(key: key);
+
   final bool forceElevated;
+  final TabController tabController;
 
-  @override
-  State<_CustomAppBar> createState() => _CustomAppBarState();
-}
-
-class _CustomAppBarState extends State<_CustomAppBar> {
   @override
   Widget build(BuildContext context) {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
 
     return SliverAppBar(
-      forceElevated: widget.forceElevated,
+      forceElevated: forceElevated,
       title: const Text('Focus Music Player'),
       pinned: true,
       floating: true,
       snap: true,
       shape: const Border(bottom: BorderSide(color: Colors.white24)),
-      bottom: const TabBar(
+      bottom: TabBar(
+        controller: tabController,
         isScrollable: true,
         indicatorColor: AppTheme.accentColor,
         labelColor: Colors.white,
-        labelStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+        labelStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         unselectedLabelColor: AppTheme.lightTextColor,
         indicatorWeight: 3.0,
         tabs: <Widget> [
-          Tab(text: 'Songs'),
-          Tab(text: 'Albums'),
-          Tab(text: 'Artists'),
-          Tab(text: 'Playlist'),
-          Tab(text: 'Favorites'),
-          Tab(text: 'Genres'),
+          const Tab(text: 'Songs'),
+          const Tab(text: 'Albums'),
+          const Tab(text: 'Artists'),
+          if( Platform.isAndroid )
+            const Tab(text: 'Playlist'),
+          const Tab(text: 'Favorites'),
+          const Tab(text: 'Genres'),
         ], 
         
       ),
@@ -181,6 +230,7 @@ class _CustomAppBarState extends State<_CustomAppBar> {
           tooltip: 'Search music',
         ),
         PopupMenuButton(
+          color: Colors.white,
           icon: const Icon(Icons.more_vert, color: AppTheme.lightTextColor),
           tooltip: 'More options',
           itemBuilder: (_) => [
@@ -197,10 +247,8 @@ class _CustomAppBarState extends State<_CustomAppBar> {
                   context: context,
                   musicPlayerProvider: musicPlayerProvider,
                 );
-                
-                if(!mounted ) return;
-                
-                showSnackbar(context: context, message: 'Task successfully completed');
+
+                Helpers.showSnackbar(message: 'Task successfully completed');
               }
             ),
           ],

@@ -1,23 +1,22 @@
-import 'dart:io';
-
+import 'dart:io' show Platform, File;
 
 import 'package:flutter/material.dart';
-import 'package:focus_music_player/audio_player_handler.dart';
-import 'package:focus_music_player/helpers/format_extension.dart';
-import 'package:focus_music_player/helpers/null_extension.dart';
-import 'package:focus_music_player/providers/audio_control_provider.dart';
-import 'package:focus_music_player/widgets/song_details_dialog.dart';
+import 'package:focus_music_player/providers/ui_provider.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../helpers/custom_snackbar.dart';
+import '../audio_player_handler.dart';
+import '../extensions/extensions.dart';
+import '../helpers/helpers.dart';
 import '../helpers/music_actions.dart';
+import '../providers/audio_control_provider.dart';
 import '../providers/music_player_provider.dart';
 import '../share_prefs/user_preferences.dart';
 import '../theme/app_theme.dart';
 import 'custom_list_tile.dart';
+import 'song_details_dialog.dart';
 
 class MoreSongOptionsModal extends StatefulWidget {
   const MoreSongOptionsModal({
@@ -45,6 +44,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
     final songPlayed = widget.song;
     final onAudioQuery = audioPlayerHandler.get<OnAudioQuery>();
     final audioPlayer = audioPlayerHandler.get<AudioPlayer>();
+    final uiProvider = Provider.of<UIProvider>(context, listen: false);
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final audioControlProvider = Provider.of<AudioControlProvider>(context);
     final duration = Duration(milliseconds: widget.song.duration ?? 0);
@@ -64,16 +64,17 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                 title: const Text('Play next'),
                 onTap: () {
                   final currentIndex = audioControlProvider.currentIndex;
-    
+        
                   if( currentIndex == musicPlayerProvider.currentPlaylist.length - 1 ) {
                     return _addToQueue(
                       audioPlayer: audioPlayer,
                       musicPlayerProvider: musicPlayerProvider,
                       audioControlProvider: audioControlProvider,
                       song: songPlayed,
+                      uiProvider: uiProvider
                     );
                   }
-    
+        
                   List<SongModel> tempList =  [ ...musicPlayerProvider.currentPlaylist ]..insert(
                     currentIndex + 1,
                     songPlayed
@@ -84,7 +85,8 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                     index: currentIndex,
                     seek: audioControlProvider.currentDuration,
                     audioControlProvider: audioControlProvider,
-                    musicPlayerProvider: musicPlayerProvider
+                    musicPlayerProvider: musicPlayerProvider,
+                    uiProvider: uiProvider
                   );
                   Navigator.pop(context);
                 },
@@ -96,10 +98,11 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                   audioPlayer: audioPlayer,
                   musicPlayerProvider: musicPlayerProvider,
                   audioControlProvider: audioControlProvider,
-                  song: songPlayed
+                  song: songPlayed,
+                  uiProvider: uiProvider
                 ),
               ),
-              if( musicPlayerProvider.playLists.isNotEmpty ) ...[
+              if( musicPlayerProvider.playLists.isNotEmpty && Platform.isAndroid ) ...[
                 ListTile(
                   leading: const Icon(Icons.playlist_add, color: AppTheme.lightTextColor,),
                   title: const Text('Add to Playlist'),
@@ -146,11 +149,11 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                 title: const Text('Share Audio'),
                 onTap: () async {
                   List<XFile> filesToShare = [ XFile(songPlayed.data) ];
-    
+        
                   if( await imageFile.exists() ) {
                     filesToShare.add(XFile(imageFile.path));
                   }
-    
+        
                   await Share.shareXFiles(
                     filesToShare,
                     text: 'I share you the song ${ widget.song.title.value() }'
@@ -171,12 +174,12 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                   onTap: () async {
                     final albumId = songPlayed.albumId;
                     final artistId = songPlayed.artistId;
-    
+        
                     if( widget.isPlaylist ) {
                       onAudioQuery.removeFromPlaylist(widget.playlistId!, songPlayed.id);
                       return await musicPlayerProvider.searchByPlaylistId(widget.playlistId!, force: true);
                     }
-    
+        
                     if( albumId != null ) {
                       await musicPlayerProvider.searchByAlbumId(albumId);
                       if( musicPlayerProvider.albumCollection[albumId]?.length == 1  && await imageFile.exists() ) {
@@ -187,31 +190,28 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                     final isDeleted = await MusicActions.deleteFile(File(songPlayed.data));
                     
                     if( !mounted ) return;
-    
+        
                     Navigator.pop(context);
-    
+        
                     if( isDeleted ) {
                       Provider.of<MusicPlayerProvider>(context, listen: false).getAllSongs();
                       
                       if( albumId != null ) {
                         await musicPlayerProvider.searchByAlbumId(albumId, force: true);
                       }
-    
+        
                       if( artistId != null ) {
                         await musicPlayerProvider.searchByArtistId(artistId, force: true);
                       }
-    
-                      if( !mounted ) return;
                       
-                      showSnackbar(
-                        context: context,
+                      Helpers.showSnackbar(
                         message: 'Successfully removed'
                       );
                       
                       return;
                     }
-                    showSnackbar(
-                      context: context,
+      
+                    Helpers.showSnackbar(
                       message: 'Error when deleting',
                       backgroundColor: Colors.red
                     );
@@ -221,7 +221,10 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
           ),
           
           Container(
-            color: AppTheme.primaryColor,
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withOpacity(0.9),
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30))
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -234,7 +237,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                     onPressed: () {
                       List<String> favoriteSongList = [ ...musicPlayerProvider.favoriteSongList ];
                       List<SongModel> favoriteList = [ ...musicPlayerProvider.favoriteList ];
-    
+                  
                       if( isFavoriteSong ) {
                         favoriteList.removeWhere(((song) => song.id == songPlayed.id));
                         favoriteSongList.removeWhere(((songId) => songId == songPlayed.id.toString()));
@@ -243,7 +246,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                         favoriteList.add( musicPlayerProvider.songList[index] );
                         favoriteSongList.add(songPlayed.id.toString());
                       }
-    
+                  
                       musicPlayerProvider.favoriteList = favoriteList;
                       musicPlayerProvider.favoriteSongList = favoriteSongList;
                       UserPreferences().favoriteSongList = favoriteSongList;
@@ -265,6 +268,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
     required AudioPlayer audioPlayer,
     required MusicPlayerProvider musicPlayerProvider,
     required AudioControlProvider audioControlProvider,
+    required UIProvider uiProvider,
   }) {
     musicPlayerProvider.currentPlaylist = [ ...musicPlayerProvider.currentPlaylist, song ];
     MusicActions.openAudios(
@@ -272,7 +276,8 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
       audioControlProvider: audioControlProvider,
       musicPlayerProvider: musicPlayerProvider,
       index: audioControlProvider.currentIndex,
-      seek: audioControlProvider.currentDuration
+      seek: audioControlProvider.currentDuration,
+      uiProvider: uiProvider,
     );
     Navigator.pop(context);
   }

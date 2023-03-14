@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
 
-  static const Color primaryColor = Color(0xFF104674);
+  static const Color primaryColor = Color(0xFF003D71);
   static const Color accentColor = Colors.amber;
   static const Color lightTextColor = Colors.white54;
 
@@ -13,7 +13,7 @@ class AppTheme {
     scaffoldBackgroundColor: primaryColor,
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: accentColor
-    ), 
+    ),
     iconTheme: const IconThemeData(
       color: lightTextColor
     ),
@@ -25,8 +25,8 @@ class AppTheme {
     colorScheme: const ColorScheme.dark(
       primary: Colors.white,
       onPrimary: Colors.white,
-      secondary: Colors.white
-    ).copyWith(secondary: accentColor),
+      secondary: accentColor
+    ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: primaryColor,
       selectedItemColor: Colors.white,

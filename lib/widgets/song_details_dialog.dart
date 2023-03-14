@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:focus_music_player/helpers/format_extension.dart';
-import 'package:focus_music_player/helpers/null_extension.dart';
-import 'package:focus_music_player/theme/app_theme.dart';
 import 'package:on_audio_query/on_audio_query.dart' show SongModel;
+
+import '../extensions/extensions.dart';
+import '../theme/app_theme.dart';
 
 class SongDetailsDialog extends StatelessWidget {
   const SongDetailsDialog({

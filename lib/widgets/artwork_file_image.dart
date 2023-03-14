@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io' show File;
 
 import 'package:flutter/material.dart';
 import 'package:focus_music_player/widgets/widgets.dart';
@@ -85,7 +85,6 @@ class _ImageWithBorder extends StatelessWidget {
         width: width,
         height: height,
         fit: BoxFit.cover,
-        filterQuality: FilterQuality.low,
         gaplessPlayback: true,
         errorBuilder: (context, error, stackTrace) {
           return ArtworkImage(

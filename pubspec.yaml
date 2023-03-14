@@ -15,10 +15,10 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.0+6
+version: 2.1.0+10
 
 environment:
-  sdk: ">=2.17.1 <3.0.0"
+  sdk: ">=2.18.6 <3.0.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -31,21 +31,22 @@ dependencies:
     sdk: flutter
   
   cupertino_icons: ^1.0.5
-  on_audio_query: ^2.6.1
+  on_audio_query: ^2.6.2
   provider: ^6.0.5
   marquee: ^2.2.3
   get_it: ^7.2.0
-  share_plus: ^6.3.0
+  share_plus: ^6.3.1
+  palette_generator: ^0.3.3+2
   permission_handler: ^10.2.0
   animate_do: ^3.0.2
   path_provider: ^2.0.12
-  fluttertoast: ^8.1.2
-  shared_preferences: ^2.0.17
+  fluttertoast: ^8.2.1
+  shared_preferences: ^2.0.18
   flutter_launcher_icons: ^0.11.0
   flutter_native_splash: ^2.2.16
   just_audio: ^0.9.31
   just_audio_background: ^0.0.1-beta.9
-  audio_video_progress_bar: ^0.11.0
+  audio_video_progress_bar: ^1.0.0
 
 dev_dependencies:
   flutter_lints: ^2.0.1
@@ -54,17 +55,17 @@ dev_dependencies:
 
 flutter_native_splash:
   color: '#ffffff'
-  image: 'assets/icon/icon.png'
-  colorDark: '#1a1a1a'
-  imageDark: 'assets/icon/icon.png'
+  image: 'assets/icon/new_icon.png'
+  color_dark: '#1a1a1a'
+  image_dark: 'assets/icon/new_icon.png'
   android: true
   ios: true
   
 flutter_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/icon/icon.png"
-  adaptative_icon_background: "assets/icon/icon.png"
+  image_path: "assets/icon/new_icon.png"
+  adaptative_icon_background: "assets/icon/new_icon.png"
   
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

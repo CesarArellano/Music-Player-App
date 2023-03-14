@@ -1,18 +1,15 @@
-
-
-
-import 'dart:io';
+import 'dart:io' show File;
 
 import 'package:flutter/material.dart';
-import 'package:focus_music_player/models/artist_content_model.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
-import '../helpers/null_extension.dart';
 import '../audio_player_handler.dart';
+import '../extensions/extensions.dart';
+import '../models/artist_content_model.dart';
 import '../providers/audio_control_provider.dart';
 import '../providers/music_player_provider.dart';
 import '../providers/ui_provider.dart';
@@ -20,7 +17,8 @@ import '../screens/song_played_screen.dart';
 import '../share_prefs/user_preferences.dart';
 import '../theme/app_theme.dart';
 
-enum TypePlaylist {
+
+enum PlaylistType {
   songs,
   album,
   artist,
@@ -28,7 +26,25 @@ enum TypePlaylist {
   playlist,
   favorites,
 }
+
 class MusicActions {
+  
+  static List<SongModel> getPlaylistType({ 
+    int? id,
+    required PlaylistType type,
+    required MusicPlayerProvider musicPlayerProvider,
+  }) {
+    final playlistTypeMap = {
+      PlaylistType.songs: musicPlayerProvider.songList,
+      PlaylistType.album: musicPlayerProvider.albumCollection[id].value(),
+      PlaylistType.artist: (musicPlayerProvider.artistCollection[id] ?? ArtistContentModel()).songs,
+      PlaylistType.playlist: musicPlayerProvider.playlistCollection[id].value(),
+      PlaylistType.genre: musicPlayerProvider.genreCollection[id].value(),
+      PlaylistType.favorites: musicPlayerProvider.favoriteList
+    };
+
+    return playlistTypeMap[type] ?? musicPlayerProvider.songList;
+  }
 
   static void initSongs(
     BuildContext context,
@@ -37,11 +53,10 @@ class MusicActions {
     }
   ) {
     final audioPlayer = audioPlayerHandler<AudioPlayer>();
+    final uiProvider = Provider.of<UIProvider>(context, listen: false);
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
     Provider.of<UIProvider>(context, listen: false).currentHeroId = heroId;
-    
-    musicPlayerProvider.currentPlaylist = musicPlayerProvider.songList;
 
     final index = musicPlayerProvider.currentPlaylist.indexWhere((songOfList) => songOfList.id == song.id );
     
@@ -52,6 +67,7 @@ class MusicActions {
       audioPlayer: audioPlayer,
       audioControlProvider: audioControlProvider,
       musicPlayerProvider: musicPlayerProvider,
+      uiProvider: uiProvider,
       seek: Duration(milliseconds: UserPreferences().lastSongDuration),
     );
 
@@ -59,61 +75,55 @@ class MusicActions {
 
   static void initStreams(BuildContext context) {
     final audioPlayer = audioPlayerHandler<AudioPlayer>();
+    final uiProvider = Provider.of<UIProvider>(context, listen: false);
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
 
-    audioPlayer.positionStream.listen((duration) async {
+    musicPlayerProvider.currentPlaylist = musicPlayerProvider.songList;
+    
+    audioPlayer.positionStream.listen((duration) {
       audioControlProvider.currentDuration = duration;
       UserPreferences().lastSongDuration = duration.inMilliseconds;
     });
 
     audioPlayer.currentIndexStream.listen((currentIndex) {
+      if( musicPlayerProvider.currentPlaylist.isEmpty ) return;
+
       audioControlProvider.currentIndex = currentIndex.value();
       musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ currentIndex.value() ];
       UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
+      
+      uiProvider.searchDominantColorByAlbumId(
+        albumId: musicPlayerProvider.songPlayed.albumId.toString(),
+        appDirectory: musicPlayerProvider.appDirectory
+      );
     });
   }
 
   static void songPlayAndPause(
     BuildContext context,
     SongModel song,
-    TypePlaylist type, { 
+    PlaylistType type, { 
       required String heroId,
-      int id = 0,
+      int? id,
+      bool activateShuffle = false
     }
   ) {
     
     final audioPlayer = audioPlayerHandler<AudioPlayer>();
     final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
+    final uiProvider = Provider.of<UIProvider>(context, listen: false);
     
     Provider.of<UIProvider>(context, listen: false).currentHeroId = heroId;
 
     final playlistToLength = musicPlayerProvider.currentPlaylist.length;
     
-    switch (type) {
-      case TypePlaylist.songs:
-        musicPlayerProvider.currentPlaylist = musicPlayerProvider.songList;
-        break;
-      case TypePlaylist.album:
-        musicPlayerProvider.currentPlaylist = musicPlayerProvider.albumCollection[id].value();
-        break;
-      case TypePlaylist.artist:
-        musicPlayerProvider.currentPlaylist = (musicPlayerProvider.artistCollection[id] ?? ArtistContentModel()).songs;
-        break;
-      case TypePlaylist.playlist:
-        musicPlayerProvider.currentPlaylist = musicPlayerProvider.playlistCollection[id].value();
-        break;
-      case TypePlaylist.genre:
-        musicPlayerProvider.currentPlaylist = musicPlayerProvider.genreCollection[id].value();
-        break;
-      case TypePlaylist.favorites:
-        musicPlayerProvider.currentPlaylist = musicPlayerProvider.favoriteList;
-        break;
-      default:
-        musicPlayerProvider.currentPlaylist = musicPlayerProvider.songList;
-        break;
-    }
+    musicPlayerProvider.currentPlaylist = getPlaylistType(
+      id: id,
+      type: type,
+      musicPlayerProvider: musicPlayerProvider,
+    );
 
     final index = musicPlayerProvider.currentPlaylist.indexWhere(
       (songOfList) => songOfList.id == song.id 
@@ -128,19 +138,22 @@ class MusicActions {
         audioPlayer: audioPlayer,
         audioControlProvider: audioControlProvider,
         musicPlayerProvider: musicPlayerProvider,
+        uiProvider: uiProvider
       );
+
     } else {
       audioPlayer.seek( const Duration( seconds: 0 ));
     }
 
     audioPlayer.play();
+    audioPlayer.setShuffleModeEnabled(activateShuffle);
 
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => SongPlayedScreen(
-          playlistId: ( TypePlaylist.playlist == type ) ? id : null,
-          isPlaylist: ( TypePlaylist.playlist == type ),
+          playlistId: ( PlaylistType.playlist == type ) ? id : null,
+          isPlaylist: ( PlaylistType.playlist == type ),
         )
       )
     );
@@ -157,7 +170,7 @@ class MusicActions {
         itemCount: musicPlayerProvider.currentPlaylist.length,
         itemBuilder: (_, int i) {
           final currentSequence = musicPlayerProvider.currentPlaylist[ ( audioPlayer.effectiveIndices?[i] ).value() ];
-
+      
           final audio = SongModel({
             '_id': currentSequence.id,
             'title':currentSequence.title,
@@ -211,8 +224,10 @@ class MusicActions {
     required AudioPlayer audioPlayer,
     required AudioControlProvider audioControlProvider,
     required MusicPlayerProvider musicPlayerProvider,
+    required UIProvider uiProvider,
     Duration? seek
   }) {
+
     final playlist = ConcatenatingAudioSource(
       children: musicPlayerProvider.currentPlaylist.map((song) => AudioSource.file(
         song.data,
@@ -232,6 +247,11 @@ class MusicActions {
     audioControlProvider.currentIndex = index;
     musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ index ];
     UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;
+    
+    uiProvider.searchDominantColorByAlbumId(
+      albumId: musicPlayerProvider.songPlayed.albumId.toString(),
+      appDirectory: musicPlayerProvider.appDirectory
+    );
   }
 
 }

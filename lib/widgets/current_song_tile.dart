@@ -1,15 +1,15 @@
-import 'dart:io';
+import 'dart:io' show File;
 
 import 'package:flutter/material.dart';
-import 'package:focus_music_player/helpers/null_extension.dart';
-import 'package:focus_music_player/providers/ui_provider.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 
 import '../audio_player_handler.dart';
+import '../extensions/extensions.dart';
 import '../helpers/music_actions.dart';
 import '../providers/audio_control_provider.dart';
 import '../providers/music_player_provider.dart';
+import '../providers/ui_provider.dart';
 import '../screens/song_played_screen.dart';
 import '../theme/app_theme.dart';
 import 'widgets.dart';

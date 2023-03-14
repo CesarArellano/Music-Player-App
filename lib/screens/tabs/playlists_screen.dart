@@ -4,7 +4,7 @@ import 'package:focus_music_player/screens/playlist_selected_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
-import '../../helpers/custom_snackbar.dart';
+import '../../helpers/helpers.dart';
 import '../../providers/music_player_provider.dart';
 import '../../widgets/widgets.dart';
 
@@ -48,8 +48,7 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> with AutomaticKeepAli
                   final resp = await onAudioQuery.removePlaylist(playlist.id);
                   if( resp ) {
                     if( !mounted ) return;
-                    showSnackbar(
-                      context: context,
+                    Helpers.showSnackbar(
                       message: 'The ${ playlist.playlist } playlist was successfully removed!'
                     );
                     musicPlayerProvider.refreshPlaylist();
