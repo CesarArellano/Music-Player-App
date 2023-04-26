@@ -85,6 +85,11 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
               iconButtonTheme: IconButtonThemeData(
                 style: ButtonStyle(iconColor: MaterialStatePropertyAll(songPlayedThemeColor))
               ),
+              appBarTheme: AppBarTheme(
+                iconTheme: IconThemeData(
+                  color: songPlayedThemeColor
+                )
+              ),
               floatingActionButtonTheme: FloatingActionButtonThemeData(
                 foregroundColor: songPlayedThemeColor,
               )
