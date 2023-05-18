@@ -71,7 +71,6 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
       builder: (context, orientation) {
         return AnnotatedRegion<SystemUiOverlayStyle>(
           value: SystemUiOverlayStyle(
-            systemNavigationBarColor: Colors.black,
             statusBarIconBrightness: songPlayedBrightness,
           ),
           child: Theme(

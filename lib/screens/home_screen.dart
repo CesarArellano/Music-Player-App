@@ -80,28 +80,23 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         await Future.delayed(const Duration(seconds: 4));
         return false;
       },
-      child: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle.light.copyWith(
-          systemNavigationBarColor: AppTheme.primaryColor,
-        ),
-        child: Scaffold(
-          body: _Body(tabController: _tabController),
-          floatingActionButton: FloatingActionButton(
-              heroTag: 'fab',
-              backgroundColor: AppTheme.accentColor,
-              onPressed: musicPlayerProvider.isCreatingArtworks
-                  ? null
-                  : _selectedIndex == 3
-                    ? () => _addPlaylist(musicPlayerProvider) 
-                    : () => _shuffleAction(musicPlayerProvider),
-              child: musicPlayerProvider.isCreatingArtworks 
-                  ? const CircularProgressIndicator(color: Colors.black,)
-                  : Icon( _selectedIndex == 3 ? Icons.add : Icons.shuffle, color: Colors.black)
-            ),
-          bottomNavigationBar: (musicPlayerProvider.isLoading || ( musicPlayerProvider.songPlayed.title.value() ).isEmpty)
-            ? null
-            : const CurrentSongTile()
-        ),
+      child: Scaffold(
+        body: _Body(tabController: _tabController),
+        floatingActionButton: FloatingActionButton(
+            heroTag: 'fab',
+            backgroundColor: AppTheme.accentColor,
+            onPressed: musicPlayerProvider.isCreatingArtworks
+                ? null
+                : _selectedIndex == 3
+                  ? () => _addPlaylist(musicPlayerProvider) 
+                  : () => _shuffleAction(musicPlayerProvider),
+            child: musicPlayerProvider.isCreatingArtworks 
+                ? const CircularProgressIndicator(color: Colors.black,)
+                : Icon( _selectedIndex == 3 ? Icons.add : Icons.shuffle, color: Colors.black)
+          ),
+        bottomNavigationBar: (musicPlayerProvider.isLoading || ( musicPlayerProvider.songPlayed.title.value() ).isEmpty)
+          ? null
+          : const CurrentSongTile()
       ),
     );
   }
