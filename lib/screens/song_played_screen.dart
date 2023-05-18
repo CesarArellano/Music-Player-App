@@ -1,7 +1,6 @@
 import 'dart:io' show File;
 import 'dart:ui';
 
-import 'package:animate_do/animate_do.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -116,28 +115,25 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
               : null,
               body: Stack(
                 children: [
-                  FadeIn(
-                    duration: const Duration(milliseconds: 300),
-                    child: Transform.scale(
-                      scale: 1.1,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            fit: BoxFit.cover,
-                            image: Image.file(
-                              imageFile,
-                              gaplessPlayback: true,
-                              errorBuilder: (_, __, ___) => Image.asset('assets/images/background.jpg', gaplessPlayback: true)
-                            ).image
-                          )                    
-                        ),
-                        child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 50.0, sigmaY: 50.0),
-                            child: Container(
-                              decoration: BoxDecoration(color: uiProvider.currentDominantColor.withOpacity(0.7)),
-                            ),
-                          ),
+                  Transform.scale(
+                    scale: 1.1,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: Image.file(
+                            imageFile,
+                            gaplessPlayback: true,
+                            errorBuilder: (_, __, ___) => Image.asset('assets/images/background.jpg', gaplessPlayback: true)
+                          ).image
+                        )                    
                       ),
+                      child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 50.0, sigmaY: 50.0),
+                          child: Container(
+                            decoration: BoxDecoration(color: uiProvider.currentDominantColor.withOpacity(0.7)),
+                          ),
+                        ),
                     ),
                   ),
                   if( orientation == Orientation.portrait )
