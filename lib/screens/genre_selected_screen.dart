@@ -52,7 +52,7 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
   }
 
   void getSongs() {
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
+    final musicPlayerProvider = context.read<MusicPlayerProvider>();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await musicPlayerProvider.searchByGenreId( widget.genreSelected.id, force: (musicPlayerProvider.genreCollection[widget.genreSelected.id]?.length ?? 0) != widget.genreSelected.numOfSongs);
       setState(() => isLoading = false);
@@ -61,7 +61,7 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
+    final musicPlayerProvider = context.watch<MusicPlayerProvider>();
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(

@@ -54,19 +54,19 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
   }
 
   void getSongs() {
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await musicPlayerProvider.searchByArtistId( 
-        widget.artistSelected.id,
-        force: (musicPlayerProvider.artistCollection[widget.artistSelected.id]?.songs ?? 0) != widget.artistSelected.numberOfTracks
-      );
-      setState(() => isLoading = false);
-    });
+    final musicPlayerProvider = context.read<MusicPlayerProvider>();
+    final artistSongs = musicPlayerProvider.artistCollection[widget.artistSelected.id]?.songs.length ?? 0;
+
+    musicPlayerProvider.searchByArtistId( 
+      widget.artistSelected.id,
+      force: artistSongs != widget.artistSelected.numberOfTracks
+    );
+    setState(() => isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
+    final musicPlayerProvider = context.watch<MusicPlayerProvider>();
     final artistContentModel = musicPlayerProvider.artistCollection[widget.artistSelected.id] ?? ArtistContentModel();
 
     return Scaffold(
@@ -101,7 +101,8 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
                 children: [
                   _AlbumHeader(
                     artistSelected: widget.artistSelected,
-                    artistContentModel: artistContentModel
+                    artistContentModel: artistContentModel,
+                    artistImageFile: File('${ musicPlayerProvider.appDirectory }/${ artistContentModel.songs.first.albumId }.jpg'),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 15.0),
@@ -225,10 +226,12 @@ class _AlbumHeader extends StatelessWidget {
     Key? key,
     required this.artistSelected,
     required this.artistContentModel,
+    required this.artistImageFile,
   }) : super(key: key);
 
   final ArtistModel artistSelected;
   final ArtistContentModel artistContentModel;
+  final File artistImageFile;
 
   @override
   Widget build(BuildContext context) {
@@ -238,13 +241,12 @@ class _AlbumHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: 
         [
-          ArtworkImage(
+          ArtworkFileImage(
             artworkId: artistSelected.id,
-            type: ArtworkType.ARTIST,
+            imageFile: artistImageFile,
+            artworkType: ArtworkType.ARTIST,
             width: 175,
             height: 175,
-            size: 500,
-            radius: BorderRadius.circular(4),
           ),
           const SizedBox(width: 10),
           Flexible(

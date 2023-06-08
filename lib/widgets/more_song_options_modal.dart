@@ -181,7 +181,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                     }
         
                     if( albumId != null ) {
-                      await musicPlayerProvider.searchByAlbumId(albumId);
+                      musicPlayerProvider.searchByAlbumId(albumId);
                       if( musicPlayerProvider.albumCollection[albumId]?.length == 1  && await imageFile.exists() ) {
                         MusicActions.deleteFile(imageFile);
                       }
@@ -197,11 +197,11 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                       Provider.of<MusicPlayerProvider>(context, listen: false).getAllSongs();
                       
                       if( albumId != null ) {
-                        await musicPlayerProvider.searchByAlbumId(albumId, force: true);
+                        musicPlayerProvider.searchByAlbumId(albumId, force: true);
                       }
         
                       if( artistId != null ) {
-                        await musicPlayerProvider.searchByArtistId(artistId, force: true);
+                        musicPlayerProvider.searchByArtistId(artistId, force: true);
                       }
                       
                       Helpers.showSnackbar(

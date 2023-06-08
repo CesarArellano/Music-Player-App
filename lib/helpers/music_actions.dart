@@ -53,10 +53,10 @@ class MusicActions {
     }
   ) {
     final audioPlayer = audioPlayerHandler<AudioPlayer>();
-    final uiProvider = Provider.of<UIProvider>(context, listen: false);
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
-    final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
-    Provider.of<UIProvider>(context, listen: false).currentHeroId = heroId;
+    final uiProvider = context.read<UIProvider>();
+    final musicPlayerProvider = context.read<MusicPlayerProvider>();
+    final audioControlProvider = context.read<AudioControlProvider>();
+    uiProvider.currentHeroId = heroId;
 
     final index = musicPlayerProvider.currentPlaylist.indexWhere((songOfList) => songOfList.id == song.id );
     
@@ -75,9 +75,9 @@ class MusicActions {
 
   static void initStreams(BuildContext context) {
     final audioPlayer = audioPlayerHandler<AudioPlayer>();
-    final uiProvider = Provider.of<UIProvider>(context, listen: false);
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
-    final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
+    final uiProvider = context.read<UIProvider>();
+    final musicPlayerProvider = context.read<MusicPlayerProvider>();
+    final audioControlProvider = context.read<AudioControlProvider>();
 
     musicPlayerProvider.currentPlaylist = musicPlayerProvider.songList;
     
@@ -111,11 +111,11 @@ class MusicActions {
   ) {
     
     final audioPlayer = audioPlayerHandler<AudioPlayer>();
-    final audioControlProvider = Provider.of<AudioControlProvider>(context, listen: false);
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
-    final uiProvider = Provider.of<UIProvider>(context, listen: false);
+    final uiProvider = context.read<UIProvider>();
+    final musicPlayerProvider = context.read<MusicPlayerProvider>();
+    final audioControlProvider = context.read<AudioControlProvider>();
     
-    Provider.of<UIProvider>(context, listen: false).currentHeroId = heroId;
+    uiProvider.currentHeroId = heroId;
 
     final playlistToLength = musicPlayerProvider.currentPlaylist.length;
     
@@ -161,7 +161,7 @@ class MusicActions {
 
   static void showCurrentPlayList(BuildContext context, ){
     final audioPlayer = audioPlayerHandler.get<AudioPlayer>();
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
+    final musicPlayerProvider = context.read<MusicPlayerProvider>();
 
     showModalBottomSheet(
       context: context,

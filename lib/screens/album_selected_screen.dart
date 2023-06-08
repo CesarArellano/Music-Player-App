@@ -52,19 +52,18 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
   }
 
   void getSongs() {
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await musicPlayerProvider.searchByAlbumId( 
-        widget.albumSelected.id,
-        force: (musicPlayerProvider.albumCollection[widget.albumSelected.id]?.length ?? 0) != widget.albumSelected.numOfSongs
-      );
-      setState(() => isLoading = false);
-    });
+    final musicPlayerProvider = context.read<MusicPlayerProvider>();
+    final albumsLength = musicPlayerProvider.albumCollection[widget.albumSelected.id]?.length ?? 0;
+    musicPlayerProvider.searchByAlbumId( 
+      widget.albumSelected.id,
+      force: albumsLength != widget.albumSelected.numOfSongs
+    );
+    setState(() => isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
+    final musicPlayerProvider = context.watch<MusicPlayerProvider>();
     final imageGeneralFile = File('${ musicPlayerProvider.appDirectory }/${ widget.albumSelected.id }.jpg');
 
     return Scaffold(

@@ -134,20 +134,20 @@ class MusicPlayerProvider extends ChangeNotifier {
     );
   }
 
-  Future<void> searchByAlbumId(int albumId, { bool force = false }) async {
+  void searchByAlbumId(int albumId, { bool force = false }) {
     
     if( albumCollection.containsKey(albumId) && !force ) return;
 
-    List<SongModel> tempAlbumList = await onAudioQuery.queryAudiosFrom( AudiosFromType.ALBUM_ID, albumId );
+    List<SongModel> tempAlbumList = [ ...songList.where((song) => song.albumId == albumId ) ];
     tempAlbumList.sort((a, b) => a.id.compareTo(b.id));
     albumCollection[albumId] = tempAlbumList;
   }
 
-  Future<void> searchByArtistId(int artistId, { bool force = false }) async {
+  void searchByArtistId(int artistId, { bool force = false }) {
     
     if( artistCollection.containsKey(artistId) && !force ) return;
-    
-    List<SongModel> tempArtistList = await onAudioQuery.queryAudiosFrom( AudiosFromType.ARTIST_ID, artistId );
+      
+    List<SongModel> tempArtistList =  [ ...songList.where((element) => element.artistId == artistId) ];
     List<int> tempAlbumIds = [];
     List<AlbumModel> tempAlbums = [];
     int totalDurationInMilliseconds = 0;

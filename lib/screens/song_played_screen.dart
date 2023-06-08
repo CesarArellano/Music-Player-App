@@ -130,7 +130,7 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
                       child: BackdropFilter(
                           filter: ImageFilter.blur(sigmaX: 50.0, sigmaY: 50.0),
                           child: Container(
-                            decoration: BoxDecoration(color: uiProvider.currentDominantColor.withOpacity(0.7)),
+                            decoration: BoxDecoration(color: uiProvider.currentDominantColor.withOpacity(0.8)),
                           ),
                         ),
                     ),
