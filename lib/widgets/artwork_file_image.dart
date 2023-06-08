@@ -80,8 +80,8 @@ class _ImageWithBorder extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: radius,
-      child: Image.file(
-        imageFile!,
+      child: Image(
+        image: FileImage(imageFile!),
         width: width,
         height: height,
         fit: BoxFit.cover,
