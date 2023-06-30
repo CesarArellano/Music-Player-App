@@ -48,16 +48,6 @@ class _CurrentSongTileState extends State<CurrentSongTile> with SingleTickerProv
   }
 }
 
-// return Column(
-//   mainAxisAlignment: MainAxisAlignment.end,
-//   mainAxisSize: MainAxisSize.min,
-//   children: [
-//     _SelectorSongTitle(playAnimation: _playAnimation),
-//     if( widget.showBottomBar )
-//       const CustomBottomNavigationBar()
-//   ],
-// );
-
 class _SelectorSongTitle extends StatelessWidget {
   const _SelectorSongTitle({
     Key? key,

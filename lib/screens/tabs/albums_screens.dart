@@ -25,71 +25,15 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
+    final musicPlayerProvider = context.watch<MusicPlayerProvider>();
     final albumList = musicPlayerProvider.albumList;
 
-    return musicPlayerProvider.isLoading
-      ? CustomLoader(isCreatingArtworks: musicPlayerProvider.isCreatingArtworks)
-      : albumList.isNotEmpty
-        ? Padding(
-          padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 8),
-          child: OrientationBuilder(
-            builder: (_, orientation ) => GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: orientation == Orientation.landscape ? 4 : 2,
-                mainAxisExtent: 240,
-                mainAxisSpacing: 4,
-                crossAxisSpacing: 4
-              ),
-              itemCount: albumList.length,
-              itemBuilder: ( _, int i ) {
-                final album = albumList[i];
-                final imageFile = File('${ musicPlayerProvider.appDirectory }/${ album.id }.jpg');
-          
-                return RippleTile(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ArtworkFileImage(
-                        artworkId: album.id,
-                        artworkType: ArtworkType.ALBUM,
-                        width: double.maxFinite,
-                        height: 190,
-                        imageFile: imageFile,
-                      ),
-                      const SizedBox(height: 6),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 4),
-                        child: Text(
-                          album.album,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontWeight: FontWeight.w500),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 4),
-                        child: Text(
-                          "${ album.numOfSongs } ${ (album.numOfSongs > 1) ? 'songs' : 'song' }",
-                          style: const TextStyle(color: AppTheme.lightTextColor, fontSize: 12),
-                        ),
-                      ),
-                    ],
-                  ),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => AlbumSelectedScreen( albumSelected: album ))
-                    );
-                  }
-                );
-              },
-                  ),
-          ),
-        )
-      : const Center( 
+    if( musicPlayerProvider.isLoading ) {
+      return const CustomLoader( isGridView: true );
+    }
+
+    if( albumList.isEmpty ) {
+      return const Center( 
         child: Text(
           'No Albums',
           style: TextStyle(
@@ -98,5 +42,66 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
           )
         )
       );
+    }
+    
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 8),
+      child: OrientationBuilder(
+        builder: (_, orientation ) => GridView.builder(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: orientation == Orientation.landscape ? 4 : 2,
+            mainAxisExtent: 240,
+            mainAxisSpacing: 4,
+            crossAxisSpacing: 4
+          ),
+          itemCount: albumList.length,
+          itemBuilder: ( _, int i ) {
+            final album = albumList[i];
+            final imageFile = File('${ musicPlayerProvider.appDirectory }/${ album.id }.jpg');
+      
+            return RippleTile(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ArtworkFileImage(
+                    artworkId: album.id,
+                    artworkType: ArtworkType.ALBUM,
+                    width: double.maxFinite,
+                    height: 190,
+                    imageFile: imageFile,
+                  ),
+                  const SizedBox(height: 6),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Text(
+                      album.album,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Text(
+                      "${ album.numOfSongs } ${ (album.numOfSongs > 1) ? 'songs' : 'song' }",
+                      style: const TextStyle(color: AppTheme.lightTextColor, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => AlbumSelectedScreen( albumSelected: album ))
+                );
+              }
+            );
+          },
+        ),
+      ),
+    );
   }
 }

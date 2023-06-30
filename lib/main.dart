@@ -14,14 +14,15 @@ import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final prefs = UserPreferences();
-  await prefs.initPrefs();
   setupAudioHandlers();
+  
+  await UserPreferences().initPrefs();
   await JustAudioBackground.init(
     androidNotificationChannelId: 'com.ryanheise.bg_demo.channel.audio',
     androidNotificationChannelName: 'Audio playback',
     androidNotificationOngoing: true,
   );
+
   runApp(const MyApp());
 }
 

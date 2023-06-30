@@ -29,7 +29,7 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> with AutomaticKeepAli
     final playlists = musicPlayerProvider.playLists;
 
     return musicPlayerProvider.isLoading
-      ? CustomLoader(isCreatingArtworks: musicPlayerProvider.isCreatingArtworks)
+      ? const CustomLoader()
       : playlists.isNotEmpty 
         ? OrientationBuilder(
           builder: ( _, orientation ) => GridView.builder(

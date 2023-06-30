@@ -28,7 +28,7 @@ class _ArtistScreenState extends State<ArtistScreen> with AutomaticKeepAliveClie
     final artistList = musicPlayerProvider.artistList;
 
     return musicPlayerProvider.isLoading
-      ? CustomLoader(isCreatingArtworks: musicPlayerProvider.isCreatingArtworks)
+      ? const CustomLoader()
       : artistList.isNotEmpty
         ? OrientationBuilder(
           builder: ( _, orientation ) => GridView.builder(

@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 import 'dart:math' show Random;
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -51,49 +52,26 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
+    final musicPlayerProvider = context.watch<MusicPlayerProvider>();
     
     return WillPopScope(
-      onWillPop: () async {
-        if( _isSnackbarActive ) {
-          audioPlayerHandler<AudioPlayer>().stop();
-          audioPlayerHandler<AudioPlayer>().dispose();
-          SystemNavigator.pop();
-          return true;
-        }
-
-        _isSnackbarActive = true;
-        
-        Helpers.showSnackbar(
-          message: 'Please back again to exit',
-          snackBarAction: SnackBarAction(
-            label: 'EXIT',
-            textColor: AppTheme.accentColor,
-            onPressed: () {
-              audioPlayerHandler<AudioPlayer>().stop();
-              audioPlayerHandler<AudioPlayer>().dispose();
-              SystemNavigator.pop();
-            },
-          )
-        ).closed.then((_) => _isSnackbarActive = false);
-
-        await Future.delayed(const Duration(seconds: 4));
-        return false;
-      },
+      onWillPop: _onWillPop,
       child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: _CustomAppBar(tabController: _tabController),
         body: _Body(tabController: _tabController),
         floatingActionButton: FloatingActionButton(
-            heroTag: 'fab',
-            backgroundColor: AppTheme.accentColor,
-            onPressed: musicPlayerProvider.isCreatingArtworks
-                ? null
-                : _selectedIndex == 3
-                  ? () => _addPlaylist(musicPlayerProvider) 
-                  : () => _shuffleAction(musicPlayerProvider),
-            child: musicPlayerProvider.isCreatingArtworks 
-                ? const CircularProgressIndicator(color: Colors.black,)
-                : Icon( _selectedIndex == 3 ? Icons.add : Icons.shuffle, color: Colors.black)
-          ),
+          heroTag: 'fab',
+          backgroundColor: AppTheme.accentColor,
+          onPressed: musicPlayerProvider.isCreatingArtworks
+              ? null
+              : _selectedIndex == 3
+                ? () => _addPlaylist(musicPlayerProvider) 
+                : () => _shuffleAction(musicPlayerProvider),
+          child: musicPlayerProvider.isCreatingArtworks 
+              ? const CircularProgressIndicator(color: Colors.black,)
+              : Icon( _selectedIndex == 3 ? Icons.add : Icons.shuffle, color: Colors.black)
+        ),
         bottomNavigationBar: (musicPlayerProvider.isLoading || ( musicPlayerProvider.songPlayed.title.value() ).isEmpty)
           ? null
           : const CurrentSongTile()
@@ -138,6 +116,33 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       _selectedIndex = _tabController.index;
     });
   }
+
+  Future<bool> _onWillPop() async {
+    if( _isSnackbarActive ) {
+      audioPlayerHandler<AudioPlayer>().stop();
+      audioPlayerHandler<AudioPlayer>().dispose();
+      SystemNavigator.pop();
+      return true;
+    }
+
+    _isSnackbarActive = true;
+    
+    Helpers.showSnackbar(
+      message: 'Please back again to exit',
+      snackBarAction: SnackBarAction(
+        label: 'EXIT',
+        textColor: AppTheme.accentColor,
+        onPressed: () {
+          audioPlayerHandler<AudioPlayer>().stop();
+          audioPlayerHandler<AudioPlayer>().dispose();
+          SystemNavigator.pop();
+        },
+      )
+    ).closed.then((_) => _isSnackbarActive = false);
+
+    await Future.delayed(const Duration(seconds: 4));
+    return false;
+  }
 }
 
 class _Body extends StatelessWidget {
@@ -150,52 +155,53 @@ class _Body extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NestedScrollView(
-      headerSliverBuilder: ( _, innerBoxIsScrolled ) {
-        return <Widget> [
-          _CustomAppBar( forceElevated: innerBoxIsScrolled, tabController: tabController ),
-        ];
-      },
-      body: MediaQuery.removePadding(
-        removeTop: true,
-        context: context,
-        child: TabBarView(
+
+    return Stack(
+      children: [
+        Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/background.jpg'),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 50),
+          child: Container(
+            color: AppTheme.primaryColor.withOpacity(0.8),
+          ),
+        ),
+        ),
+        
+        TabBarView(
           controller: tabController,
-          children: <Widget>[
-            const SongsScreen(),
-            const AlbumsScreen(),
-            const ArtistScreen(),
-            if( Platform.isAndroid )
-              const PlaylistsScreen(),
-            const FavoriteScreen(),
-            const GenresScreen(),
+          children: const <Widget>[
+            SongsScreen(),
+            AlbumsScreen(),
+            ArtistScreen(),
+            PlaylistsScreen(),
+            FavoriteScreen(),
+            GenresScreen(),
           ],
         ),
-      ),
+      ],
     );
   }
 }
 
-class _CustomAppBar extends StatelessWidget {
+class _CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   const _CustomAppBar({
     Key? key,
-    required this.forceElevated,
     required this.tabController
   }) : super(key: key);
 
-  final bool forceElevated;
   final TabController tabController;
 
   @override
   Widget build(BuildContext context) {
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
 
-    return SliverAppBar(
-      forceElevated: forceElevated,
+    return AppBar(
       title: const Text('Focus Music Player'),
-      pinned: true,
-      floating: true,
-      snap: true,
       shape: const Border(bottom: BorderSide(color: Colors.white24)),
       bottom: TabBar(
         controller: tabController,
@@ -205,14 +211,13 @@ class _CustomAppBar extends StatelessWidget {
         labelStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         unselectedLabelColor: AppTheme.lightTextColor,
         indicatorWeight: 3.0,
-        tabs: <Widget> [
-          const Tab(text: 'Songs'),
-          const Tab(text: 'Albums'),
-          const Tab(text: 'Artists'),
-          if( Platform.isAndroid )
-            const Tab(text: 'Playlist'),
-          const Tab(text: 'Favorites'),
-          const Tab(text: 'Genres'),
+        tabs: const <Widget> [
+          Tab(text: 'Songs'),
+          Tab(text: 'Albums'),
+          Tab(text: 'Artists'),
+          Tab(text: 'Playlist'),
+          Tab(text: 'Favorites'),
+          Tab(text: 'Genres'),
         ], 
         
       ),
@@ -232,12 +237,14 @@ class _CustomAppBar extends StatelessWidget {
             PopupMenuItem(
               child: const Text('Share App', style: TextStyle(color: Colors.black)),
               onTap: () async {
-                await Share.share("Hey, I Recommend this App fopr you. It's Most Stylish MP3 Music Player for your Android Device You would definitely like it.Please Try it Out. https://github.com/CesarArellano/Music-Player-App");
+                await Share.share("Hey, I Recommend this App for you. It's Most Stylish MP3 Music Player for your Android Device You would definitely like it.Please Try it Out. https://github.com/CesarArellano/Music-Player-App");
               },
             ),
             PopupMenuItem(
               child: const Text('Scan media', style: TextStyle(color: Colors.black)),
               onTap: () async {
+                final musicPlayerProvider = context.read<MusicPlayerProvider>();
+
                 await _getAllSongs(
                   context: context,
                   musicPlayerProvider: musicPlayerProvider,
@@ -259,5 +266,8 @@ class _CustomAppBar extends StatelessWidget {
   }) async {
     await musicPlayerProvider.getAllSongs(forceCreatingArtworks: forceCreatingArtworks);
   }
+  
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight * 1.75);
 }
 

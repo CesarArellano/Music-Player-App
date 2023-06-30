@@ -1,25 +1,77 @@
 import 'package:flutter/material.dart';
+import 'package:focus_music_player/widgets/widgets.dart';
+import 'package:shimmer/shimmer.dart';
 
 class CustomLoader extends StatelessWidget {
   const CustomLoader({
     super.key,
-    this.isCreatingArtworks = false,
+    this.isGridView = false
   });
 
-  final bool isCreatingArtworks;
+  final bool isGridView;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const CircularProgressIndicator(),
-        if( isCreatingArtworks ) ...[
-          const SizedBox(height: 10),
-          const Text('Creating new artworks...')
-        ]
-      ],
+    Widget widgetToShow = ListView.builder(
+      padding: const EdgeInsets.only(top: 8),
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: 15,
+      itemBuilder:(context, index) {
+        return const Column(
+          children: [
+            ContentPlaceholder(),
+            SizedBox(height: 16.0),
+          ],
+        );
+      },
+    );
+
+    if( isGridView ) {
+      widgetToShow = GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisExtent: 240,
+          mainAxisSpacing: 4,
+          crossAxisSpacing: 4
+        ),
+        padding: const EdgeInsets.only(top: 140, left: 8, right: 8),
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: 15,
+        itemBuilder:(context, index) {
+          return Column(
+            children: [
+              Container(
+                width: double.infinity,
+                height: 190.0,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                width: double.infinity,
+                height: 10.0,
+                color: Colors.white,
+                margin: const EdgeInsets.only(bottom: 8.0),
+              ),
+              Container(
+                width: double.infinity,
+                height: 10.0,
+                color: Colors.white,
+                margin: const EdgeInsets.only(bottom: 8.0),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    return Shimmer.fromColors(
+      baseColor: Colors.white10,
+      highlightColor: Colors.white38,
+      enabled: true,
+      child: widgetToShow
     );
   }
 }

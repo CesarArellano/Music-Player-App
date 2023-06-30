@@ -28,7 +28,7 @@ class _GenresScreenState extends State<GenresScreen> with AutomaticKeepAliveClie
     final genreList = musicPlayerProvider.genreList;
 
     return musicPlayerProvider.isLoading
-      ? CustomLoader(isCreatingArtworks: musicPlayerProvider.isCreatingArtworks)
+      ? const CustomLoader()
       : genreList.isNotEmpty
         ? OrientationBuilder(
           builder: ( _, orientation ) => GridView.builder(

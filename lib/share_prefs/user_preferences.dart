@@ -12,7 +12,7 @@ class UserPreferences {
   UserPreferences._internal();
   late SharedPreferences _prefs;
 
-  initPrefs() async {
+  Future<void> initPrefs() async {
     _prefs = await SharedPreferences.getInstance();
   }
 

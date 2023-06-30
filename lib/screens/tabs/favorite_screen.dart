@@ -28,7 +28,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> with AutomaticKeepAlive
     final songList = musicPlayerProvider.favoriteList;
 
     return musicPlayerProvider.isLoading
-      ? CustomLoader(isCreatingArtworks: musicPlayerProvider.isCreatingArtworks)
+      ? const CustomLoader()
       : songList.isNotEmpty
         ? OrientationBuilder(
           builder: ( _, orientation ) => GridView.builder(

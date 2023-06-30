@@ -61,49 +61,55 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    
+
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     final songList = musicPlayerProvider.songList;
+    
+    if( musicPlayerProvider.isLoading ) {
+      return const CustomLoader();
+    }
 
-    return ( musicPlayerProvider.isLoading )
-      ? CustomLoader(isCreatingArtworks: musicPlayerProvider.isCreatingArtworks)
-      : songList.isNotEmpty
-        ? OrientationBuilder(
-          builder: (context, orientation) => GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: ( orientation == Orientation.landscape ) ?  2 : 1,
-              childAspectRatio: 5.5
-            ),
-            itemCount: songList.length,
-            itemBuilder: ( _, int i ) {
-              final song = songList[i];
-              final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
-              final heroId = 'songs-${ song.id }';
-              
-              return RippleTile(
-                child: CustomListTile(
-                  title: song.title.value(),
-                  subtitle: song.artist.valueEmpty('No Artist'),
-                  artworkId: song.id,
-                  imageFile: imageFile,
-                  tag: heroId,
-                ),
-                onTap: () => MusicActions.songPlayAndPause(context, song, PlaylistType.songs, heroId: heroId),
-                onLongPress: () {
-                  showModalBottomSheet(
-                    context: context,
-                    builder:( _ ) => MoreSongOptionsModal(song: song)
-                  );
-                },
-              );
-            } 
-          ),
-        )
-      : const Center( 
+    if( songList.isEmpty) {
+      const Center( 
         child: Text(
           'No Songs',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)
         )
       );
+    }
+
+    return OrientationBuilder(
+      builder: (context, orientation) => GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: ( orientation == Orientation.landscape ) ?  2 : 1,
+          childAspectRatio: 5.5
+        ),
+        itemCount: songList.length,
+        itemBuilder: ( _, int i ) {
+          final song = songList[i];
+          final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
+          final heroId = 'songs-${ song.id }';
+          
+          return RippleTile(
+            child: CustomListTile(
+              title: song.title.value(),
+              subtitle: song.artist.valueEmpty('No Artist'),
+              artworkId: song.id,
+              imageFile: imageFile,
+              tag: heroId,
+            ),
+            onTap: () => MusicActions.songPlayAndPause(context, song, PlaylistType.songs, heroId: heroId),
+            onLongPress: () {
+              showModalBottomSheet(
+                context: context,
+                builder:( _ ) => MoreSongOptionsModal(song: song)
+              );
+            },
+          );
+        } 
+      ),
+    );
   }
 }
+
+
