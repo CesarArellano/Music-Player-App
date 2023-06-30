@@ -68,16 +68,16 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
     if( musicPlayerProvider.isLoading ) {
       return const CustomLoader();
     }
-
-    if( songList.isEmpty) {
-      const Center( 
+    
+    if( songList.isEmpty ) {
+      return const Center( 
         child: Text(
           'No Songs',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)
         )
       );
     }
-
+    
     return OrientationBuilder(
       builder: (context, orientation) => GridView.builder(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

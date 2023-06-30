@@ -14,11 +14,12 @@ class SongDetailsDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const textStyle = TextStyle(color: Colors.white70);
     final duration = Duration(milliseconds: song.duration ?? 0);
     
     return AlertDialog(
       backgroundColor: AppTheme.primaryColor,
-      title: const Text('Details'),
+      title: const Text('Details', style: textStyle),
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -42,7 +43,7 @@ class SongDetailsDialog extends StatelessWidget {
       actionsPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
       actions: <Widget> [
         TextButton(
-          child: const Text('OK'),
+          child: const Text('OK', style: textStyle),
           onPressed:() {
             Navigator.pop(context, false);
           } , 

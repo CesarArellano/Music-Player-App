@@ -44,7 +44,6 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
       );
     }
     
-
     return Padding(
       padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 8),
       child: OrientationBuilder(

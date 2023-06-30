@@ -34,36 +34,10 @@ class CustomLoader extends StatelessWidget {
           mainAxisSpacing: 4,
           crossAxisSpacing: 4
         ),
-        padding: const EdgeInsets.only(top: 140, left: 8, right: 8),
+        padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
         physics: const NeverScrollableScrollPhysics(),
         itemCount: 15,
-        itemBuilder:(context, index) {
-          return Column(
-            children: [
-              Container(
-                width: double.infinity,
-                height: 190.0,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(5),
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Container(
-                width: double.infinity,
-                height: 10.0,
-                color: Colors.white,
-                margin: const EdgeInsets.only(bottom: 8.0),
-              ),
-              Container(
-                width: double.infinity,
-                height: 10.0,
-                color: Colors.white,
-                margin: const EdgeInsets.only(bottom: 8.0),
-              ),
-            ],
-          );
-        },
+        itemBuilder:(context, index) => const ArtworkPlaceholder()
       );
     }
 

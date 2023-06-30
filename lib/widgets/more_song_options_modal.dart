@@ -45,11 +45,12 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
     final onAudioQuery = audioPlayerHandler.get<OnAudioQuery>();
     final audioPlayer = audioPlayerHandler.get<AudioPlayer>();
     final uiProvider = Provider.of<UIProvider>(context, listen: false);
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
-    final audioControlProvider = Provider.of<AudioControlProvider>(context);
+    final musicPlayerProvider = context.watch<MusicPlayerProvider>();
+    final audioControlProvider = context.watch<AudioControlProvider>();
     final duration = Duration(milliseconds: widget.song.duration ?? 0);
     final imageFile = File('${ musicPlayerProvider.appDirectory }/${ songPlayed.albumId }.jpg');
     final isFavoriteSong = musicPlayerProvider.isFavoriteSong(songPlayed.id);
+    const textStyle = TextStyle(color: Colors.white);
 
     return OrientationBuilder(
       builder:(_, orientation) => Stack(
@@ -61,7 +62,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
               const SizedBox(height: 70),
               ListTile(
                 leading: const Icon(Icons.replay_outlined, color: AppTheme.lightTextColor,),
-                title: const Text('Play next'),
+                title: const Text('Play next', style: textStyle),
                 onTap: () {
                   final currentIndex = audioControlProvider.currentIndex;
         
@@ -93,7 +94,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
               ),
               ListTile(
                 leading: const Icon(Icons.library_add_rounded, color: AppTheme.lightTextColor,),
-                title: const Text('Add to playing queue'),
+                title: const Text('Add to playing queue', style: textStyle),
                 onTap: () => _addToQueue(
                   audioPlayer: audioPlayer,
                   musicPlayerProvider: musicPlayerProvider,
@@ -105,7 +106,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
               if( musicPlayerProvider.playLists.isNotEmpty && Platform.isAndroid ) ...[
                 ListTile(
                   leading: const Icon(Icons.playlist_add, color: AppTheme.lightTextColor,),
-                  title: const Text('Add to Playlist'),
+                  title: const Text('Add to Playlist', style: textStyle),
                   onTap: () {
                     showDialog(
                       context: context,
@@ -114,7 +115,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                           builder: (_, setInnerState) {
                               return AlertDialog(
                                 backgroundColor: AppTheme.primaryColor,
-                                title: const Text('Add to playlist'),
+                                title: const Text('Add to playlist', style: textStyle),
                                 content: DropdownButton<int?>(
                                   isExpanded: true,
                                   value: playListId,
@@ -132,7 +133,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                                         musicPlayerProvider.refreshPlaylist();
                                         Navigator.pop(context);
                                       },
-                                    child: const Text('Add')
+                                    child: const Text('Add', style: textStyle),
                                   )
                                 ],
                               );
@@ -146,7 +147,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
               ],
               ListTile(
                 leading: const Icon(Icons.share, color: AppTheme.lightTextColor,),
-                title: const Text('Share Audio'),
+                title: const Text('Share Audio', style: textStyle),
                 onTap: () async {
                   List<XFile> filesToShare = [ XFile(songPlayed.data) ];
         
@@ -162,7 +163,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
               ),
               ListTile(
                 leading: const Icon(Icons.info_outline, color: AppTheme.lightTextColor,),
-                title: const Text('Details'),
+                title: const Text('Details', style: textStyle),
                 onTap: () {
                   showDialog(context: context, builder: (_) => SongDetailsDialog(song: widget.song));
                 },
@@ -170,7 +171,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
               if( !widget.disabledDeleteButton )
                 ListTile(
                   leading: Icon(widget.isPlaylist ? Icons.playlist_remove : Icons.delete_forever, color: AppTheme.lightTextColor,),
-                  title: Text(widget.isPlaylist ? 'Remove from this playlist' : 'Delete from device'),
+                  title: Text(widget.isPlaylist ? 'Remove from this playlist' : 'Delete from device', style: textStyle),
                   onTap: () async {
                     final albumId = songPlayed.albumId;
                     final artistId = songPlayed.artistId;
@@ -251,7 +252,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                       musicPlayerProvider.favoriteSongList = favoriteSongList;
                       UserPreferences().favoriteSongList = favoriteSongList;
                     },
-                    icon: Icon( isFavoriteSong ? Icons.favorite : Icons.favorite_border)
+                    icon: Icon( isFavoriteSong ? Icons.favorite : Icons.favorite_border, color: Colors.white,)
                   ),
                 ),
                 const Divider(color: AppTheme.lightTextColor, height: 1),

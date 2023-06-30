@@ -1,6 +1,5 @@
 import 'dart:io' show Platform;
 import 'dart:math' show Random;
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -57,7 +56,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
-        extendBodyBehindAppBar: true,
         appBar: _CustomAppBar(tabController: _tabController),
         body: _Body(tabController: _tabController),
         floatingActionButton: FloatingActionButton(
@@ -156,34 +154,15 @@ class _Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    return Stack(
-      children: [
-        Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/images/background.jpg'),
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 50),
-          child: Container(
-            color: AppTheme.primaryColor.withOpacity(0.8),
-          ),
-        ),
-        ),
-        
-        TabBarView(
-          controller: tabController,
-          children: const <Widget>[
-            SongsScreen(),
-            AlbumsScreen(),
-            ArtistScreen(),
-            PlaylistsScreen(),
-            FavoriteScreen(),
-            GenresScreen(),
-          ],
-        ),
+    return TabBarView(
+      controller: tabController,
+      children: const <Widget>[
+        SongsScreen(),
+        AlbumsScreen(),
+        ArtistScreen(),
+        PlaylistsScreen(),
+        FavoriteScreen(),
+        GenresScreen(),
       ],
     );
   }

@@ -108,6 +108,7 @@ class MusicPlayerProvider extends ChangeNotifier {
     await createAllArtworks(createArtworks);
     
     userPrefs.numberOfSongs = songList.length;
+
     isLoading = false;
     notifyListeners();
   }

@@ -17,35 +17,38 @@ class BannerPlaceholder extends StatelessWidget {
   }
 }
 
-class TitlePlaceholder extends StatelessWidget {
-  final double width;
-
-  const TitlePlaceholder({
+class ArtworkPlaceholder extends StatelessWidget {
+  const ArtworkPlaceholder({
     Key? key,
-    required this.width,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: width,
-            height: 12.0,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: double.infinity,
+          height: 190.0,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
             color: Colors.white,
           ),
-          const SizedBox(height: 8.0),
-          Container(
-            width: width,
-            height: 12.0,
-            color: Colors.white,
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          width: double.infinity,
+          height: 10.0,
+          color: Colors.white,
+          margin: const EdgeInsets.only(bottom: 8.0),
+        ),
+        Container(
+          width: 75,
+          height: 10.0,
+          color: Colors.white,
+          margin: const EdgeInsets.only(bottom: 8.0),
+        ),
+      ],
     );
   }
 }
@@ -99,7 +102,7 @@ class ContentPlaceholder extends StatelessWidget {
                     margin: const EdgeInsets.only(bottom: 8.0),
                   ),
                 Container(
-                  width: double.infinity,
+                  width: 150,
                   height: 10.0,
                   color: Colors.white,
                 )
