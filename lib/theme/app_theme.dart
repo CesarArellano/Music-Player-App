@@ -4,7 +4,7 @@ class AppTheme {
 
   static const Color primaryColor = Color(0xFF012D5B);
   static const Color accentColor = Colors.amber;
-  static const Color lightTextColor = Colors.white54;
+  static const Color lightTextColor = Colors.white70;
 
   static ThemeData lightTheme = ThemeData.light().copyWith(
     useMaterial3: true,

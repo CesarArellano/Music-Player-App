@@ -199,6 +199,7 @@ class _AlbumList extends StatelessWidget {
                       borderRadius: BorderRadius.circular(5),
                       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AlbumSelectedScreen(albumSelected: album))),
                       child: ArtworkFileImage(
+                        tag: 'album-screen-${ album.id }',
                         artworkId: album.id,
                         height: 130,
                         width: 130,

@@ -7,6 +7,14 @@ import 'package:palette_generator/palette_generator.dart';
 
 class UIProvider extends ChangeNotifier {
 
+  bool _isSnackbarActive = false;
+  bool get isSnackbarActive => _isSnackbarActive;
+
+  set isSnackbarActive( bool newValue ) {
+    _isSnackbarActive = newValue;
+    notifyListeners();
+  }
+
   AnimationController? _animationController;
 
   AnimationController? get animationController => _animationController;

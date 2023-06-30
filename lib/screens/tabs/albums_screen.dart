@@ -65,6 +65,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> with AutomaticKeepAliveClie
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   ArtworkFileImage(
+                    tag: 'album-screen-${ album.id }',
                     artworkId: album.id,
                     artworkType: ArtworkType.ALBUM,
                     width: double.maxFinite,

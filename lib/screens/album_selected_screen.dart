@@ -25,30 +25,12 @@ class AlbumSelectedScreen extends StatefulWidget {
 }
 
 class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
-  final ScrollController _scrollController = ScrollController();
-  String? appBarTitle;
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     getSongs();
-    _scrollController.addListener(() {
-      if( _scrollController.position.pixels < 40 && appBarTitle != null ) {
-        setState(() => appBarTitle = null);
-      }
-
-      if( _scrollController.position.pixels >= 40 && appBarTitle == null ) {
-        setState(() => appBarTitle = widget.albumSelected.album);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _scrollController.removeListener(() { });
-    _scrollController.dispose();
   }
 
   void getSongs() {
@@ -65,78 +47,84 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
   Widget build(BuildContext context) {
     final musicPlayerProvider = context.watch<MusicPlayerProvider>();
     final imageGeneralFile = File('${ musicPlayerProvider.appDirectory }/${ widget.albumSelected.id }.jpg');
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.lightTextColor),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: appBarTitle == null 
-          ? null
-          : FadeInUp(
-            duration: const Duration(milliseconds: 350),
-            child: Text(appBarTitle!, maxLines: 1, overflow: TextOverflow.ellipsis)
-          ),
-        actions: <Widget>[
-          IconButton(
-            splashRadius: 20,
-            icon: const Icon(Icons.search, color: AppTheme.lightTextColor),
-            onPressed: () => showSearch(context: context, delegate: MusicSearchDelegate() ),
-          ),
-        ],
-      ),
       body: isLoading
         ? const Center( child: CircularProgressIndicator() )
         : CustomScrollView(
-          controller: _scrollController,
           slivers: [
+            SliverAppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+              pinned: true,
+              actions: <Widget>[
+                IconButton(
+                  splashRadius: 20,
+                  icon: const Icon(Icons.search, color: Colors.white),
+                  onPressed: () => showSearch(context: context, delegate: MusicSearchDelegate() ),
+                ),
+              ],
+              expandedHeight: size.height * 0.4,
+              flexibleSpace: FlexibleSpaceBar(
+                titlePadding: const EdgeInsets.all(0),
+                title: FadeIn(
+                  child: Container(
+                    padding: const EdgeInsets.only(bottom: 16, left: 5, right: 5),
+                    alignment: Alignment.bottomCenter,
+                    color: AppTheme.primaryColor.withOpacity(0.35),
+                    child: Text(
+                      widget.albumSelected.album,
+                      style: const TextStyle(fontSize: 18),
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis
+                    ),
+                  ),
+                ),
+                background: ArtworkFileImage(
+                    tag: 'album-screen-${ widget.albumSelected.id }',
+                    artworkId: widget.albumSelected.id,
+                    artworkType: ArtworkType.ALBUM,
+                    width: double.maxFinite,
+                    height: 190,
+                    imageFile: imageGeneralFile,
+                  ),
+              )
+            ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                child: Column(
+                padding: const EdgeInsets.only(left:15, right: 15, top: 15),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: 
-                      [
-                        ArtworkFileImage(
-                          artworkId: widget.albumSelected.id,
-                          artworkType: ArtworkType.ALBUM,
-                          imageFile: imageGeneralFile,
-                          width: 175,
-                          height: 175,
-                        ),
-                        const SizedBox(width: 15),
-                        Flexible(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(widget.albumSelected.album, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
-                              const SizedBox(height: 10),
-                              Text(widget.albumSelected.artist.valueEmpty('No Artist'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppTheme.lightTextColor)),
-                              const SizedBox(height: 5),
-                              Text(
-                                "${ widget.albumSelected.getMap['minyear'] } • ${ widget.albumSelected.numOfSongs } ${ (widget.albumSelected.numOfSongs > 1) ? 'songs' : 'song' }",
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppTheme.lightTextColor)
-                              ),
-                            ],
-                          ),
-                        )
-                      ]
+                    Text(
+                      "${ widget.albumSelected.numOfSongs } ${ (widget.albumSelected.numOfSongs > 1) ? 'songs' : 'song' }",
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: AppTheme.lightTextColor)
                     ),
-                    const SizedBox(height: 10),
-                    PlayShuffleButtons(
-                      heroId: 'album-song-',
-                      id: widget.albumSelected.id,
-                      songList: ( musicPlayerProvider.albumCollection[widget.albumSelected.id] ?? [] ),
-                      typePlaylist: PlaylistType.album,
+                    Text(
+                      "${ widget.albumSelected.getMap['minyear'] }",
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: AppTheme.lightTextColor)
                     ),
-                    const SizedBox(height: 5),
+                    
                   ],
+                ),
+              )
+            ),
+            SliverToBoxAdapter(
+              child: Container(
+                margin: const EdgeInsets.all(15),
+                child: PlayShuffleButtons(
+                  heroId: 'album-song-',
+                  id: widget.albumSelected.id,
+                  songList: ( musicPlayerProvider.albumCollection[widget.albumSelected.id] ?? [] ),
+                  typePlaylist: PlaylistType.album,
                 ),
               ),
             ),
+            
             SliverList(delegate: SliverChildBuilderDelegate((context, i) {
                 final song = musicPlayerProvider.albumCollection[widget.albumSelected.id]![i];
                 final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
@@ -147,7 +135,7 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const SizedBox(width: 5),
-                        Text('${ i + 1 }'),
+                        Text('${ i + 1 }', style: const TextStyle(fontSize: 13),),
                         SizedBox(width: ( i + 1 >= 10) ? 18 : 25 ),
                         ArtworkFileImage(
                           artworkId: widget.albumSelected.id,

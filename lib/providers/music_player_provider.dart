@@ -140,7 +140,6 @@ class MusicPlayerProvider extends ChangeNotifier {
     if( albumCollection.containsKey(albumId) && !force ) return;
 
     List<SongModel> tempAlbumList = [ ...songList.where((song) => song.albumId == albumId ) ];
-    tempAlbumList.sort((a, b) => a.id.compareTo(b.id));
     albumCollection[albumId] = tempAlbumList;
   }
 
