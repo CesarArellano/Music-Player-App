@@ -22,7 +22,7 @@ import 'tabs/favorite_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -53,13 +53,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
     
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) {
         if( _isSnackbarActive ) {
           audioPlayerHandler<AudioPlayer>().stop();
           audioPlayerHandler<AudioPlayer>().dispose();
           SystemNavigator.pop();
-          return true;
         }
 
         _isSnackbarActive = true;
@@ -76,13 +75,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             },
           )
         ).closed.then((_) => _isSnackbarActive = false);
-
-        await Future.delayed(const Duration(seconds: 4));
-        return false;
       },
       child: Scaffold(
         body: _Body(tabController: _tabController),
-        floatingActionButton: FloatingActionButton(
+        floatingActionButton: musicPlayerProvider.songList.isEmpty 
+        ? null 
+        : FloatingActionButton(
             heroTag: 'fab',
             backgroundColor: AppTheme.accentColor,
             onPressed: musicPlayerProvider.isCreatingArtworks
@@ -94,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 ? const CircularProgressIndicator(color: Colors.black,)
                 : Icon( _selectedIndex == 3 ? Icons.add : Icons.shuffle, color: Colors.black)
           ),
-        bottomNavigationBar: (musicPlayerProvider.isLoading || ( musicPlayerProvider.songPlayed.title.value() ).isEmpty)
+        bottomNavigationBar: (musicPlayerProvider.isLoading || musicPlayerProvider.songPlayed.id == 0)
           ? null
           : const CurrentSongTile()
       ),
@@ -142,9 +140,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
 class _Body extends StatelessWidget {
   const _Body({
-    Key? key,
     required this.tabController
-  }): super(key: key);
+  });
 
   final TabController tabController;
 
@@ -178,10 +175,9 @@ class _Body extends StatelessWidget {
 
 class _CustomAppBar extends StatelessWidget {
   const _CustomAppBar({
-    Key? key,
     required this.forceElevated,
     required this.tabController
-  }) : super(key: key);
+  });
 
   final bool forceElevated;
   final TabController tabController;
@@ -232,7 +228,7 @@ class _CustomAppBar extends StatelessWidget {
             PopupMenuItem(
               child: const Text('Share App', style: TextStyle(color: Colors.black)),
               onTap: () async {
-                await Share.share("Hey, I Recommend this App fopr you. It's Most Stylish MP3 Music Player for your Android Device You would definitely like it.Please Try it Out. https://github.com/CesarArellano/Music-Player-App");
+                await SharePlus.instance.share(ShareParams(text: "Hey, I Recommend this App fopr you. It's Most Stylish MP3 Music Player for your Android Device You would definitely like it.Please Try it Out. https://github.com/CesarArellano/Music-Player-App"));
               },
             ),
             PopupMenuItem(

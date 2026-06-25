@@ -16,9 +16,9 @@ import 'widgets.dart';
 
 class CurrentSongTile extends StatefulWidget {
   const CurrentSongTile({
-    Key? key,
+    super.key,
     // this.showBottomBar = false
-  }) : super(key: key);
+  });
 
   // final bool showBottomBar;
   @override
@@ -60,9 +60,8 @@ class _CurrentSongTileState extends State<CurrentSongTile> with SingleTickerProv
 
 class _SelectorSongTitle extends StatelessWidget {
   const _SelectorSongTitle({
-    Key? key,
-    required AnimationController playAnimation,
-  }) : _playAnimation = playAnimation, super(key: key);
+    required this._playAnimation,
+  });
 
   final AnimationController _playAnimation;
 

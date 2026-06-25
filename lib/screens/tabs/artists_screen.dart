@@ -9,7 +9,7 @@ import '../artist_selected_screen.dart';
 
 class ArtistScreen extends StatefulWidget {
   
-  const ArtistScreen({Key? key}) : super(key: key);
+  const ArtistScreen({super.key});
 
   @override
   State<ArtistScreen> createState() => _ArtistScreenState();

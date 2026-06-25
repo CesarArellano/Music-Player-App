@@ -9,7 +9,7 @@ import '../../providers/music_player_provider.dart';
 
 class GenresScreen extends StatefulWidget {
   
-  const GenresScreen({Key? key}) : super(key: key);
+  const GenresScreen({super.key});
 
   @override
   State<GenresScreen> createState() => _GenresScreenState();

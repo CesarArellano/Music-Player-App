@@ -154,10 +154,10 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                     filesToShare.add(XFile(imageFile.path));
                   }
         
-                  await Share.shareXFiles(
-                    filesToShare,
+                  await SharePlus.instance.share(ShareParams(
+                    files: filesToShare,
                     text: 'I share you the song ${ widget.song.title.value() }'
-                  );
+                  ));
                 },
               ),
               ListTile(
@@ -189,7 +189,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                     
                     final isDeleted = await MusicActions.deleteFile(File(songPlayed.data));
                     
-                    if( !mounted ) return;
+                    if( !context.mounted ) return;
         
                     Navigator.pop(context);
         
@@ -222,7 +222,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
           
           Container(
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withOpacity(0.9),
+              color: AppTheme.primaryColor.withValues(alpha: 0.9),
               borderRadius: const BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30))
             ),
             child: Column(

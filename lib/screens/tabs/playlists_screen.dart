@@ -10,7 +10,7 @@ import '../../widgets/widgets.dart';
 
 class PlaylistsScreen extends StatefulWidget {
   
-  const PlaylistsScreen({Key? key}) : super(key: key);
+  const PlaylistsScreen({super.key});
 
   @override
   State<PlaylistsScreen> createState() => _PlaylistsScreenState();

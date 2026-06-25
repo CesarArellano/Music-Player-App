@@ -169,7 +169,7 @@ class MusicActions {
         shrinkWrap: true,
         itemCount: musicPlayerProvider.currentPlaylist.length,
         itemBuilder: (_, int i) {
-          final currentSequence = musicPlayerProvider.currentPlaylist[ ( audioPlayer.effectiveIndices?[i] ).value() ];
+          final currentSequence = musicPlayerProvider.currentPlaylist[ audioPlayer.effectiveIndices[i] ];
       
           final audio = SongModel({
             '_id': currentSequence.id,
@@ -228,8 +228,8 @@ class MusicActions {
     Duration? seek
   }) {
 
-    final playlist = ConcatenatingAudioSource(
-      children: musicPlayerProvider.currentPlaylist.map((song) => AudioSource.file(
+    audioPlayer.setAudioSources(
+      musicPlayerProvider.currentPlaylist.map((song) => AudioSource.file(
         song.data,
         tag: MediaItem(
           id: song.id.value().toString(),
@@ -241,9 +241,9 @@ class MusicActions {
           artUri: Uri.file('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg'),
         )
       )).toList(),
+      initialIndex: index,
+      initialPosition: seek,
     );
-
-    audioPlayer.setAudioSource(playlist, initialIndex: index, initialPosition: seek);
     audioControlProvider.currentIndex = index;
     musicPlayerProvider.songPlayed = musicPlayerProvider.currentPlaylist[ index ];
     UserPreferences().lastSongId = musicPlayerProvider.songPlayed.id;

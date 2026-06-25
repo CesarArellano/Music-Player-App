@@ -9,7 +9,7 @@ import '../theme/app_theme.dart';
 class CustomListTile extends StatelessWidget {
   
   const CustomListTile({
-    Key? key,
+    super.key,
     required this.title,
     required this.subtitle,
     required this.artworkId,
@@ -17,7 +17,7 @@ class CustomListTile extends StatelessWidget {
     this.imageFile,
     this.trailing,
     this.tag = ''
-  }) : super(key: key);
+  });
   
   final int artworkId;
   final ArtworkType artworkType;

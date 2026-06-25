@@ -14,10 +14,9 @@ import '../widgets/widgets.dart';
 
 class PlaylistSelectedScreen extends StatefulWidget {
   
-  const PlaylistSelectedScreen({
-    Key? key,
+  const PlaylistSelectedScreen({super.key, 
     required this.playlist,
-  }) : super(key: key);
+  });
   
   final PlaylistModel playlist;
 
@@ -98,9 +97,8 @@ class _PlaylistSelectedScreenState extends State<PlaylistSelectedScreen> {
 
 class _EmptyList extends StatelessWidget {
   const _EmptyList({
-    Key? key,
     required this.playlist,
-  }) : super(key: key);
+  });
 
   final PlaylistModel playlist;
 

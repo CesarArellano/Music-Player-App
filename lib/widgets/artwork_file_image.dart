@@ -60,14 +60,13 @@ class ArtworkFileImage extends StatelessWidget {
 
 class _ImageWithBorder extends StatelessWidget {
   const _ImageWithBorder({
-    Key? key,
     required this.radius,
     required this.imageFile,
     required this.width,
     required this.height,
     required this.artworkId,
     required this.artworkType,
-  }) : super(key: key);
+  });
 
   final BorderRadius radius;
   final File? imageFile;

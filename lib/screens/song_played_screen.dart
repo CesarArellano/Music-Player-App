@@ -9,7 +9,7 @@ import 'package:focus_music_player/screens/album_selected_screen.dart';
 import 'package:focus_music_player/theme/app_theme.dart';
 import 'package:focus_music_player/widgets/bouncing_widget.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:marquee/marquee.dart';
+import 'package:marqueer/marqueer.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
 
@@ -27,10 +27,10 @@ import 'artist_selected_screen.dart';
 class SongPlayedScreen extends StatefulWidget {
   
   const SongPlayedScreen({
-    Key? key,
+    super.key,
     this.isPlaylist = false,
     this.playlistId
-  }) : super(key: key);
+  });
 
   final bool isPlaylist;
   final int? playlistId;
@@ -81,7 +81,7 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
                 onSurface: songPlayedThemeColor,
               ),
               iconButtonTheme: IconButtonThemeData(
-                style: ButtonStyle(iconColor: MaterialStatePropertyAll(songPlayedThemeColor))
+                style: ButtonStyle(iconColor: WidgetStatePropertyAll(songPlayedThemeColor))
               ),
               appBarTheme: AppBarTheme(
                 iconTheme: IconThemeData(
@@ -123,14 +123,14 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
                           image: Image.file(
                             imageFile,
                             gaplessPlayback: true,
-                            errorBuilder: (_, __, ___) => Image.asset('assets/images/background.jpg', gaplessPlayback: true)
+                            errorBuilder: (_, _, _) => Image.asset('assets/images/background.jpg', gaplessPlayback: true)
                           ).image
                         )                    
                       ),
                       child: BackdropFilter(
                           filter: ImageFilter.blur(sigmaX: 50.0, sigmaY: 50.0),
                           child: Container(
-                            decoration: BoxDecoration(color: uiProvider.currentDominantColor.withOpacity(0.8)),
+                            decoration: BoxDecoration(color: uiProvider.currentDominantColor.withValues(alpha: 0.8)),
                           ),
                         ),
                     ),
@@ -157,11 +157,10 @@ class _SongPlayedScreenState extends State<SongPlayedScreen> with SingleTickerPr
 
 class _MoreOptionsModal extends StatelessWidget {
   const _MoreOptionsModal({
-    Key? key,
     required this.songPlayed,
     required this.isPlaylist,
     required this.playlistId,
-  }) : super(key: key);
+  });
 
   final SongModel songPlayed;
   final bool isPlaylist;
@@ -187,9 +186,7 @@ class _MoreOptionsModal extends StatelessWidget {
 }
 
 class _AppBarLeading extends StatelessWidget {
-  const _AppBarLeading({
-    Key? key,
-  }) : super(key: key);
+  const _AppBarLeading();
 
   @override
   Widget build(BuildContext context) {
@@ -203,9 +200,8 @@ class _AppBarLeading extends StatelessWidget {
 
 class _AppBarTitle extends StatelessWidget {
   const _AppBarTitle({
-    Key? key,
     required this.songPlayed,
-  }) : super(key: key);
+  });
 
   final SongModel songPlayed;
 
@@ -235,9 +231,8 @@ class _AppBarTitle extends StatelessWidget {
 
 class _SongPlayedPortraitBody extends StatelessWidget {
   const _SongPlayedPortraitBody({
-    Key? key,
     required this.playAnimation,
-  }) : super(key: key);
+  });
 
   final AnimationController? playAnimation;
 
@@ -267,7 +262,7 @@ class _SongPlayedPortraitBody extends StatelessWidget {
                   fit: BoxFit.cover,
                   filterQuality: FilterQuality.medium,
                   gaplessPlayback: true,
-                  errorBuilder: ( _, __, ___ ) => ArtworkImage(
+                  errorBuilder: ( _, _, _ ) => ArtworkImage(
                     artworkId: songPlayed.id,
                     type: ArtworkType.AUDIO,
                     width: double.infinity,
@@ -313,14 +308,12 @@ class _SongPlayedPortraitBody extends StatelessWidget {
                           child: ( songPlayed.title.value().length > 25 )
                           ? SizedBox(
                             height: 40,
-                            child: Marquee(
-                              velocity: 45.0,
-                              text: songPlayed.title.value(),
-                              blankSpace: 20,
-                              fadingEdgeEndFraction: 0.1,
-                              fadingEdgeStartFraction: 0.1,
-                              style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18),
-                              textScaleFactor: 1,
+                            child: Marqueer(
+                              pps: 45.0,
+                              child: Text(
+                                songPlayed.title.value(),
+                                style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18),
+                              ),
                             ),
                           )
                           : Column(
@@ -356,14 +349,14 @@ class _SongPlayedPortraitBody extends StatelessWidget {
                             },
                             child: Text(
                               songPlayed.artist.valueEmpty('No Artist'),
-                              textScaleFactor: 1,
+                              textScaler: const TextScaler.linear(1),
                               maxLines: 1,
                               textAlign: TextAlign.center,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontWeight: FontWeight.w400,
                                 fontSize: 16,
-                              ).copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7))
+                              ).copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7))
                             ),
                           ),
                         ),
@@ -392,10 +385,9 @@ class _SongPlayedPortraitBody extends StatelessWidget {
 
 class _CustomIconButton extends StatelessWidget {
   const _CustomIconButton({
-    Key? key,
     required this.icon,
     this.onPressed
-  }) : super(key: key);
+  });
 
   final IconData icon;
   final VoidCallback? onPressed;
@@ -414,9 +406,8 @@ class _CustomIconButton extends StatelessWidget {
 
 class _MusicControls extends StatefulWidget {
   const _MusicControls({
-    Key? key,
     required this.playAnimation,
-  }) : super(key: key);
+  });
 
   final AnimationController? playAnimation;
 
@@ -570,10 +561,10 @@ class _MusicControlsState extends State<_MusicControls> {
             stream: audioPlayer.shuffleModeEnabledStream,
             builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
               if( !snapshot.hasData ) {
-                return Icon( Icons.shuffle, color: onSurfaceColor.withOpacity(0.6));
+                return Icon( Icons.shuffle, color: onSurfaceColor.withValues(alpha: 0.6));
               }
             
-              return Icon( Icons.shuffle, color: ( snapshot.data! ) ?  onSurfaceColor : onSurfaceColor.withOpacity(0.6));
+              return Icon( Icons.shuffle, color: ( snapshot.data! ) ?  onSurfaceColor : onSurfaceColor.withValues(alpha: 0.6));
             },
           ),
           onPressed: ()  {
@@ -619,9 +610,7 @@ class _MusicControlsState extends State<_MusicControls> {
 }
 
 class _SongTimeline extends StatelessWidget {
-  const _SongTimeline({
-    Key? key,
-  }) : super(key: key);
+  const _SongTimeline();
 
   @override
   Widget build(BuildContext context) {
@@ -640,7 +629,7 @@ class _SongTimeline extends StatelessWidget {
         audioPlayer.seek(duration);
       },
       timeLabelTextStyle: const TextStyle(fontWeight: FontWeight.w500)
-        .copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+        .copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
     );
   }
 }
@@ -648,11 +637,10 @@ class _SongTimeline extends StatelessWidget {
 
 class _SongPlayedLandscapeBody extends StatelessWidget {
   const _SongPlayedLandscapeBody({
-    Key? key,
     required this.playAnimation,
     required this.isPlaylist,
     required this.playlistId
-  }) : super(key: key);
+  });
 
   final AnimationController? playAnimation;
   final bool isPlaylist;
@@ -689,7 +677,7 @@ class _SongPlayedLandscapeBody extends StatelessWidget {
                       fit: BoxFit.cover,
                       filterQuality: FilterQuality.medium,
                       gaplessPlayback: true,
-                      errorBuilder: ( _, __, ___ ) => ArtworkImage(
+                      errorBuilder: ( _, _, _ ) => ArtworkImage(
                         artworkId: songPlayed.id,
                         type: ArtworkType.AUDIO,
                         width: double.infinity,
@@ -751,13 +739,12 @@ class _SongPlayedLandscapeBody extends StatelessWidget {
                               children: [
                                 Flexible (
                                   child: ( songPlayed.title.value().length > 25 )
-                                  ? Marquee(
-                                    velocity: 50.0,
-                                    text: songPlayed.title.value(),
-                                    blankSpace: 30,
-                                    fadingEdgeEndFraction: 0.1,
-                                    fadingEdgeStartFraction: 0.1,
-                                    style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18),
+                                  ? Marqueer(
+                                    pps: 50.0,
+                                    child: Text(
+                                      songPlayed.title.value(),
+                                      style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18),
+                                    ),
                                   )
                                   : Column(
                                     mainAxisSize: MainAxisSize.min,
@@ -789,7 +776,7 @@ class _SongPlayedLandscapeBody extends StatelessWidget {
                                   },
                                   child: Text(
                                     songPlayed.artist.valueEmpty('No Artist'),
-                                    textScaleFactor: 1,
+                                    textScaler: const TextScaler.linear(1.0),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 16)

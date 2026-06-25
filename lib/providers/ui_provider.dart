@@ -58,7 +58,7 @@ class UIProvider extends ChangeNotifier {
 
     dominantColorCollection[albumId] = ((
       await PaletteGenerator.fromImageProvider( fileImage )
-    ).dominantColor?.color ?? Colors.white).value.toRadixString(16);
+    ).dominantColor?.color ?? Colors.white).toARGB32().toRadixString(16);
 
     final dominantColor = dominantColorCollection[albumId];
     _currentDominantColor = (dominantColor != null) ? Helpers.fromHex(dominantColor) : null;

@@ -13,7 +13,7 @@ import '../../widgets/widgets.dart';
 
 class SongsScreen extends StatefulWidget {
   
-  const SongsScreen({Key? key}) : super(key: key);
+  const SongsScreen({super.key});
 
   @override
   State<SongsScreen> createState() => _SongsScreenState();
@@ -33,6 +33,7 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
   void initSong() {
     WidgetsBinding.instance.addPostFrameCallback(( _ ) {
       Future.delayed(const Duration(milliseconds: 400), () {
+        if( !mounted ) return;
         final int lastSongId = UserPreferences().lastSongId;
         final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
         final uiProvider = Provider.of<UIProvider>(context, listen: false);
@@ -48,6 +49,7 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
         );
 
         if( musicPlayerProvider.songPlayed.id == 0 ) return;
+        if( !mounted ) return;
         
         MusicActions.initSongs(
           context,

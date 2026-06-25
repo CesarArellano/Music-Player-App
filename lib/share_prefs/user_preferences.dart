@@ -3,16 +3,16 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserPreferences {
-  static final  UserPreferences _instancia = UserPreferences._internal();
+  static final  UserPreferences _instance = UserPreferences._internal();
   
   factory UserPreferences() {
-    return _instancia;
+    return _instance;
   }
 
   UserPreferences._internal();
   late SharedPreferences _prefs;
 
-  initPrefs() async {
+  Future<void> initPrefs() async {
     _prefs = await SharedPreferences.getInstance();
   }
 

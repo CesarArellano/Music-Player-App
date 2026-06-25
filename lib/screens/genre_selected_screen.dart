@@ -14,9 +14,9 @@ import '../widgets/widgets.dart';
 
 class GenreSelectedScreen extends StatefulWidget {
   const GenreSelectedScreen({
-    Key? key,
+    super.key,
     required this.genreSelected
-  }) : super(key: key);
+  });
 
   final GenreModel genreSelected;
 
@@ -147,7 +147,7 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
                 return RippleTile(
                   child: CustomListTile(
                     imageFile: imageFile,
-                    title: song.title.value(i),
+                    title: song.title.value('$i'),
                     subtitle: song.artist.valueEmpty('No Artist'),
                     artworkId: song.id,
                     tag: heroId,

@@ -54,10 +54,9 @@ class SongDetailsDialog extends StatelessWidget {
 
 class _RowLabel extends StatelessWidget {
   const _RowLabel({
-    Key? key,
     required this.label,
     required this.value,
-  }) : super(key: key);
+  });
 
   final String label;
   final String value;

@@ -11,7 +11,7 @@ import '../screens.dart';
 
 class AlbumsScreen extends StatefulWidget {
 
-  const AlbumsScreen({Key? key}) : super(key: key);
+  const AlbumsScreen({super.key});
 
   @override
   State<AlbumsScreen> createState() => _AlbumsScreenState();

@@ -7,7 +7,6 @@ class AppTheme {
   static const Color lightTextColor = Colors.white54;
 
   static ThemeData lightTheme = ThemeData.light().copyWith(
-    useMaterial3: true,
     splashFactory: InkSparkle.constantTurbulenceSeedSplashFactory,
     textTheme: Typography.whiteCupertino,
     scaffoldBackgroundColor: primaryColor,

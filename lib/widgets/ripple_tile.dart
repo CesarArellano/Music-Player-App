@@ -7,12 +7,12 @@ class RippleTile extends StatelessWidget {
   final BorderRadius? borderRadius;
 
   const RippleTile({
-    Key? key,
+    super.key,
     required this.child,
     required this.onTap,
     this.onLongPress,
     this.borderRadius
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

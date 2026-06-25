@@ -4,9 +4,9 @@ class Bouncing extends StatefulWidget {
   final Widget child;
 
   const Bouncing({
-    Key? key,
+    super.key,
     required this.child,
-  }): super(key: key);
+  });
 
   @override
   State<Bouncing> createState() => _BouncingState();

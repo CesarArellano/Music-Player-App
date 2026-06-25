@@ -15,9 +15,9 @@ import 'album_selected_screen.dart';
 
 class ArtistSelectedScreen extends StatefulWidget {
   const ArtistSelectedScreen({
-    Key? key,
+    super.key,
     required this.artistSelected
-  }) : super(key: key);
+  });
 
   final ArtistModel artistSelected;
 
@@ -165,10 +165,9 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
 
 class _AlbumList extends StatelessWidget {
   const _AlbumList({
-    Key? key,
     required this.artistContentModel,
     required this.musicPlayerProvider,
-  }) : super(key: key);
+  });
 
   final ArtistContentModel artistContentModel;
   final MusicPlayerProvider musicPlayerProvider;
@@ -180,7 +179,7 @@ class _AlbumList extends StatelessWidget {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: artistContentModel.albums.length,
-        separatorBuilder: (_ , __) => const SizedBox(width: 5),
+        separatorBuilder: (_ , _) => const SizedBox(width: 5),
         itemBuilder: (context, i) {
           final album = artistContentModel.albums[i];
 
@@ -223,11 +222,10 @@ class _AlbumList extends StatelessWidget {
 
 class _AlbumHeader extends StatelessWidget {
   const _AlbumHeader({
-    Key? key,
     required this.artistSelected,
     required this.artistContentModel,
     required this.artistImageFile,
-  }) : super(key: key);
+  });
 
   final ArtistModel artistSelected;
   final ArtistContentModel artistContentModel;

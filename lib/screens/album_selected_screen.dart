@@ -14,9 +14,9 @@ import '../widgets/widgets.dart';
 
 class AlbumSelectedScreen extends StatefulWidget {
   const AlbumSelectedScreen({
-    Key? key,
+    super.key,
     required this.albumSelected
-  }) : super(key: key);
+  });
 
   final AlbumModel albumSelected;
 
