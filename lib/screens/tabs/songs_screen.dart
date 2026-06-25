@@ -1,60 +1,64 @@
 import 'dart:io' show File;
 
 import 'package:flutter/material.dart';
-import 'package:focus_music_player/providers/ui_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:provider/provider.dart';
 
+import '../../cubits/cubits.dart';
 import '../../extensions/extensions.dart';
 import '../../helpers/music_actions.dart';
-import '../../providers/music_player_provider.dart';
 import '../../share_prefs/user_preferences.dart';
 import '../../widgets/widgets.dart';
 
 class SongsScreen extends StatefulWidget {
-  
   const SongsScreen({super.key});
 
   @override
   State<SongsScreen> createState() => _SongsScreenState();
 }
 
-class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClientMixin {
-
+class _SongsScreenState extends State<SongsScreen>
+    with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
 
   @override
   void initState() {
-    initSong();
     super.initState();
+    _initSong();
   }
 
-  void initSong() {
-    WidgetsBinding.instance.addPostFrameCallback(( _ ) {
+  void _initSong() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 400), () {
-        if( !mounted ) return;
-        final int lastSongId = UserPreferences().lastSongId;
-        final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context, listen: false);
-        final uiProvider = Provider.of<UIProvider>(context, listen: false);
-        uiProvider.dominantColorCollection = UserPreferences().dominantColorCollection;
-        musicPlayerProvider.currentPlaylist = musicPlayerProvider.songList;
+        if (!mounted) return;
+        final lastSongId = UserPreferences().lastSongId;
+        final musicPlayerCubit = context.read<MusicPlayerCubit>();
+        final uiCubit = context.read<UICubit>();
+
+        uiCubit.updateDominantColorCollection(
+          UserPreferences().dominantColorCollection,
+        );
+        musicPlayerCubit
+            .updateCurrentPlaylist(musicPlayerCubit.state.songList);
         MusicActions.initStreams(context);
-        
-        if( lastSongId == 0 ) return;
-          
-        musicPlayerProvider.songPlayed = musicPlayerProvider.songList.firstWhere(
+
+        if (lastSongId == 0) return;
+
+        final foundSong = musicPlayerCubit.state.songList.firstWhere(
           (song) => song.id == lastSongId,
-          orElse: () => SongModel({ '_id': 0 })
+          orElse: () => SongModel({'_id': 0}),
         );
 
-        if( musicPlayerProvider.songPlayed.id == 0 ) return;
-        if( !mounted ) return;
-        
+        musicPlayerCubit.updateSongPlayed(foundSong);
+
+        if (foundSong.id == 0) return;
+        if (!mounted) return;
+
         MusicActions.initSongs(
           context,
-          musicPlayerProvider.songPlayed,
-          heroId: 'current-song-${ musicPlayerProvider.songPlayed.id }'
+          foundSong,
+          heroId: 'current-song-${foundSong.id}',
         );
       });
     });
@@ -63,49 +67,54 @@ class _SongsScreenState extends State<SongsScreen> with AutomaticKeepAliveClient
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
-    final songList = musicPlayerProvider.songList;
+    final musicPlayerState = context.watch<MusicPlayerCubit>().state;
+    final songList = musicPlayerState.songList;
 
-    return ( musicPlayerProvider.isLoading )
-      ? CustomLoader(isCreatingArtworks: musicPlayerProvider.isCreatingArtworks)
-      : songList.isNotEmpty
-        ? OrientationBuilder(
-          builder: (context, orientation) => GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: ( orientation == Orientation.landscape ) ?  2 : 1,
-              childAspectRatio: 5.5
-            ),
-            itemCount: songList.length,
-            itemBuilder: ( _, int i ) {
-              final song = songList[i];
-              final imageFile = File('${ musicPlayerProvider.appDirectory }/${ song.albumId }.jpg');
-              final heroId = 'songs-${ song.id }';
-              
-              return RippleTile(
-                child: CustomListTile(
-                  title: song.title.value(),
-                  subtitle: song.artist.valueEmpty('No Artist'),
-                  artworkId: song.id,
-                  imageFile: imageFile,
-                  tag: heroId,
+    return musicPlayerState.isLoading
+        ? CustomLoader(isCreatingArtworks: musicPlayerState.isCreatingArtworks)
+        : songList.isNotEmpty
+            ? OrientationBuilder(
+                builder: (context, orientation) => GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount:
+                        orientation == Orientation.landscape ? 2 : 1,
+                    childAspectRatio: 5.5,
+                  ),
+                  itemCount: songList.length,
+                  itemBuilder: (_, int i) {
+                    final song = songList[i];
+                    final imageFile = File(
+                      '${musicPlayerState.appDirectory}/${song.albumId}.jpg',
+                    );
+                    final heroId = 'songs-${song.id}';
+
+                    return RippleTile(
+                      child: CustomListTile(
+                        title: song.title.value(),
+                        subtitle: song.artist.valueEmpty('No Artist'),
+                        artworkId: song.id,
+                        imageFile: imageFile,
+                        tag: heroId,
+                      ),
+                      onTap: () => MusicActions.songPlayAndPause(
+                        context,
+                        song,
+                        PlaylistType.songs,
+                        heroId: heroId,
+                      ),
+                      onLongPress: () => showModalBottomSheet(
+                        context: context,
+                        builder: (_) => MoreSongOptionsModal(song: song),
+                      ),
+                    );
+                  },
                 ),
-                onTap: () => MusicActions.songPlayAndPause(context, song, PlaylistType.songs, heroId: heroId),
-                onLongPress: () {
-                  showModalBottomSheet(
-                    context: context,
-                    builder:( _ ) => MoreSongOptionsModal(song: song)
-                  );
-                },
+              )
+            : const Center(
+                child: Text(
+                  'No Songs',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
               );
-            } 
-          ),
-        )
-      : const Center( 
-        child: Text(
-          'No Songs',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)
-        )
-      );
   }
 }

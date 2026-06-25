@@ -1,14 +1,11 @@
-
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:focus_music_player/helpers/helpers.dart';
 import 'package:focus_music_player/share_prefs/user_preferences.dart';
 import 'package:just_audio_background/just_audio_background.dart';
-import 'package:provider/provider.dart';
 
 import 'audio_player_handler.dart';
-import 'providers/audio_control_provider.dart';
-import 'providers/music_player_provider.dart';
-import 'providers/ui_provider.dart';
+import 'cubits/cubits.dart';
 import 'routes/app_router.dart';
 import 'theme/app_theme.dart';
 
@@ -26,16 +23,15 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
+    return MultiBlocProvider(
       providers: [
-        ChangeNotifierProvider( create: ( _ ) => MusicPlayerProvider() ),
-        ChangeNotifierProvider( create: ( _ ) => AudioControlProvider()),
-        ChangeNotifierProvider( create: ( _ ) => UIProvider()),
+        BlocProvider(create: (_) => MusicPlayerCubit()),
+        BlocProvider(create: (_) => AudioControlCubit()),
+        BlocProvider(create: (_) => UICubit()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

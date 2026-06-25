@@ -1,18 +1,16 @@
 import 'dart:io' show Platform, File;
 
 import 'package:flutter/material.dart';
-import 'package:focus_music_player/providers/ui_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../audio_player_handler.dart';
+import '../cubits/cubits.dart';
 import '../extensions/extensions.dart';
 import '../helpers/helpers.dart';
 import '../helpers/music_actions.dart';
-import '../providers/audio_control_provider.dart';
-import '../providers/music_player_provider.dart';
 import '../share_prefs/user_preferences.dart';
 import '../theme/app_theme.dart';
 import 'custom_list_tile.dart';
@@ -37,193 +35,227 @@ class MoreSongOptionsModal extends StatefulWidget {
 }
 
 class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
-  int? playListId;
+  int? _selectedPlaylistId;
 
   @override
   Widget build(BuildContext context) {
     final songPlayed = widget.song;
     final onAudioQuery = audioPlayerHandler.get<OnAudioQuery>();
     final audioPlayer = audioPlayerHandler.get<AudioPlayer>();
-    final uiProvider = Provider.of<UIProvider>(context, listen: false);
-    final musicPlayerProvider = Provider.of<MusicPlayerProvider>(context);
-    final audioControlProvider = Provider.of<AudioControlProvider>(context);
+    final musicPlayerCubit = context.watch<MusicPlayerCubit>();
+    final audioControlCubit = context.watch<AudioControlCubit>();
+    final musicPlayerState = musicPlayerCubit.state;
+    final audioControlState = audioControlCubit.state;
+    final uiCubit = context.read<UICubit>();
     final duration = Duration(milliseconds: widget.song.duration ?? 0);
-    final imageFile = File('${ musicPlayerProvider.appDirectory }/${ songPlayed.albumId }.jpg');
-    final isFavoriteSong = musicPlayerProvider.isFavoriteSong(songPlayed.id);
+    final imageFile = File(
+      '${musicPlayerState.appDirectory}/${songPlayed.albumId}.jpg',
+    );
+    final isFavoriteSong = musicPlayerState.isFavoriteSong(songPlayed.id);
 
     return OrientationBuilder(
-      builder:(_, orientation) => Stack(
+      builder: (_, orientation) => Stack(
         children: [
           ListView(
             shrinkWrap: true,
-            physics: orientation == Orientation.portrait ? const NeverScrollableScrollPhysics() : const ScrollPhysics(),
+            physics: orientation == Orientation.portrait
+                ? const NeverScrollableScrollPhysics()
+                : const ScrollPhysics(),
             children: [
               const SizedBox(height: 70),
               ListTile(
-                leading: const Icon(Icons.replay_outlined, color: AppTheme.lightTextColor,),
+                leading: const Icon(Icons.replay_outlined,
+                    color: AppTheme.lightTextColor),
                 title: const Text('Play next'),
                 onTap: () {
-                  final currentIndex = audioControlProvider.currentIndex;
-        
-                  if( currentIndex == musicPlayerProvider.currentPlaylist.length - 1 ) {
+                  final currentIndex = audioControlState.currentIndex;
+
+                  if (currentIndex ==
+                      musicPlayerState.currentPlaylist.length - 1) {
                     return _addToQueue(
+                      context: context,
                       audioPlayer: audioPlayer,
-                      musicPlayerProvider: musicPlayerProvider,
-                      audioControlProvider: audioControlProvider,
+                      musicPlayerCubit: musicPlayerCubit,
+                      audioControlCubit: audioControlCubit,
+                      uiCubit: uiCubit,
                       song: songPlayed,
-                      uiProvider: uiProvider
                     );
                   }
-        
-                  List<SongModel> tempList =  [ ...musicPlayerProvider.currentPlaylist ]..insert(
-                    currentIndex + 1,
-                    songPlayed
-                  );
-                  musicPlayerProvider.currentPlaylist = tempList;
+
+                  final tempList = [...musicPlayerState.currentPlaylist]
+                    ..insert(currentIndex + 1, songPlayed);
+                  musicPlayerCubit.updateCurrentPlaylist(tempList);
                   MusicActions.openAudios(
                     audioPlayer: audioPlayer,
                     index: currentIndex,
-                    seek: audioControlProvider.currentDuration,
-                    audioControlProvider: audioControlProvider,
-                    musicPlayerProvider: musicPlayerProvider,
-                    uiProvider: uiProvider
+                    seek: audioControlState.currentDuration,
+                    audioControlCubit: audioControlCubit,
+                    musicPlayerCubit: musicPlayerCubit,
+                    uiCubit: uiCubit,
                   );
                   Navigator.pop(context);
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.library_add_rounded, color: AppTheme.lightTextColor,),
+                leading: const Icon(Icons.library_add_rounded,
+                    color: AppTheme.lightTextColor),
                 title: const Text('Add to playing queue'),
                 onTap: () => _addToQueue(
+                  context: context,
                   audioPlayer: audioPlayer,
-                  musicPlayerProvider: musicPlayerProvider,
-                  audioControlProvider: audioControlProvider,
+                  musicPlayerCubit: musicPlayerCubit,
+                  audioControlCubit: audioControlCubit,
+                  uiCubit: uiCubit,
                   song: songPlayed,
-                  uiProvider: uiProvider
                 ),
               ),
-              if( musicPlayerProvider.playLists.isNotEmpty && Platform.isAndroid ) ...[
+              if (musicPlayerState.playLists.isNotEmpty &&
+                  Platform.isAndroid) ...[
                 ListTile(
-                  leading: const Icon(Icons.playlist_add, color: AppTheme.lightTextColor,),
+                  leading: const Icon(Icons.playlist_add,
+                      color: AppTheme.lightTextColor),
                   title: const Text('Add to Playlist'),
                   onTap: () {
                     showDialog(
                       context: context,
-                      builder: (context) {
-                        return StatefulBuilder(
-                          builder: (_, setInnerState) {
-                              return AlertDialog(
-                                backgroundColor: AppTheme.primaryColor,
-                                title: const Text('Add to playlist'),
-                                content: DropdownButton<int?>(
-                                  isExpanded: true,
-                                  value: playListId,
-                                  dropdownColor: AppTheme.primaryColor,
-                                  hint: const Text('Seleccionar una playlist', style: TextStyle(color: Colors.white)),
-                                  items: musicPlayerProvider.playLists.map((e) => DropdownMenuItem<int?>(value: e.id,child: Text(e.playlist, style: const TextStyle(color: Colors.white)),)).toList(),
-                                  onChanged: (int? value) => setInnerState(() => playListId = value),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: playListId == null
-                                      ? null
-                                      : () {
-                                        onAudioQuery.addToPlaylist(playListId!, widget.song.id);
-                                        musicPlayerProvider.refreshPlaylist();
-                                        Navigator.pop(context);
-                                      },
-                                    child: const Text('Add')
-                                  )
-                                ],
-                              );
-                          }
-                        );
-                      }
+                      builder: (context) => StatefulBuilder(
+                        builder: (_, setInnerState) => AlertDialog(
+                          backgroundColor: AppTheme.primaryColor,
+                          title: const Text('Add to playlist'),
+                          content: DropdownButton<int?>(
+                            isExpanded: true,
+                            value: _selectedPlaylistId,
+                            dropdownColor: AppTheme.primaryColor,
+                            hint: const Text('Select a playlist',
+                                style: TextStyle(color: Colors.white)),
+                            items: musicPlayerState.playLists
+                                .map((e) => DropdownMenuItem<int?>(
+                                      value: e.id,
+                                      child: Text(e.playlist,
+                                          style: const TextStyle(
+                                              color: Colors.white)),
+                                    ))
+                                .toList(),
+                            onChanged: (int? value) =>
+                                setInnerState(() => _selectedPlaylistId = value),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: _selectedPlaylistId == null
+                                  ? null
+                                  : () {
+                                      onAudioQuery.addToPlaylist(
+                                          _selectedPlaylistId!,
+                                          widget.song.id);
+                                      musicPlayerCubit.refreshPlaylist();
+                                      Navigator.pop(context);
+                                    },
+                              child: const Text('Add'),
+                            ),
+                          ],
+                        ),
+                      ),
                     );
                   },
                 ),
                 const Divider(color: AppTheme.lightTextColor, height: 1),
               ],
               ListTile(
-                leading: const Icon(Icons.share, color: AppTheme.lightTextColor,),
+                leading: const Icon(Icons.share,
+                    color: AppTheme.lightTextColor),
                 title: const Text('Share Audio'),
                 onTap: () async {
-                  List<XFile> filesToShare = [ XFile(songPlayed.data) ];
-        
-                  if( await imageFile.exists() ) {
+                  final filesToShare = <XFile>[XFile(songPlayed.data)];
+                  if (await imageFile.exists()) {
                     filesToShare.add(XFile(imageFile.path));
                   }
-        
                   await SharePlus.instance.share(ShareParams(
                     files: filesToShare,
-                    text: 'I share you the song ${ widget.song.title.value() }'
+                    text:
+                        'I share you the song ${widget.song.title.value()}',
                   ));
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.info_outline, color: AppTheme.lightTextColor,),
+                leading: const Icon(Icons.info_outline,
+                    color: AppTheme.lightTextColor),
                 title: const Text('Details'),
-                onTap: () {
-                  showDialog(context: context, builder: (_) => SongDetailsDialog(song: widget.song));
-                },
+                onTap: () => showDialog(
+                  context: context,
+                  builder: (_) => SongDetailsDialog(song: widget.song),
+                ),
               ),
-              if( !widget.disabledDeleteButton )
+              if (!widget.disabledDeleteButton)
                 ListTile(
-                  leading: Icon(widget.isPlaylist ? Icons.playlist_remove : Icons.delete_forever, color: AppTheme.lightTextColor,),
-                  title: Text(widget.isPlaylist ? 'Remove from this playlist' : 'Delete from device'),
+                  leading: Icon(
+                    widget.isPlaylist
+                        ? Icons.playlist_remove
+                        : Icons.delete_forever,
+                    color: AppTheme.lightTextColor,
+                  ),
+                  title: Text(
+                    widget.isPlaylist
+                        ? 'Remove from this playlist'
+                        : 'Delete from device',
+                  ),
                   onTap: () async {
                     final albumId = songPlayed.albumId;
                     final artistId = songPlayed.artistId;
-        
-                    if( widget.isPlaylist ) {
-                      onAudioQuery.removeFromPlaylist(widget.playlistId!, songPlayed.id);
-                      return await musicPlayerProvider.searchByPlaylistId(widget.playlistId!, force: true);
+
+                    if (widget.isPlaylist) {
+                      onAudioQuery.removeFromPlaylist(
+                          widget.playlistId!, songPlayed.id);
+                      return await musicPlayerCubit.searchByPlaylistId(
+                          widget.playlistId!,
+                          force: true);
                     }
-        
-                    if( albumId != null ) {
-                      musicPlayerProvider.searchByAlbumId(albumId);
-                      if( musicPlayerProvider.albumCollection[albumId]?.length == 1  && await imageFile.exists() ) {
+
+                    if (albumId != null) {
+                      musicPlayerCubit.searchByAlbumId(albumId);
+                      if (musicPlayerState
+                                  .albumCollection[albumId]?.length ==
+                              1 &&
+                          await imageFile.exists()) {
                         MusicActions.deleteFile(imageFile);
                       }
                     }
-                    
-                    final isDeleted = await MusicActions.deleteFile(File(songPlayed.data));
-                    
-                    if( !context.mounted ) return;
-        
+
+                    final isDeleted =
+                        await MusicActions.deleteFile(File(songPlayed.data));
+
+                    if (!context.mounted) return;
                     Navigator.pop(context);
-        
-                    if( isDeleted ) {
-                      Provider.of<MusicPlayerProvider>(context, listen: false).getAllSongs();
-                      
-                      if( albumId != null ) {
-                        musicPlayerProvider.searchByAlbumId(albumId, force: true);
+
+                    if (isDeleted) {
+                      context.read<MusicPlayerCubit>().getAllSongs();
+
+                      if (albumId != null) {
+                        musicPlayerCubit.searchByAlbumId(albumId, force: true);
                       }
-        
-                      if( artistId != null ) {
-                        musicPlayerProvider.searchByArtistId(artistId, force: true);
+                      if (artistId != null) {
+                        musicPlayerCubit.searchByArtistId(artistId,
+                            force: true);
                       }
-                      
-                      Helpers.showSnackbar(
-                        message: 'Successfully removed'
-                      );
-                      
+
+                      Helpers.showSnackbar(message: 'Successfully removed');
                       return;
                     }
-      
+
                     Helpers.showSnackbar(
                       message: 'Error when deleting',
-                      backgroundColor: Colors.red
+                      backgroundColor: Colors.red,
                     );
                   },
                 ),
             ],
           ),
-          
           Container(
             decoration: BoxDecoration(
               color: AppTheme.primaryColor.withValues(alpha: 0.9),
-              borderRadius: const BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30))
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(30),
+                topRight: Radius.circular(30),
+              ),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -231,53 +263,70 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                 CustomListTile(
                   artworkId: songPlayed.id,
                   title: songPlayed.title.value(),
-                  subtitle: '${ songPlayed.artist.valueEmpty('No Artist') } • ${ duration.getTimeString() }',
+                  subtitle:
+                      '${songPlayed.artist.valueEmpty('No Artist')} • ${duration.getTimeString()}',
                   imageFile: imageFile,
                   trailing: IconButton(
                     onPressed: () {
-                      List<String> favoriteSongList = [ ...musicPlayerProvider.favoriteSongList ];
-                      List<SongModel> favoriteList = [ ...musicPlayerProvider.favoriteList ];
-                  
-                      if( isFavoriteSong ) {
-                        favoriteList.removeWhere(((song) => song.id == songPlayed.id));
-                        favoriteSongList.removeWhere(((songId) => songId == songPlayed.id.toString()));
+                      final favoriteList = [...musicPlayerState.favoriteList];
+                      final favoriteSongList = [
+                        ...musicPlayerState.favoriteSongList
+                      ];
+
+                      if (isFavoriteSong) {
+                        favoriteList
+                            .removeWhere((s) => s.id == songPlayed.id);
+                        favoriteSongList.removeWhere(
+                            (id) => id == songPlayed.id.toString());
                       } else {
-                        final index = musicPlayerProvider.songList.indexWhere((song) => song.id == songPlayed.id);
-                        favoriteList.add( musicPlayerProvider.songList[index] );
+                        final index = musicPlayerState.songList
+                            .indexWhere((s) => s.id == songPlayed.id);
+                        favoriteList
+                            .add(musicPlayerState.songList[index]);
                         favoriteSongList.add(songPlayed.id.toString());
                       }
-                  
-                      musicPlayerProvider.favoriteList = favoriteList;
-                      musicPlayerProvider.favoriteSongList = favoriteSongList;
+
+                      musicPlayerCubit.updateFavorites(
+                        favoriteList: favoriteList,
+                        favoriteSongList: favoriteSongList,
+                      );
                       UserPreferences().favoriteSongList = favoriteSongList;
                     },
-                    icon: Icon( isFavoriteSong ? Icons.favorite : Icons.favorite_border)
+                    icon: Icon(
+                      isFavoriteSong
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                    ),
                   ),
                 ),
                 const Divider(color: AppTheme.lightTextColor, height: 1),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
   }
 
   void _addToQueue({
+    required BuildContext context,
     required SongModel song,
     required AudioPlayer audioPlayer,
-    required MusicPlayerProvider musicPlayerProvider,
-    required AudioControlProvider audioControlProvider,
-    required UIProvider uiProvider,
+    required MusicPlayerCubit musicPlayerCubit,
+    required AudioControlCubit audioControlCubit,
+    required UICubit uiCubit,
   }) {
-    musicPlayerProvider.currentPlaylist = [ ...musicPlayerProvider.currentPlaylist, song ];
+    musicPlayerCubit.updateCurrentPlaylist([
+      ...musicPlayerCubit.state.currentPlaylist,
+      song,
+    ]);
     MusicActions.openAudios(
       audioPlayer: audioPlayer,
-      audioControlProvider: audioControlProvider,
-      musicPlayerProvider: musicPlayerProvider,
-      index: audioControlProvider.currentIndex,
-      seek: audioControlProvider.currentDuration,
-      uiProvider: uiProvider,
+      audioControlCubit: audioControlCubit,
+      musicPlayerCubit: musicPlayerCubit,
+      uiCubit: uiCubit,
+      index: audioControlCubit.state.currentIndex,
+      seek: audioControlCubit.state.currentDuration,
     );
     Navigator.pop(context);
   }
