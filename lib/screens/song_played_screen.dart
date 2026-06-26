@@ -336,7 +336,7 @@ class _SongPlayedPortraitBody extends StatelessWidget {
                                         fontSize: 18,
                                       ),
                                     ),
-                                    const SizedBox(height: 9),
+                                    const SizedBox(height: 5),
                                   ],
                                 ),
                         ),

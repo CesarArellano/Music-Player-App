@@ -67,6 +67,10 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- Enable Hybrid Composition++ (HCPP) for improved platform view performance (Flutter 3.44+, requires API 34+) -->
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableHcpp"
+            android:value="true" />
     </application>
     <queries>
         <!-- If your sends SMS messages -->

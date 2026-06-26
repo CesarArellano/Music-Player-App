@@ -204,6 +204,7 @@ class _CustomAppBar extends StatelessWidget {
       bottom: TabBar(
         controller: tabController,
         isScrollable: true,
+        tabAlignment: TabAlignment.start,
         indicatorColor: AppTheme.accentColor,
         labelColor: Colors.white,
         labelStyle:
