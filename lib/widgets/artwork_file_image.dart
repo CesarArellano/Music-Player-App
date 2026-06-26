@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:focus_music_player/widgets/widgets.dart';
 import 'package:on_audio_query/on_audio_query.dart' show ArtworkType;
 
+import '../audio_player_handler.dart';
+import '../data/cache/file_image_cache.dart';
+
 class ArtworkFileImage extends StatelessWidget {
   const ArtworkFileImage({
     super.key,
@@ -80,7 +83,7 @@ class _ImageWithBorder extends StatelessWidget {
     return ClipRRect(
       borderRadius: radius,
       child: Image(
-        image: FileImage(imageFile!),
+        image: audioPlayerHandler<FileImageCache>().get(imageFile!.path),
         width: width,
         height: height,
         fit: BoxFit.cover,

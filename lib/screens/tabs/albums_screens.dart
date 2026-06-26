@@ -24,11 +24,11 @@ class _AlbumsScreenState extends State<AlbumsScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final musicPlayerState = context.watch<MusicPlayerCubit>().state;
-    final albumList = musicPlayerState.albumList;
+    final libraryState = context.watch<LibraryCubit>().state;
+    final albumList = libraryState.albumList;
 
-    return musicPlayerState.isLoading
-        ? CustomLoader(isCreatingArtworks: musicPlayerState.isCreatingArtworks)
+    return libraryState.isLoading
+        ? CustomLoader(isCreatingArtworks: libraryState.isCreatingArtworks)
         : albumList.isNotEmpty
             ? Padding(
                 padding:
@@ -46,7 +46,7 @@ class _AlbumsScreenState extends State<AlbumsScreen>
                     itemBuilder: (_, int i) {
                       final album = albumList[i];
                       final imageFile = File(
-                        '${musicPlayerState.appDirectory}/${album.id}.jpg',
+                        '${libraryState.appDirectory}/${album.id}.jpg',
                       );
 
                       return RippleTile(

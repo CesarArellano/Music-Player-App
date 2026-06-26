@@ -14,8 +14,9 @@ import '../audio_player_handler.dart';
 import '../cubits/cubits.dart';
 import '../extensions/extensions.dart';
 import '../helpers/music_actions.dart';
-import '../share_prefs/user_preferences.dart';
+import '../services/favorites_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_background.dart';
 import '../widgets/bouncing_widget.dart';
 import '../widgets/widgets.dart';
 import 'album_selected_screen.dart';
@@ -57,11 +58,13 @@ class _SongPlayedScreenState extends State<SongPlayedScreen>
 
   @override
   Widget build(BuildContext context) {
-    final musicPlayerState = context.watch<MusicPlayerCubit>().state;
+    final playbackState = context.watch<PlaybackStateCubit>().state;
+    final favoritesState = context.watch<FavoritesCubit>().state;
+    final libraryState = context.watch<LibraryCubit>().state;
     final uiState = context.watch<UICubit>().state;
-    final songPlayed = musicPlayerState.songPlayed;
+    final songPlayed = playbackState.songPlayed;
     final imageFile =
-        File('${musicPlayerState.appDirectory}/${songPlayed.albumId}.jpg');
+        File('${libraryState.appDirectory}/${songPlayed.albumId}.jpg');
     final songPlayedBrightness = uiState.songPlayedBrightness;
     final songPlayedThemeColor = uiState.songPlayedThemeColor;
 
@@ -72,7 +75,7 @@ class _SongPlayedScreenState extends State<SongPlayedScreen>
             statusBarIconBrightness: songPlayedBrightness,
           ),
           child: Theme(
-            data: AppTheme.lightTheme.copyWith(
+            data: AppTheme.darkTheme.copyWith(
               textTheme: uiState.songPlayedTypography,
               colorScheme: ColorScheme.dark(
                 primary: songPlayedThemeColor,
@@ -112,40 +115,49 @@ class _SongPlayedScreenState extends State<SongPlayedScreen>
                   : null,
               body: Stack(
                 children: [
+                  const AppBackground(),
                   Transform.scale(
                     scale: 1.1,
                     child: Container(
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          fit: BoxFit.cover,
-                          image: Image.file(
-                            imageFile,
-                            gaplessPlayback: true,
-                            errorBuilder: (_, _, _) => Image.asset(
-                              'assets/images/background.jpg',
-                              gaplessPlayback: true,
-                            ),
-                          ).image,
-                        ),
-                      ),
+                      decoration: imageFile.existsSync()
+                          ? BoxDecoration(
+                              image: DecorationImage(
+                                fit: BoxFit.cover,
+                                image: FileImage(imageFile),
+                              ),
+                            )
+                          : null,
                       child: BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 50.0, sigmaY: 50.0),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: uiState.dominantColor
-                                .withValues(alpha: 0.8),
+                            color: uiState.dominantColor.withValues(alpha: 0.8),
                           ),
                         ),
                       ),
                     ),
                   ),
                   if (orientation == Orientation.portrait)
-                    _SongPlayedPortraitBody(playAnimation: _playAnimation),
+                    _SongPlayedPortraitBody(
+                      playAnimation: _playAnimation,
+                      songPlayed: songPlayed,
+                      imageFile: imageFile,
+                      isFavoriteSong: favoritesState.isFavoriteSong(songPlayed.id),
+                      currentHeroId: uiState.currentHeroId,
+                      playbackState: playbackState,
+                      libraryState: libraryState,
+                    ),
                   if (orientation == Orientation.landscape)
                     _SongPlayedLandscapeBody(
                       playAnimation: _playAnimation,
                       isPlaylist: widget.isPlaylist,
                       playlistId: widget.playlistId.value(),
+                      songPlayed: songPlayed,
+                      imageFile: imageFile,
+                      isFavoriteSong: favoritesState.isFavoriteSong(songPlayed.id),
+                      currentHeroId: uiState.currentHeroId,
+                      playbackState: playbackState,
+                      libraryState: libraryState,
                     ),
                 ],
               ),
@@ -207,8 +219,9 @@ class _AppBarTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final musicPlayerState = context.watch<MusicPlayerCubit>().state;
-    final albumSelected = musicPlayerState.albumList.firstWhere(
+    final albumList =
+        context.select((LibraryCubit c) => c.state.albumList);
+    final albumSelected = albumList.firstWhere(
       (album) => album.id == songPlayed.albumId.value(),
       orElse: () => AlbumModel({'_id': 0}),
     );
@@ -246,19 +259,27 @@ class _AppBarTitle extends StatelessWidget {
 }
 
 class _SongPlayedPortraitBody extends StatelessWidget {
-  const _SongPlayedPortraitBody({required this.playAnimation});
+  const _SongPlayedPortraitBody({
+    required this.playAnimation,
+    required this.songPlayed,
+    required this.imageFile,
+    required this.isFavoriteSong,
+    required this.currentHeroId,
+    required this.playbackState,
+    required this.libraryState,
+  });
 
   final AnimationController? playAnimation;
+  final SongModel songPlayed;
+  final File imageFile;
+  final bool isFavoriteSong;
+  final String currentHeroId;
+  final PlaybackState playbackState;
+  final LibraryState libraryState;
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final musicPlayerState = context.watch<MusicPlayerCubit>().state;
-    final uiState = context.watch<UICubit>().state;
-    final songPlayed = musicPlayerState.songPlayed;
-    final imageFile =
-        File('${musicPlayerState.appDirectory}/${songPlayed.albumId}.jpg');
-    final isFavoriteSong = musicPlayerState.isFavoriteSong(songPlayed.id);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -267,7 +288,7 @@ class _SongPlayedPortraitBody extends StatelessWidget {
           children: [
             const SizedBox(height: 10),
             Hero(
-              tag: uiState.currentHeroId,
+              tag: currentHeroId,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(15),
                 child: Image.file(
@@ -298,12 +319,7 @@ class _SongPlayedPortraitBody extends StatelessWidget {
                     icon: isFavoriteSong
                         ? Icons.favorite
                         : Icons.favorite_border,
-                    onPressed: () => _toggleFavorite(
-                      context,
-                      musicPlayerState,
-                      songPlayed,
-                      isFavoriteSong,
-                    ),
+                    onPressed: () => _toggleFavorite(context, songPlayed),
                   ),
                   const SizedBox(width: 5),
                   Flexible(
@@ -344,7 +360,7 @@ class _SongPlayedPortraitBody extends StatelessWidget {
                           color: Colors.transparent,
                           child: InkWell(
                             onTap: () =>
-                                _navigateToArtist(context, musicPlayerState, songPlayed),
+                                _navigateToArtist(context, libraryState, songPlayed),
                             child: Text(
                               songPlayed.artist.valueEmpty('No Artist'),
                               textScaler: const TextScaler.linear(1),
@@ -395,7 +411,7 @@ class _CustomIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final songPlayedThemeColor =
-        context.watch<UICubit>().state.songPlayedThemeColor;
+        context.select((UICubit c) => c.state.songPlayedThemeColor);
 
     return IconButton(
       padding: EdgeInsets.zero,
@@ -405,41 +421,25 @@ class _CustomIconButton extends StatelessWidget {
   }
 }
 
-void _toggleFavorite(
-  BuildContext context,
-  MusicPlayerState musicPlayerState,
-  SongModel songPlayed,
-  bool isFavoriteSong,
-) {
-  final favoriteList = [...musicPlayerState.favoriteList];
-  final favoriteSongList = [...musicPlayerState.favoriteSongList];
-
-  if (isFavoriteSong) {
-    favoriteList.removeWhere((s) => s.id == songPlayed.id);
-    favoriteSongList.removeWhere((id) => id == songPlayed.id.toString());
-  } else {
-    final index =
-        musicPlayerState.songList.indexWhere((s) => s.id == songPlayed.id);
-    favoriteList.add(musicPlayerState.songList[index]);
-    favoriteSongList.add(songPlayed.id.toString());
-  }
-
-  context.read<MusicPlayerCubit>().updateFavorites(
-    favoriteList: favoriteList,
-    favoriteSongList: favoriteSongList,
+void _toggleFavorite(BuildContext context, SongModel songPlayed) {
+  final favoritesState = context.read<FavoritesCubit>().state;
+  final libraryState = context.read<LibraryCubit>().state;
+  audioPlayerHandler<FavoritesService>().toggle(
+    songPlayed,
+    favoritesState: favoritesState,
+    allSongs: libraryState.songList,
   );
-  UserPreferences().favoriteSongList = favoriteSongList;
 }
 
 void _navigateToArtist(
   BuildContext context,
-  MusicPlayerState musicPlayerState,
+  LibraryState libraryState,
   SongModel songPlayed,
 ) {
   final artistId = songPlayed.artistId;
   if (artistId == null || artistId == 0) return;
 
-  final artist = musicPlayerState.artistList.firstWhere(
+  final artist = libraryState.artistList.firstWhere(
     (a) => a.id == artistId.value(),
     orElse: () => ArtistModel({'_id': 0}),
   );
@@ -468,7 +468,7 @@ class _MusicControlsState extends State<_MusicControls> {
   Widget build(BuildContext context) {
     final audioPlayer = audioPlayerHandler<AudioPlayer>();
     final audioControlState = context.read<AudioControlCubit>().state;
-    final musicPlayerState = context.read<MusicPlayerCubit>().state;
+    final playbackState = context.read<PlaybackStateCubit>().state;
     final onSurfaceColor = Theme.of(context).colorScheme.onSurface;
 
     return Row(
@@ -519,7 +519,7 @@ class _MusicControlsState extends State<_MusicControls> {
                   currentDuration: audioControlState.currentDuration,
                   currentIndex: audioControlState.currentIndex,
                   songDurationSeconds: Duration(
-                    milliseconds: musicPlayerState.songPlayed.duration.value(),
+                    milliseconds: playbackState.songPlayed.duration.value(),
                   ).inSeconds,
                   goToSeconds: -10,
                 );
@@ -581,7 +581,7 @@ class _MusicControlsState extends State<_MusicControls> {
                   currentDuration: audioControlState.currentDuration,
                   currentIndex: audioControlState.currentIndex,
                   songDurationSeconds: Duration(
-                    milliseconds: musicPlayerState.songPlayed.duration.value(),
+                    milliseconds: playbackState.songPlayed.duration.value(),
                   ).inSeconds,
                   goToSeconds: 10,
                 );
@@ -668,7 +668,7 @@ class _SongTimeline extends StatelessWidget {
   Widget build(BuildContext context) {
     final audioPlayer = audioPlayerHandler<AudioPlayer>();
     final audioControlState = context.watch<AudioControlCubit>().state;
-    final songPlayed = context.read<MusicPlayerCubit>().state.songPlayed;
+    final songPlayed = context.read<PlaybackStateCubit>().state.songPlayed;
 
     return ProgressBar(
       thumbGlowRadius: 15.0,
@@ -690,21 +690,27 @@ class _SongPlayedLandscapeBody extends StatelessWidget {
     required this.playAnimation,
     required this.isPlaylist,
     required this.playlistId,
+    required this.songPlayed,
+    required this.imageFile,
+    required this.isFavoriteSong,
+    required this.currentHeroId,
+    required this.playbackState,
+    required this.libraryState,
   });
 
   final AnimationController? playAnimation;
   final bool isPlaylist;
   final int playlistId;
+  final SongModel songPlayed;
+  final File imageFile;
+  final bool isFavoriteSong;
+  final String currentHeroId;
+  final PlaybackState playbackState;
+  final LibraryState libraryState;
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final musicPlayerState = context.watch<MusicPlayerCubit>().state;
-    final uiState = context.watch<UICubit>().state;
-    final songPlayed = musicPlayerState.songPlayed;
-    final imageFile =
-        File('${musicPlayerState.appDirectory}/${songPlayed.albumId}.jpg');
-    final isFavoriteSong = musicPlayerState.isFavoriteSong(songPlayed.id);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -718,7 +724,7 @@ class _SongPlayedLandscapeBody extends StatelessWidget {
                 height: size.height * 0.85,
                 width: size.width * 0.38,
                 child: Hero(
-                  tag: uiState.currentHeroId,
+                  tag: currentHeroId,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(15),
                     child: Image.file(
@@ -765,12 +771,7 @@ class _SongPlayedLandscapeBody extends StatelessWidget {
                         children: [
                           IconButton(
                             padding: EdgeInsets.zero,
-                            onPressed: () => _toggleFavorite(
-                              context,
-                              musicPlayerState,
-                              songPlayed,
-                              isFavoriteSong,
-                            ),
+                            onPressed: () => _toggleFavorite(context, songPlayed),
                             icon: Icon(
                               isFavoriteSong
                                   ? Icons.favorite
@@ -813,7 +814,7 @@ class _SongPlayedLandscapeBody extends StatelessWidget {
                                 InkWell(
                                   onTap: () => _navigateToArtist(
                                     context,
-                                    musicPlayerState,
+                                    libraryState,
                                     songPlayed,
                                   ),
                                   child: Text(

@@ -31,7 +31,7 @@ class _PlaylistSelectedScreenState extends State<PlaylistSelectedScreen> {
   }
 
   void _getSongs() {
-    final cubit = context.read<MusicPlayerCubit>();
+    final cubit = context.read<LibraryCubit>();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await cubit.searchByPlaylistId(
         widget.playlist.id,
@@ -45,7 +45,8 @@ class _PlaylistSelectedScreenState extends State<PlaylistSelectedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final musicPlayerState = context.watch<MusicPlayerCubit>().state;
+    final libraryState = context.watch<LibraryCubit>().state;
+    final songPlayed = context.watch<PlaybackStateCubit>().state.songPlayed;
 
     return Scaffold(
       appBar: AppBar(
@@ -57,20 +58,20 @@ class _PlaylistSelectedScreenState extends State<PlaylistSelectedScreen> {
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : musicPlayerState.playlistCollection[widget.playlist.id]!.isEmpty
+          : libraryState.playlistCollection[widget.playlist.id]!.isEmpty
               ? _EmptyList(playlist: widget.playlist)
               : ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: (musicPlayerState
+                  itemCount: (libraryState
                               .playlistCollection[widget.playlist.id] ??
                           [])
                       .length,
                   itemBuilder: (_, int i) {
-                    final song = musicPlayerState
+                    final song = libraryState
                         .playlistCollection[widget.playlist.id]![i];
                     final imageFile = File(
-                      '${musicPlayerState.appDirectory}/${song.albumId}.jpg',
+                      '${libraryState.appDirectory}/${song.albumId}.jpg',
                     );
                     final heroId = 'playlist-song-${song.id}';
 
@@ -100,8 +101,7 @@ class _PlaylistSelectedScreenState extends State<PlaylistSelectedScreen> {
                     );
                   },
                 ),
-      bottomNavigationBar: (musicPlayerState.isLoading ||
-              musicPlayerState.songPlayed.title.value().isEmpty)
+      bottomNavigationBar: (libraryState.isLoading || songPlayed.id == 0)
           ? null
           : const CurrentSongTile(),
     );

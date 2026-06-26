@@ -23,11 +23,12 @@ class _FavoriteScreenState extends State<FavoriteScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final musicPlayerState = context.watch<MusicPlayerCubit>().state;
-    final songList = musicPlayerState.favoriteList;
+    final libraryState = context.watch<LibraryCubit>().state;
+    final favoritesState = context.watch<FavoritesCubit>().state;
+    final songList = favoritesState.favoriteList;
 
-    return musicPlayerState.isLoading
-        ? CustomLoader(isCreatingArtworks: musicPlayerState.isCreatingArtworks)
+    return libraryState.isLoading
+        ? CustomLoader(isCreatingArtworks: libraryState.isCreatingArtworks)
         : songList.isNotEmpty
             ? OrientationBuilder(
                 builder: (_, orientation) => GridView.builder(
@@ -40,7 +41,7 @@ class _FavoriteScreenState extends State<FavoriteScreen>
                   itemBuilder: (_, int i) {
                     final song = songList[i];
                     final imageFile = File(
-                      '${musicPlayerState.appDirectory}/${song.albumId}.jpg',
+                      '${libraryState.appDirectory}/${song.albumId}.jpg',
                     );
                     final heroId = 'favorite-song-${song.id}';
 

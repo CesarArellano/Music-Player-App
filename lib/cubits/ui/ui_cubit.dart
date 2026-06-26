@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:palette_generator/palette_generator.dart';
 
-import '../../helpers/helpers.dart';
 import '../../share_prefs/user_preferences.dart';
 import 'ui_state.dart';
 
@@ -33,7 +32,7 @@ class UICubit extends Cubit<UIState> {
     if (state.dominantColorCollection.containsKey(albumId)) {
       final hex = state.dominantColorCollection[albumId];
       emit(state.copyWith(
-        currentDominantColor: hex != null ? Helpers.fromHex(hex) : null,
+        currentDominantColor: hex != null ? Color(int.parse(hex, radix: 16)) : null,
         clearDominantColor: hex == null,
       ));
       return;
@@ -52,7 +51,7 @@ class UICubit extends Cubit<UIState> {
 
     emit(state.copyWith(
       dominantColorCollection: updated,
-      currentDominantColor: Helpers.fromHex(hex),
+      currentDominantColor: Color(int.parse(hex, radix: 16)),
     ));
   }
 }

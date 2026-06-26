@@ -1,0 +1,19 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:on_audio_query/on_audio_query.dart';
+
+import 'playback_state.dart';
+
+export 'playback_state.dart';
+
+class PlaybackStateCubit extends Cubit<PlaybackState> {
+  PlaybackStateCubit() : super(PlaybackState());
+
+  void updateSongPlayed(SongModel song) =>
+      emit(state.copyWith(songPlayed: song));
+
+  void updateCurrentPlaylist(List<SongModel> playlist) =>
+      emit(state.copyWith(currentPlaylist: playlist));
+
+  void updateIsShuffling(bool value) =>
+      emit(state.copyWith(isShuffling: value));
+}

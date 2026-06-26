@@ -41,117 +41,131 @@ class _CurrentSongTileState extends State<CurrentSongTile>
 
   @override
   Widget build(BuildContext context) {
-    return _SelectorSongTile(playAnimation: _playAnimation);
-  }
-}
-
-class _SelectorSongTile extends StatelessWidget {
-  const _SelectorSongTile({required this.playAnimation});
-
-  final AnimationController playAnimation;
-
-  @override
-  Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final audioPlayer = audioPlayerHandler<AudioPlayer>();
-    final musicPlayerState = context.watch<MusicPlayerCubit>().state;
-    final audioControlState = context.watch<AudioControlCubit>().state;
-    final uiCubit = context.read<UICubit>();
-    final songPlayed = musicPlayerState.songPlayed;
-    final imageFile =
-        File('${musicPlayerState.appDirectory}/${songPlayed.albumId}.jpg');
-    final heroId = 'current-song-${songPlayed.id}';
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         const Divider(height: 0.20, color: Colors.white30),
-        ListTile(
-          dense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 15),
-          visualDensity: const VisualDensity(horizontal: -1, vertical: -1),
-          tileColor: AppTheme.primaryColor,
-          leading: ArtworkFileImage(
-            artworkId: songPlayed.id,
-            imageFile: imageFile,
-            height: 40,
-            width: 40,
-            tag: heroId,
-          ),
-          trailing: StreamBuilder<bool>(
-            stream: audioPlayer.playingStream,
-            builder: (context, snapshot) {
-              final isPlaying = snapshot.data ?? false;
-
-              if (isPlaying) {
-                playAnimation.forward();
-              } else {
-                playAnimation.reverse();
-              }
-
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      if (isPlaying) {
-                        playAnimation.reverse();
-                        audioPlayer.pause();
-                      } else {
-                        playAnimation.forward();
-                        audioPlayer.play();
-                      }
-                    },
-                    splashRadius: 24,
-                    iconSize: 28,
-                    icon: AnimatedIcon(
-                      progress: playAnimation,
-                      icon: AnimatedIcons.play_pause,
-                      color: Colors.white,
-                    ),
-                  ),
-                  IconButton(
-                    splashRadius: 24,
-                    icon: const Icon(Icons.queue_music),
-                    iconSize: 26,
-                    color: Colors.white,
-                    onPressed: () => MusicActions.showCurrentPlayList(context),
-                  ),
-                ],
-              );
-            },
-          ),
-          title: Text(
-            songPlayed.title.value(),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style:
-                const TextStyle(fontWeight: FontWeight.w400, fontSize: 15),
-          ),
-          subtitle: Text(
-            '${songPlayed.artist.valueEmpty('No Artist')} • ${songPlayed.album}',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style:
-                const TextStyle(fontSize: 12, color: AppTheme.lightTextColor),
-          ),
-          onTap: () {
-            uiCubit.updateCurrentHeroId(heroId);
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const SongPlayedScreen()),
-            );
-          },
-        ),
-        Container(
-          height: 2,
-          width: width *
-              (audioControlState.currentDuration.inMilliseconds /
-                  songPlayed.duration!),
-          color: AppTheme.accentColor,
-        ),
+        _SongInfoTile(playAnimation: _playAnimation),
+        const _ProgressBar(),
       ],
+    );
+  }
+}
+
+// Rebuilds only when the playing song changes.
+class _SongInfoTile extends StatelessWidget {
+  const _SongInfoTile({required this.playAnimation});
+
+  final AnimationController playAnimation;
+
+  @override
+  Widget build(BuildContext context) {
+    final songPlayed = context.select((PlaybackStateCubit c) => c.state.songPlayed);
+    final appDirectory = context.select((LibraryCubit c) => c.state.appDirectory);
+    final audioPlayer = audioPlayerHandler<AudioPlayer>();
+    final uiCubit = context.read<UICubit>();
+    final imageFile = File('$appDirectory/${songPlayed.albumId}.jpg');
+    final heroId = 'current-song-${songPlayed.id}';
+
+    return ColoredBox(
+      color: AppTheme.backgroundBase,
+      child: ListTile(
+      dense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 15),
+      visualDensity: const VisualDensity(horizontal: -1, vertical: -1),
+      leading: ArtworkFileImage(
+        artworkId: songPlayed.id,
+        imageFile: imageFile,
+        height: 40,
+        width: 40,
+        tag: heroId,
+      ),
+      trailing: StreamBuilder<bool>(
+        stream: audioPlayer.playingStream,
+        builder: (context, snapshot) {
+          final isPlaying = snapshot.data ?? false;
+
+          if (isPlaying) {
+            playAnimation.forward();
+          } else {
+            playAnimation.reverse();
+          }
+
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                onPressed: () {
+                  if (isPlaying) {
+                    playAnimation.reverse();
+                    audioPlayer.pause();
+                  } else {
+                    playAnimation.forward();
+                    audioPlayer.play();
+                  }
+                },
+                splashRadius: 24,
+                iconSize: 28,
+                icon: AnimatedIcon(
+                  progress: playAnimation,
+                  icon: AnimatedIcons.play_pause,
+                  color: Colors.white,
+                ),
+              ),
+              IconButton(
+                splashRadius: 24,
+                icon: const Icon(Icons.queue_music),
+                iconSize: 26,
+                color: Colors.white,
+                onPressed: () => MusicActions.showCurrentPlayList(context),
+              ),
+            ],
+          );
+        },
+      ),
+      title: Text(
+        songPlayed.title.value(),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 15),
+      ),
+      subtitle: Text(
+        '${songPlayed.artist.valueEmpty('No Artist')} • ${songPlayed.album}',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(fontSize: 12, color: AppTheme.lightTextColor),
+      ),
+      onTap: () {
+        uiCubit.updateCurrentHeroId(heroId);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SongPlayedScreen()),
+        );
+      },
+    ),
+    );
+  }
+}
+
+// Rebuilds every second (position stream), but is only a 2px-tall Container.
+class _ProgressBar extends StatelessWidget {
+  const _ProgressBar();
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final currentDuration =
+        context.select((AudioControlCubit c) => c.state.currentDuration);
+    final songDuration =
+        context.select((PlaybackStateCubit c) => c.state.songPlayed.duration);
+
+    if (songDuration == null || songDuration == 0) return const SizedBox.shrink();
+
+    return Container(
+      height: 2,
+      width: width * (currentDuration.inMilliseconds / songDuration),
+      color: AppTheme.accentColor,
     );
   }
 }

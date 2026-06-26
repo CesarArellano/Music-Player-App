@@ -48,7 +48,7 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
   }
 
   void _getSongs() {
-    final cubit = context.read<MusicPlayerCubit>();
+    final cubit = context.read<LibraryCubit>();
     final albumsLength =
         cubit.state.albumCollection[widget.albumSelected.id]?.length ?? 0;
     cubit.searchByAlbumId(
@@ -60,9 +60,10 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final musicPlayerState = context.watch<MusicPlayerCubit>().state;
+    final libraryState = context.watch<LibraryCubit>().state;
+    final playbackState = context.watch<PlaybackStateCubit>().state;
     final imageGeneralFile = File(
-      '${musicPlayerState.appDirectory}/${widget.albumSelected.id}.jpg',
+      '${libraryState.appDirectory}/${widget.albumSelected.id}.jpg',
     );
 
     return Scaffold(
@@ -144,7 +145,7 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                         PlayShuffleButtons(
                           heroId: 'album-song-',
                           id: widget.albumSelected.id,
-                          songList: musicPlayerState
+                          songList: libraryState
                                   .albumCollection[widget.albumSelected.id] ??
                               [],
                           typePlaylist: PlaylistType.album,
@@ -157,10 +158,10 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, i) {
-                      final song = musicPlayerState
+                      final song = libraryState
                           .albumCollection[widget.albumSelected.id]![i];
                       final imageFile = File(
-                        '${musicPlayerState.appDirectory}/${song.albumId}.jpg',
+                        '${libraryState.appDirectory}/${song.albumId}.jpg',
                       );
                       final heroId = 'album-song-${song.id}';
 
@@ -203,7 +204,7 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                         ),
                       );
                     },
-                    childCount: (musicPlayerState
+                    childCount: (libraryState
                                 .albumCollection[widget.albumSelected.id] ??
                             [])
                         .length,
@@ -211,8 +212,8 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                 ),
               ],
             ),
-      bottomNavigationBar: (musicPlayerState.isLoading ||
-              musicPlayerState.songPlayed.title.value().isEmpty)
+      bottomNavigationBar: (libraryState.isLoading ||
+              playbackState.songPlayed.title.value().isEmpty)
           ? null
           : const CurrentSongTile(),
     );

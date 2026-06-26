@@ -4,7 +4,7 @@ import 'package:on_audio_query/on_audio_query.dart';
 
 import '../../audio_player_handler.dart';
 import '../../cubits/cubits.dart';
-import '../../helpers/helpers.dart';
+import '../../services/snackbar_service.dart';
 import '../../widgets/widgets.dart';
 import '../playlist_selected_screen.dart';
 
@@ -24,11 +24,11 @@ class _PlaylistsScreenState extends State<PlaylistsScreen>
   Widget build(BuildContext context) {
     super.build(context);
     final onAudioQuery = audioPlayerHandler<OnAudioQuery>();
-    final musicPlayerState = context.watch<MusicPlayerCubit>().state;
-    final playlists = musicPlayerState.playLists;
+    final libraryState = context.watch<LibraryCubit>().state;
+    final playlists = libraryState.playLists;
 
-    return musicPlayerState.isLoading
-        ? CustomLoader(isCreatingArtworks: musicPlayerState.isCreatingArtworks)
+    return libraryState.isLoading
+        ? CustomLoader(isCreatingArtworks: libraryState.isCreatingArtworks)
         : playlists.isNotEmpty
             ? OrientationBuilder(
                 builder: (_, orientation) => GridView.builder(
@@ -60,17 +60,17 @@ class _PlaylistsScreenState extends State<PlaylistsScreen>
                         size: 250,
                       ),
                       onLongPress: () async {
-                        final musicPlayerCubit =
-                            context.read<MusicPlayerCubit>();
+                        final libraryCubit =
+                            context.read<LibraryCubit>();
                         final removed =
                             await onAudioQuery.removePlaylist(playlist.id);
                         if (removed) {
                           if (!mounted) return;
-                          Helpers.showSnackbar(
+                          SnackbarService.instance.showSnackbar(
                             message:
                                 'The ${playlist.playlist} playlist was successfully removed!',
                           );
-                          musicPlayerCubit.refreshPlaylist();
+                          libraryCubit.refreshPlaylist();
                         }
                       },
                       onTap: () => Navigator.push(

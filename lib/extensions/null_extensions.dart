@@ -39,16 +39,7 @@ extension BoolNullExtension on bool? {
   }
 }
 
-extension ListExts on List {
-  dynamic get firstOrNull {
-    if (isEmpty) return null;
-    return first;
-  }
-  dynamic get firstOrNull2 {
-    if (isEmpty) return null;
-    return first;
-  }
-}
+// firstOrNull / firstOrNull2 removed — use Dart's built-in Iterable.firstOrNull
 
 extension SongModelListExt on List<SongModel>? {
   List<SongModel> value() {

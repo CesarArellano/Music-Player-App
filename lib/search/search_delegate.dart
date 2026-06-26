@@ -53,8 +53,8 @@ class MusicSearchDelegate extends SearchDelegate {
   Widget buildSuggestions(BuildContext context) {
     if (query.isEmpty) return _emptyContainer();
 
-    final musicPlayerState = context.watch<MusicPlayerCubit>().state;
-    final result = musicPlayerState.searchByQuery(query);
+    final libraryState = context.watch<LibraryCubit>().state;
+    final result = libraryState.searchByQuery(query);
     final songs = result.songs;
     final albums = result.albums;
     final artists = result.artists;
@@ -68,7 +68,7 @@ class MusicSearchDelegate extends SearchDelegate {
         if (songs.isNotEmpty) _SectionTitle(title: 'Songs', length: songs.length),
         SliverList(
           delegate: SliverChildBuilderDelegate(
-            (context, i) => _songItem(context, songs[i], musicPlayerState),
+            (context, i) => _songItem(context, songs[i], libraryState),
             childCount: songs.length,
           ),
         ),
@@ -115,7 +115,7 @@ class MusicSearchDelegate extends SearchDelegate {
                 child: CustomListTile(
                   artworkId: album.id,
                   imageFile: File(
-                    '${musicPlayerState.appDirectory}/${album.id}.jpg',
+                    '${libraryState.appDirectory}/${album.id}.jpg',
                   ),
                   title: album.album,
                   subtitle:
@@ -139,10 +139,10 @@ class MusicSearchDelegate extends SearchDelegate {
   Widget _songItem(
     BuildContext context,
     SongModel song,
-    MusicPlayerState musicPlayerState,
+    LibraryState libraryState,
   ) {
     final imageFile = File(
-      '${musicPlayerState.appDirectory}/${song.albumId}.jpg',
+      '${libraryState.appDirectory}/${song.albumId}.jpg',
     );
     final heroId = 'search-song-${song.id}';
 

@@ -11,8 +11,8 @@ import 'package:share_plus/share_plus.dart';
 import '../audio_player_handler.dart';
 import '../cubits/cubits.dart';
 import '../extensions/extensions.dart';
-import '../helpers/helpers.dart';
 import '../helpers/music_actions.dart';
+import '../services/snackbar_service.dart';
 import '../search/search_delegate.dart';
 import '../theme/app_theme.dart';
 import '../widgets/create_playlist_dialog.dart';
@@ -51,7 +51,8 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    final musicPlayerState = context.watch<MusicPlayerCubit>().state;
+    final libraryState = context.watch<LibraryCubit>().state;
+    final playbackState = context.watch<PlaybackStateCubit>().state;
 
     return PopScope(
       onPopInvokedWithResult: (didPop, result) {
@@ -63,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen>
 
         _isSnackbarActive = true;
 
-        Helpers.showSnackbar(
+        SnackbarService.instance.showSnackbar(
           message: 'Please back again to exit',
           snackBarAction: SnackBarAction(
             label: 'EXIT',
@@ -77,18 +78,29 @@ class _HomeScreenState extends State<HomeScreen>
         ).closed.then((_) => _isSnackbarActive = false);
       },
       child: Scaffold(
-        body: _Body(tabController: _tabController),
-        floatingActionButton: musicPlayerState.songList.isEmpty
+        appBar: _CustomAppBar(tabController: _tabController),
+        body: TabBarView(
+          controller: _tabController,
+          children: <Widget>[
+            const SongsScreen(),
+            const AlbumsScreen(),
+            const ArtistScreen(),
+            if (Platform.isAndroid) const PlaylistsScreen(),
+            const FavoriteScreen(),
+            const GenresScreen(),
+          ],
+        ),
+        floatingActionButton: libraryState.songList.isEmpty
             ? null
             : FloatingActionButton(
                 heroTag: 'fab',
                 backgroundColor: AppTheme.accentColor,
-                onPressed: musicPlayerState.isCreatingArtworks
+                onPressed: libraryState.isCreatingArtworks
                     ? null
                     : _selectedIndex == 3
                         ? () => _addPlaylist()
-                        : () => _shuffleAction(musicPlayerState),
-                child: musicPlayerState.isCreatingArtworks
+                        : () => _shuffleAction(libraryState),
+                child: libraryState.isCreatingArtworks
                     ? const CircularProgressIndicator(color: Colors.black)
                     : Icon(
                         _selectedIndex == 3 ? Icons.add : Icons.shuffle,
@@ -96,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
               ),
         bottomNavigationBar:
-            (musicPlayerState.isLoading || musicPlayerState.songPlayed.id == 0)
+            (libraryState.isLoading || playbackState.songPlayed.id == 0)
                 ? null
                 : const CurrentSongTile(),
       ),
@@ -104,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Future<void> _addPlaylist() async {
-    final musicPlayerCubit = context.read<MusicPlayerCubit>();
+    final libraryCubit = context.read<LibraryCubit>();
     final CreatePlaylistResp dialogResp =
         await showDialog<CreatePlaylistResp>(
               context: context,
@@ -120,16 +132,16 @@ class _HomeScreenState extends State<HomeScreen>
 
     if (!mounted) return;
 
-    Helpers.showSnackbar(
+    SnackbarService.instance.showSnackbar(
       message: 'The $playlistName playlist was successfully added!',
     );
 
-    musicPlayerCubit.refreshPlaylist();
+    libraryCubit.refreshPlaylist();
   }
 
-  void _shuffleAction(MusicPlayerState musicPlayerState) {
-    final index = Random().nextInt(musicPlayerState.songList.length);
-    final song = musicPlayerState.songList[index];
+  void _shuffleAction(LibraryState libraryState) {
+    final index = Random().nextInt(libraryState.songList.length);
+    final song = libraryState.songList[index];
     MusicActions.songPlayAndPause(
       context,
       song,
@@ -146,60 +158,21 @@ class _HomeScreenState extends State<HomeScreen>
   }
 }
 
-class _Body extends StatelessWidget {
-  const _Body({required this.tabController});
+class _CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const _CustomAppBar({required this.tabController});
 
   final TabController tabController;
 
   @override
-  Widget build(BuildContext context) {
-    return NestedScrollView(
-      headerSliverBuilder: (_, innerBoxIsScrolled) {
-        return <Widget>[
-          _CustomAppBar(
-            forceElevated: innerBoxIsScrolled,
-            tabController: tabController,
-          ),
-        ];
-      },
-      body: MediaQuery.removePadding(
-        removeTop: true,
-        context: context,
-        child: TabBarView(
-          controller: tabController,
-          children: <Widget>[
-            const SongsScreen(),
-            const AlbumsScreen(),
-            const ArtistScreen(),
-            if (Platform.isAndroid) const PlaylistsScreen(),
-            const FavoriteScreen(),
-            const GenresScreen(),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CustomAppBar extends StatelessWidget {
-  const _CustomAppBar({
-    required this.forceElevated,
-    required this.tabController,
-  });
-
-  final bool forceElevated;
-  final TabController tabController;
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight + kTextTabBarHeight);
 
   @override
   Widget build(BuildContext context) {
     final musicPlayerCubit = context.read<MusicPlayerCubit>();
 
-    return SliverAppBar(
-      forceElevated: forceElevated,
+    return AppBar(
+      backgroundColor: AppTheme.backgroundBase,
       title: const Text('Focus Music Player'),
-      pinned: true,
-      floating: true,
-      snap: true,
       shape: const Border(bottom: BorderSide(color: Colors.white24)),
       bottom: TabBar(
         controller: tabController,
@@ -249,7 +222,7 @@ class _CustomAppBar extends StatelessWidget {
                   style: TextStyle(color: Colors.black)),
               onTap: () async {
                 await musicPlayerCubit.getAllSongs();
-                Helpers.showSnackbar(message: 'Task successfully completed');
+                SnackbarService.instance.showSnackbar(message: 'Task successfully completed');
               },
             ),
           ],

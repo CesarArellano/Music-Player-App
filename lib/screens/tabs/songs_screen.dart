@@ -19,102 +19,113 @@ class SongsScreen extends StatefulWidget {
 
 class _SongsScreenState extends State<SongsScreen>
     with AutomaticKeepAliveClientMixin {
+  bool _initialized = false;
+
   @override
   bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
-    _initSong();
+    // Handle the case where songs are already loaded before the first frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _initialized) return;
+      final state = context.read<LibraryCubit>().state;
+      if (!state.isLoading) {
+        _initialized = true;
+        _initSong(context, state);
+      }
+    });
   }
 
-  void _initSong() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 400), () {
-        if (!mounted) return;
-        final lastSongId = UserPreferences().lastSongId;
-        final musicPlayerCubit = context.read<MusicPlayerCubit>();
-        final uiCubit = context.read<UICubit>();
+  void _initSong(BuildContext context, LibraryState state) {
+    final lastSongId = UserPreferences().lastSongId;
+    final playbackCubit = context.read<PlaybackStateCubit>();
+    final uiCubit = context.read<UICubit>();
 
-        uiCubit.updateDominantColorCollection(
-          UserPreferences().dominantColorCollection,
-        );
-        musicPlayerCubit
-            .updateCurrentPlaylist(musicPlayerCubit.state.songList);
-        MusicActions.initStreams(context);
+    uiCubit.updateDominantColorCollection(
+      UserPreferences().dominantColorCollection,
+    );
+    playbackCubit.updateCurrentPlaylist(state.songList);
 
-        if (lastSongId == 0) return;
+    if (lastSongId == 0) return;
 
-        final foundSong = musicPlayerCubit.state.songList.firstWhere(
-          (song) => song.id == lastSongId,
-          orElse: () => SongModel({'_id': 0}),
-        );
+    final foundSong = state.songList.firstWhere(
+      (song) => song.id == lastSongId,
+      orElse: () => SongModel({'_id': 0}),
+    );
 
-        musicPlayerCubit.updateSongPlayed(foundSong);
+    playbackCubit.updateSongPlayed(foundSong);
 
-        if (foundSong.id == 0) return;
-        if (!mounted) return;
-
-        MusicActions.initSongs(
-          context,
-          foundSong,
-          heroId: 'current-song-${foundSong.id}',
-        );
-      });
-    });
+    if (foundSong.id == 0) return;
+    MusicActions.initSongs(context, foundSong, heroId: 'current-song-${foundSong.id}');
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final musicPlayerState = context.watch<MusicPlayerCubit>().state;
-    final songList = musicPlayerState.songList;
 
-    return musicPlayerState.isLoading
-        ? CustomLoader(isCreatingArtworks: musicPlayerState.isCreatingArtworks)
-        : songList.isNotEmpty
-            ? OrientationBuilder(
-                builder: (context, orientation) => GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount:
-                        orientation == Orientation.landscape ? 2 : 1,
-                    childAspectRatio: 5.5,
-                  ),
-                  itemCount: songList.length,
-                  itemBuilder: (_, int i) {
-                    final song = songList[i];
-                    final imageFile = File(
-                      '${musicPlayerState.appDirectory}/${song.albumId}.jpg',
-                    );
-                    final heroId = 'songs-${song.id}';
+    return BlocListener<LibraryCubit, LibraryState>(
+      // Fires once when the loading completes (handles the still-loading case).
+      listenWhen: (prev, curr) => prev.isLoading && !curr.isLoading,
+      listener: (context, state) {
+        if (_initialized) return;
+        _initialized = true;
+        _initSong(context, state);
+      },
+      child: Builder(
+        builder: (context) {
+          final musicPlayerState = context.watch<LibraryCubit>().state;
+          final songList = musicPlayerState.songList;
 
-                    return RippleTile(
-                      child: CustomListTile(
-                        title: song.title.value(),
-                        subtitle: song.artist.valueEmpty('No Artist'),
-                        artworkId: song.id,
-                        imageFile: imageFile,
-                        tag: heroId,
+          return musicPlayerState.isLoading
+              ? CustomLoader(isCreatingArtworks: musicPlayerState.isCreatingArtworks)
+              : songList.isNotEmpty
+                  ? OrientationBuilder(
+                      builder: (context, orientation) => GridView.builder(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount:
+                              orientation == Orientation.landscape ? 2 : 1,
+                          childAspectRatio: 5.5,
+                        ),
+                        itemCount: songList.length,
+                        itemBuilder: (_, int i) {
+                          final song = songList[i];
+                          final imageFile = File(
+                            '${musicPlayerState.appDirectory}/${song.albumId}.jpg',
+                          );
+                          final heroId = 'songs-${song.id}';
+
+                          return RippleTile(
+                            child: CustomListTile(
+                              title: song.title.value(),
+                              subtitle: song.artist.valueEmpty('No Artist'),
+                              artworkId: song.id,
+                              imageFile: imageFile,
+                              tag: heroId,
+                            ),
+                            onTap: () => MusicActions.songPlayAndPause(
+                              context,
+                              song,
+                              PlaylistType.songs,
+                              heroId: heroId,
+                            ),
+                            onLongPress: () => showModalBottomSheet(
+                              context: context,
+                              builder: (_) => MoreSongOptionsModal(song: song),
+                            ),
+                          );
+                        },
                       ),
-                      onTap: () => MusicActions.songPlayAndPause(
-                        context,
-                        song,
-                        PlaylistType.songs,
-                        heroId: heroId,
-                      ),
-                      onLongPress: () => showModalBottomSheet(
-                        context: context,
-                        builder: (_) => MoreSongOptionsModal(song: song),
+                    )
+                  : const Center(
+                      child: Text(
+                        'No Songs',
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                       ),
                     );
-                  },
-                ),
-              )
-            : const Center(
-                child: Text(
-                  'No Songs',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-              );
+        },
+      ),
+    );
   }
 }

@@ -2,16 +2,16 @@ import 'dart:io' show Platform, File;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../audio_player_handler.dart';
 import '../cubits/cubits.dart';
 import '../extensions/extensions.dart';
-import '../helpers/helpers.dart';
 import '../helpers/music_actions.dart';
-import '../share_prefs/user_preferences.dart';
+import '../services/favorites_service.dart';
+import '../services/playback_service.dart';
+import '../services/snackbar_service.dart';
 import '../theme/app_theme.dart';
 import 'custom_list_tile.dart';
 import 'song_details_dialog.dart';
@@ -41,17 +41,16 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
   Widget build(BuildContext context) {
     final songPlayed = widget.song;
     final onAudioQuery = audioPlayerHandler.get<OnAudioQuery>();
-    final audioPlayer = audioPlayerHandler.get<AudioPlayer>();
-    final musicPlayerCubit = context.watch<MusicPlayerCubit>();
+    final playbackState = context.watch<PlaybackStateCubit>().state;
+    final favoritesState = context.watch<FavoritesCubit>().state;
+    final libraryState = context.watch<LibraryCubit>().state;
     final audioControlCubit = context.watch<AudioControlCubit>();
-    final musicPlayerState = musicPlayerCubit.state;
     final audioControlState = audioControlCubit.state;
-    final uiCubit = context.read<UICubit>();
     final duration = Duration(milliseconds: widget.song.duration ?? 0);
     final imageFile = File(
-      '${musicPlayerState.appDirectory}/${songPlayed.albumId}.jpg',
+      '${libraryState.appDirectory}/${songPlayed.albumId}.jpg',
     );
-    final isFavoriteSong = musicPlayerState.isFavoriteSong(songPlayed.id);
+    final isFavoriteSong = favoritesState.isFavoriteSong(songPlayed.id);
 
     return OrientationBuilder(
       builder: (_, orientation) => Stack(
@@ -70,29 +69,25 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                 onTap: () {
                   final currentIndex = audioControlState.currentIndex;
 
-                  if (currentIndex ==
-                      musicPlayerState.currentPlaylist.length - 1) {
+                  if (currentIndex == playbackState.currentPlaylist.length - 1) {
                     return _addToQueue(
                       context: context,
-                      audioPlayer: audioPlayer,
-                      musicPlayerCubit: musicPlayerCubit,
                       audioControlCubit: audioControlCubit,
-                      uiCubit: uiCubit,
                       song: songPlayed,
                     );
                   }
 
-                  final tempList = [...musicPlayerState.currentPlaylist]
+                  final tempList = [...playbackState.currentPlaylist]
                     ..insert(currentIndex + 1, songPlayed);
-                  musicPlayerCubit.updateCurrentPlaylist(tempList);
-                  MusicActions.openAudios(
-                    audioPlayer: audioPlayer,
-                    index: currentIndex,
-                    seek: audioControlState.currentDuration,
-                    audioControlCubit: audioControlCubit,
-                    musicPlayerCubit: musicPlayerCubit,
-                    uiCubit: uiCubit,
+                  context.read<PlaybackStateCubit>().updateCurrentPlaylist(tempList);
+                  final playbackService = audioPlayerHandler<PlaybackService>();
+                  playbackService.loadPlaylist(
+                    songs: tempList,
+                    initialIndex: currentIndex,
+                    appDirectory: libraryState.appDirectory,
+                    initialPosition: audioControlState.currentDuration,
                   );
+                  playbackService.play();
                   Navigator.pop(context);
                 },
               ),
@@ -102,15 +97,11 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                 title: const Text('Add to playing queue'),
                 onTap: () => _addToQueue(
                   context: context,
-                  audioPlayer: audioPlayer,
-                  musicPlayerCubit: musicPlayerCubit,
                   audioControlCubit: audioControlCubit,
-                  uiCubit: uiCubit,
                   song: songPlayed,
                 ),
               ),
-              if (musicPlayerState.playLists.isNotEmpty &&
-                  Platform.isAndroid) ...[
+              if (libraryState.playLists.isNotEmpty && Platform.isAndroid) ...[
                 ListTile(
                   leading: const Icon(Icons.playlist_add,
                       color: AppTheme.lightTextColor),
@@ -128,7 +119,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                             dropdownColor: AppTheme.primaryColor,
                             hint: const Text('Select a playlist',
                                 style: TextStyle(color: Colors.white)),
-                            items: musicPlayerState.playLists
+                            items: libraryState.playLists
                                 .map((e) => DropdownMenuItem<int?>(
                                       value: e.id,
                                       child: Text(e.playlist,
@@ -147,7 +138,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                                       onAudioQuery.addToPlaylist(
                                           _selectedPlaylistId!,
                                           widget.song.id);
-                                      musicPlayerCubit.refreshPlaylist();
+                                      context.read<LibraryCubit>().refreshPlaylist();
                                       Navigator.pop(context);
                                     },
                               child: const Text('Add'),
@@ -199,22 +190,21 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                         : 'Delete from device',
                   ),
                   onTap: () async {
+                    final libraryCubit = context.read<LibraryCubit>();
                     final albumId = songPlayed.albumId;
                     final artistId = songPlayed.artistId;
 
                     if (widget.isPlaylist) {
                       onAudioQuery.removeFromPlaylist(
                           widget.playlistId!, songPlayed.id);
-                      return await musicPlayerCubit.searchByPlaylistId(
+                      return await libraryCubit.searchByPlaylistId(
                           widget.playlistId!,
                           force: true);
                     }
 
                     if (albumId != null) {
-                      musicPlayerCubit.searchByAlbumId(albumId);
-                      if (musicPlayerState
-                                  .albumCollection[albumId]?.length ==
-                              1 &&
+                      libraryCubit.searchByAlbumId(albumId);
+                      if (libraryState.albumCollection[albumId]?.length == 1 &&
                           await imageFile.exists()) {
                         MusicActions.deleteFile(imageFile);
                       }
@@ -227,21 +217,20 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                     Navigator.pop(context);
 
                     if (isDeleted) {
-                      context.read<MusicPlayerCubit>().getAllSongs();
+                      context.read<LibraryCubit>().getAllSongs();
 
                       if (albumId != null) {
-                        musicPlayerCubit.searchByAlbumId(albumId, force: true);
+                        libraryCubit.searchByAlbumId(albumId, force: true);
                       }
                       if (artistId != null) {
-                        musicPlayerCubit.searchByArtistId(artistId,
-                            force: true);
+                        libraryCubit.searchByArtistId(artistId, force: true);
                       }
 
-                      Helpers.showSnackbar(message: 'Successfully removed');
+                      SnackbarService.instance.showSnackbar(message: 'Successfully removed');
                       return;
                     }
 
-                    Helpers.showSnackbar(
+                    SnackbarService.instance.showSnackbar(
                       message: 'Error when deleting',
                       backgroundColor: Colors.red,
                     );
@@ -268,29 +257,11 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                   imageFile: imageFile,
                   trailing: IconButton(
                     onPressed: () {
-                      final favoriteList = [...musicPlayerState.favoriteList];
-                      final favoriteSongList = [
-                        ...musicPlayerState.favoriteSongList
-                      ];
-
-                      if (isFavoriteSong) {
-                        favoriteList
-                            .removeWhere((s) => s.id == songPlayed.id);
-                        favoriteSongList.removeWhere(
-                            (id) => id == songPlayed.id.toString());
-                      } else {
-                        final index = musicPlayerState.songList
-                            .indexWhere((s) => s.id == songPlayed.id);
-                        favoriteList
-                            .add(musicPlayerState.songList[index]);
-                        favoriteSongList.add(songPlayed.id.toString());
-                      }
-
-                      musicPlayerCubit.updateFavorites(
-                        favoriteList: favoriteList,
-                        favoriteSongList: favoriteSongList,
+                      audioPlayerHandler<FavoritesService>().toggle(
+                        songPlayed,
+                        favoritesState: favoritesState,
+                        allSongs: libraryState.songList,
                       );
-                      UserPreferences().favoriteSongList = favoriteSongList;
                     },
                     icon: Icon(
                       isFavoriteSong
@@ -311,23 +282,22 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
   void _addToQueue({
     required BuildContext context,
     required SongModel song,
-    required AudioPlayer audioPlayer,
-    required MusicPlayerCubit musicPlayerCubit,
     required AudioControlCubit audioControlCubit,
-    required UICubit uiCubit,
   }) {
-    musicPlayerCubit.updateCurrentPlaylist([
-      ...musicPlayerCubit.state.currentPlaylist,
+    final playbackCubit = context.read<PlaybackStateCubit>();
+    final updatedPlaylist = [
+      ...playbackCubit.state.currentPlaylist,
       song,
-    ]);
-    MusicActions.openAudios(
-      audioPlayer: audioPlayer,
-      audioControlCubit: audioControlCubit,
-      musicPlayerCubit: musicPlayerCubit,
-      uiCubit: uiCubit,
-      index: audioControlCubit.state.currentIndex,
-      seek: audioControlCubit.state.currentDuration,
+    ];
+    playbackCubit.updateCurrentPlaylist(updatedPlaylist);
+    final playbackService = audioPlayerHandler<PlaybackService>();
+    playbackService.loadPlaylist(
+      songs: updatedPlaylist,
+      initialIndex: audioControlCubit.state.currentIndex,
+      appDirectory: context.read<LibraryCubit>().state.appDirectory,
+      initialPosition: audioControlCubit.state.currentDuration,
     );
+    playbackService.play();
     Navigator.pop(context);
   }
 }

@@ -22,11 +22,11 @@ class _ArtistScreenState extends State<ArtistScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final musicPlayerState = context.watch<MusicPlayerCubit>().state;
-    final artistList = musicPlayerState.artistList;
+    final libraryState = context.watch<LibraryCubit>().state;
+    final artistList = libraryState.artistList;
 
-    return musicPlayerState.isLoading
-        ? CustomLoader(isCreatingArtworks: musicPlayerState.isCreatingArtworks)
+    return libraryState.isLoading
+        ? CustomLoader(isCreatingArtworks: libraryState.isCreatingArtworks)
         : artistList.isNotEmpty
             ? OrientationBuilder(
                 builder: (_, orientation) => GridView.builder(

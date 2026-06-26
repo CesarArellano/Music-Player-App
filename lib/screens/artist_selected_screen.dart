@@ -50,7 +50,7 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
   }
 
   void _getSongs() {
-    final cubit = context.read<MusicPlayerCubit>();
+    final cubit = context.read<LibraryCubit>();
     final artistSongs =
         cubit.state.artistCollection[widget.artistSelected.id]?.songs.length ??
             0;
@@ -63,9 +63,10 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final musicPlayerState = context.watch<MusicPlayerCubit>().state;
+    final libraryState = context.watch<LibraryCubit>().state;
+    final playbackState = context.watch<PlaybackStateCubit>().state;
     final artistContentModel =
-        musicPlayerState.artistCollection[widget.artistSelected.id] ??
+        libraryState.artistCollection[widget.artistSelected.id] ??
             ArtistContentModel();
 
     return Scaffold(
@@ -104,7 +105,7 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
                         artistSelected: widget.artistSelected,
                         artistContentModel: artistContentModel,
                         artistImageFile: File(
-                          '${musicPlayerState.appDirectory}/${artistContentModel.songs.first.albumId}.jpg',
+                          '${libraryState.appDirectory}/${artistContentModel.songs.first.albumId}.jpg',
                         ),
                       ),
                       Padding(
@@ -123,7 +124,7 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
                       ),
                       _AlbumList(
                         artistContentModel: artistContentModel,
-                        appDirectory: musicPlayerState.appDirectory,
+                        appDirectory: libraryState.appDirectory,
                       ),
                       const Padding(
                         padding: EdgeInsets.only(left: 15.0, bottom: 5),
@@ -137,7 +138,7 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
                     (context, i) {
                       final song = artistContentModel.songs[i];
                       final imageFile = File(
-                        '${musicPlayerState.appDirectory}/${song.albumId}.jpg',
+                        '${libraryState.appDirectory}/${song.albumId}.jpg',
                       );
                       final heroId = 'artist-song-${song.id}';
 
@@ -167,8 +168,8 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
                 ),
               ],
             ),
-      bottomNavigationBar: (musicPlayerState.isLoading ||
-              musicPlayerState.songPlayed.title.value().isEmpty)
+      bottomNavigationBar: (libraryState.isLoading ||
+              playbackState.songPlayed.title.value().isEmpty)
           ? null
           : const CurrentSongTile(),
     );

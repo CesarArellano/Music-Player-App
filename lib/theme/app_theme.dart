@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 class AppTheme {
 
   static const Color primaryColor = Color(0xFF003D71);
+  static const Color backgroundBase = Color(0xFF0C1D30);
   static const Color accentColor = Colors.amber;
   static const Color lightTextColor = Colors.white54;
 
-  static ThemeData lightTheme = ThemeData.light().copyWith(
+  static ThemeData darkTheme = ThemeData.light().copyWith(
     splashFactory: InkSparkle.constantTurbulenceSeedSplashFactory,
     textTheme: Typography.whiteCupertino,
-    scaffoldBackgroundColor: primaryColor,
+    scaffoldBackgroundColor: Colors.transparent,
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: accentColor
     ),
@@ -18,7 +19,7 @@ class AppTheme {
     ),
     appBarTheme: const AppBarTheme(
       elevation: 0.0,
-      backgroundColor: primaryColor,
+      backgroundColor: Colors.transparent,
       iconTheme: IconThemeData(color: lightTextColor)
     ),
     colorScheme: const ColorScheme.dark(

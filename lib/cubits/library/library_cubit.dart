@@ -9,19 +9,20 @@ import '../../data/repositories/preferences_repository.dart';
 import '../../data/services/artwork_cache_service.dart';
 import '../../extensions/extensions.dart';
 import '../../models/artist_content_model.dart';
-import 'music_player_state.dart';
+import 'library_state.dart';
 
-export 'music_player_state.dart';
+export 'library_state.dart';
 
-class MusicPlayerCubit extends Cubit<MusicPlayerState> {
-  MusicPlayerCubit({
+class LibraryCubit extends Cubit<LibraryState> {
+  LibraryCubit({
     AudioRepository? audioRepository,
     ArtworkCacheService? artworkCacheService,
     PreferencesRepository? preferences,
+    this.onSongsLoaded,
   })  : _audio = audioRepository ?? audioPlayerHandler<AudioRepository>(),
         _artwork = artworkCacheService ?? audioPlayerHandler<ArtworkCacheService>(),
         _prefs = preferences ?? audioPlayerHandler<PreferencesRepository>(),
-        super(MusicPlayerState()) {
+        super(LibraryState()) {
     getAllSongs();
   }
 
@@ -29,9 +30,12 @@ class MusicPlayerCubit extends Cubit<MusicPlayerState> {
   final ArtworkCacheService _artwork;
   final PreferencesRepository _prefs;
 
+  /// Called once after the initial song list loads, so FavoritesCubit can
+  /// decode persisted favourite IDs into SongModel instances.
+  final void Function(List<SongModel>)? onSongsLoaded;
+
   Future<void> getAllSongs({bool forceCreatingArtworks = false}) async {
     bool createArtworks = forceCreatingArtworks;
-
     String appDirectory = _prefs.appDirectory;
 
     if (!_prefs.isNotFirstTime) {
@@ -65,7 +69,7 @@ class MusicPlayerCubit extends Cubit<MusicPlayerState> {
       playLists: playLists,
     ));
 
-    _decodeFavoriteSongs(songList);
+    onSongsLoaded?.call(songList);
 
     await _artwork.buildArtworkCache(
       songs: songList,
@@ -141,37 +145,5 @@ class MusicPlayerCubit extends Cubit<MusicPlayerState> {
     final updated = Map<int, List<SongModel>>.from(state.playlistCollection)
       ..[playlistId] = songs;
     emit(state.copyWith(playlistCollection: updated, isLoading: false));
-  }
-
-  void updateSongPlayed(SongModel song) => emit(state.copyWith(songPlayed: song));
-
-  void updateIsShuffling(bool value) => emit(state.copyWith(isShuffling: value));
-
-  void updateCurrentPlaylist(List<SongModel> playlist) =>
-      emit(state.copyWith(currentPlaylist: playlist));
-
-  void updateFavorites({
-    required List<SongModel> favoriteList,
-    required List<String> favoriteSongList,
-  }) {
-    emit(state.copyWith(
-      favoriteList: favoriteList,
-      favoriteSongList: favoriteSongList,
-    ));
-  }
-
-  void _decodeFavoriteSongs(List<SongModel> songList) {
-    final favoriteSongList = _prefs.favoriteSongList;
-    final favorites = <SongModel>[];
-
-    for (final id in favoriteSongList) {
-      final index = songList.indexWhere((s) => s.id == int.tryParse(id));
-      if (index != -1) favorites.add(songList[index]);
-    }
-
-    emit(state.copyWith(
-      favoriteSongList: favoriteSongList,
-      favoriteList: favorites,
-    ));
   }
 }

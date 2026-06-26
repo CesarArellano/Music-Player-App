@@ -48,7 +48,7 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
   }
 
   void _getSongs() {
-    final cubit = context.read<MusicPlayerCubit>();
+    final cubit = context.read<LibraryCubit>();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await cubit.searchByGenreId(
         widget.genreSelected.id,
@@ -62,7 +62,8 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final musicPlayerState = context.watch<MusicPlayerCubit>().state;
+    final libraryState = context.watch<LibraryCubit>().state;
+    final songPlayed = context.watch<PlaybackStateCubit>().state.songPlayed;
 
     return Scaffold(
       appBar: AppBar(
@@ -139,7 +140,7 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
                         child: PlayShuffleButtons(
                           heroId: 'genre-song-',
                           id: widget.genreSelected.id,
-                          songList: musicPlayerState
+                          songList: libraryState
                                   .genreCollection[widget.genreSelected.id] ??
                               [],
                           typePlaylist: PlaylistType.genre,
@@ -152,10 +153,10 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, i) {
-                      final song = musicPlayerState
+                      final song = libraryState
                           .genreCollection[widget.genreSelected.id]![i];
                       final imageFile = File(
-                        '${musicPlayerState.appDirectory}/${song.albumId}.jpg',
+                        '${libraryState.appDirectory}/${song.albumId}.jpg',
                       );
                       final heroId = 'genre-song-${song.id}';
 
@@ -183,7 +184,7 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
                         ),
                       );
                     },
-                    childCount: (musicPlayerState
+                    childCount: (libraryState
                                 .genreCollection[widget.genreSelected.id] ??
                             [])
                         .length,
@@ -191,8 +192,7 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
                 ),
               ],
             ),
-      bottomNavigationBar: (musicPlayerState.isLoading ||
-              musicPlayerState.songPlayed.title.value().isEmpty)
+      bottomNavigationBar: (libraryState.isLoading || songPlayed.id == 0)
           ? null
           : const CurrentSongTile(),
     );
