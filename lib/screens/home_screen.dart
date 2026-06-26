@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:on_audio_query/on_audio_query.dart';
+import 'package:music_query_selector/music_query_selector.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../audio_player_handler.dart';
@@ -126,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen>
 
     if (dialogResp.isCancel) return;
 
-    final onAudioQuery = audioPlayerHandler<OnAudioQuery>();
+    final onAudioQuery = audioPlayerHandler<MusicQuerySelector>();
     final playlistName = dialogResp.playlistName.value();
     await onAudioQuery.createPlaylist(playlistName);
 
@@ -168,7 +168,7 @@ class _CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final musicPlayerCubit = context.read<MusicPlayerCubit>();
+    final libraryCubit = context.read<LibraryCubit>();
 
     return AppBar(
       backgroundColor: AppTheme.backgroundBase,
@@ -221,7 +221,7 @@ class _CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: const Text('Scan media',
                   style: TextStyle(color: Colors.black)),
               onTap: () async {
-                await musicPlayerCubit.getAllSongs();
+                await libraryCubit.getAllSongs();
                 SnackbarService.instance.showSnackbar(message: 'Task successfully completed');
               },
             ),

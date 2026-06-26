@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
-import 'package:on_audio_query/on_audio_query.dart' show SongModel;
+import 'package:music_query_selector/music_query_selector.dart' show SongModel;
 
 import '../cubits/audio_control/audio_control_cubit.dart';
 import '../cubits/playback_state/playback_state_cubit.dart';
@@ -47,9 +47,10 @@ class JustAudioPlaybackService implements PlaybackService {
   }) {
     _player.setAudioSources(
       songs
+          .where((song) => song.data != null)
           .map(
             (song) => AudioSource.file(
-              song.data,
+              song.data!,
               tag: MediaItem(
                 id: song.id.value().toString(),
                 title: song.title.value(),
@@ -82,10 +83,16 @@ class JustAudioPlaybackService implements PlaybackService {
   Future<void> play() => _player.play();
 
   @override
-  Future<void> pause() => _player.pause();
+  Future<void> pause() {
+    _prefs.lastSongDuration = _player.position.inMilliseconds;
+    return _player.pause();
+  }
 
   @override
-  Future<void> stop() => _player.stop();
+  Future<void> stop() {
+    _prefs.lastSongDuration = _player.position.inMilliseconds;
+    return _player.stop();
+  }
 
   @override
   Future<void> seek(Duration position, {int? index}) =>
@@ -105,7 +112,7 @@ class JustAudioPlaybackService implements PlaybackService {
   void _subscribeToPosition() {
     _positionSub = _player.positionStream.listen((duration) {
       _audioCubit.updateCurrentDuration(duration);
-      _prefs.lastSongDuration = duration.inMilliseconds;
+      // lastSongDuration is written on pause()/stop() only, not on every tick.
     });
   }
 

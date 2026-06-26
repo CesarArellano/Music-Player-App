@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:on_audio_query/on_audio_query.dart';
+import 'package:music_query_selector/music_query_selector.dart';
 
 import '../../audio_player_handler.dart';
 import '../../cubits/cubits.dart';
@@ -23,12 +23,12 @@ class _PlaylistsScreenState extends State<PlaylistsScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final onAudioQuery = audioPlayerHandler<OnAudioQuery>();
+    final onAudioQuery = audioPlayerHandler<MusicQuerySelector>();
     final libraryState = context.watch<LibraryCubit>().state;
     final playlists = libraryState.playLists;
 
-    return libraryState.isLoading
-        ? CustomLoader(isCreatingArtworks: libraryState.isCreatingArtworks)
+    return libraryState.isLoadingCatalogue
+        ? CustomLoader(isCreatingArtworks: false)
         : playlists.isNotEmpty
             ? OrientationBuilder(
                 builder: (_, orientation) => GridView.builder(

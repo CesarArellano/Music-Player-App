@@ -1,7 +1,7 @@
 import 'dart:io' show Platform;
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:on_audio_query/on_audio_query.dart';
+import 'package:music_query_selector/music_query_selector.dart';
 
 import '../../audio_player_handler.dart';
 import '../../data/repositories/audio_repository.dart';
@@ -36,10 +36,9 @@ class LibraryCubit extends Cubit<LibraryState> {
 
   Future<void> getAllSongs({bool forceCreatingArtworks = false}) async {
     bool createArtworks = forceCreatingArtworks;
-    String appDirectory = _prefs.appDirectory;
+    final appDirectory = await _artwork.resolveAppDirectory();
 
     if (!_prefs.isNotFirstTime) {
-      appDirectory = await _artwork.resolveAppDirectory();
       createArtworks = true;
     }
 
@@ -47,29 +46,49 @@ class LibraryCubit extends Cubit<LibraryState> {
       appDirectory: appDirectory,
       isCreatingArtworks: createArtworks,
       isLoading: true,
+      isLoadingCatalogue: true,
     ));
 
-    await _audio.requestPermissions();
-
-    final songList = await _audio.querySongs();
-    final albumList = await _audio.queryAlbums();
-    final genreList = await _audio.queryGenres();
-    final artistList = await _audio.queryArtists();
-
-    List<PlaylistModel> playLists = state.playLists;
-    if (Platform.isAndroid) {
-      playLists = await _audio.queryPlaylists();
+    final hasPermission = await _audio.requestPermissions();
+    if (!hasPermission) {
+      emit(state.copyWith(
+        isLoading: false,
+        isLoadingCatalogue: false,
+        isCreatingArtworks: false,
+      ));
+      return;
     }
 
+    // All four queries fire concurrently. Songs are awaited first so the
+    // Songs tab becomes interactive as soon as possible; the other futures
+    // are already in-flight and will resolve shortly after.
+    final songsFuture = _audio.querySongs();
+    final albumsFuture = _audio.queryAlbums();
+    final genresFuture = _audio.queryGenres();
+    final artistsFuture = _audio.queryArtists();
+    final playlistsFuture =
+        Platform.isAndroid ? _audio.queryPlaylists() : null;
+
+    final songList = await songsFuture;
+    emit(state.copyWith(songList: songList, isLoading: false));
+    onSongsLoaded?.call(songList);
+
+    // Pick up catalogue results — all already in-flight from above.
+    final (albumList, genreList, artistList) = await (
+      albumsFuture,
+      genresFuture,
+      artistsFuture,
+    ).wait;
+
+    final playLists = (await playlistsFuture) ?? state.playLists;
+
     emit(state.copyWith(
-      songList: songList,
       albumList: albumList,
       genreList: genreList,
       artistList: artistList,
       playLists: playLists,
+      isLoadingCatalogue: false,
     ));
-
-    onSongsLoaded?.call(songList);
 
     await _artwork.buildArtworkCache(
       songs: songList,
@@ -78,7 +97,7 @@ class LibraryCubit extends Cubit<LibraryState> {
     );
 
     _prefs.numberOfSongs = songList.length;
-    emit(state.copyWith(isLoading: false, isCreatingArtworks: false));
+    emit(state.copyWith(isCreatingArtworks: false));
   }
 
   Future<void> refreshPlaylist() async {

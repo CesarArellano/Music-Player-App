@@ -31,7 +31,7 @@ dependencies:
     sdk: flutter
   
   cupertino_icons: ^1.0.5
-  on_audio_query: ^2.9.0
+  music_query_selector: ^3.0.0
   flutter_bloc: ^9.0.0
   marqueer: ^2.5.0
   get_it: ^9.2.1
@@ -45,6 +45,17 @@ dependencies:
   just_audio: ^0.10.5
   just_audio_background: ^0.0.1-beta.17
   audio_video_progress_bar: ^2.0.3
+
+
+dependency_overrides:
+  music_query_selector:
+    path: ../music_query_selector/packages/music_query_selector
+  music_query_selector_platform_interface:
+    path: ../music_query_selector/packages/music_query_selector_platform_interface
+  music_query_selector_android:
+    path: ../music_query_selector/packages/music_query_selector_android
+  music_query_selector_ios:
+    path: ../music_query_selector/packages/music_query_selector_ios
 
 dev_dependencies:
   flutter_lints: ^6.0.0

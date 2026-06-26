@@ -1,6 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:on_audio_query/on_audio_query.dart';
+import 'package:music_query_selector/music_query_selector.dart';
 
 import 'cubits/audio_control/audio_control_cubit.dart';
 import 'cubits/favorites/favorites_cubit.dart';
@@ -24,7 +24,7 @@ GetIt audioPlayerHandler = GetIt.instance;
 void setupAudioHandlers() {
   audioPlayerHandler.registerSingleton<FileImageCache>(FileImageCache());
   audioPlayerHandler.registerLazySingleton(() => AudioPlayer());
-  audioPlayerHandler.registerLazySingleton(() => OnAudioQuery());
+  audioPlayerHandler.registerLazySingleton(() => MusicQuerySelector());
   audioPlayerHandler.registerSingleton<SnackbarService>(SnackbarService());
 
   audioPlayerHandler.registerLazySingleton<PreferencesRepository>(
@@ -32,7 +32,7 @@ void setupAudioHandlers() {
   );
 
   audioPlayerHandler.registerLazySingleton<AudioRepository>(
-    () => OnAudioQueryRepository(audioPlayerHandler<OnAudioQuery>()),
+    () => MusicQuerySelectorRepository(audioPlayerHandler<MusicQuerySelector>()),
   );
 
   audioPlayerHandler.registerLazySingleton<ArtworkCacheService>(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:on_audio_query/on_audio_query.dart' show ArtworkFormat, ArtworkType, QueryArtworkWidget;
+import 'package:music_query_selector/music_query_selector.dart' show ArtworkFormat, ArtworkType, QueryArtworkWidget;
 class ArtworkImage extends StatelessWidget {
   const ArtworkImage({
     super.key,

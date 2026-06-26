@@ -1,18 +1,26 @@
 import 'dart:typed_data' show Uint8List;
 
-import 'package:on_audio_query/on_audio_query.dart';
+import 'package:music_query_selector/music_query_selector.dart';
 
 import 'audio_repository.dart';
 
-class OnAudioQueryRepository implements AudioRepository {
-  OnAudioQueryRepository(this._query);
+class MusicQuerySelectorRepository implements AudioRepository {
+  MusicQuerySelectorRepository(this._query);
 
-  final OnAudioQuery _query;
+  final MusicQuerySelector _query;
 
   @override
   Future<bool> requestPermissions() async {
     if (await _query.permissionsStatus()) return true;
-    return _query.permissionsRequest();
+    // iOS: MPMediaLibrary.requestAuthorization fires a callback but the Swift
+    // wrapper returns false before it executes. Poll until the status flips or
+    // we give up after ~3 s.
+    await _query.permissionsRequest();
+    for (int i = 0; i < 6; i++) {
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (await _query.permissionsStatus()) return true;
+    }
+    return false;
   }
 
   @override

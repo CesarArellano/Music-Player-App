@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart' show listEquals;
-import 'package:on_audio_query/on_audio_query.dart' show SongModel, AlbumModel, ArtistModel;
+import 'package:music_query_selector/music_query_selector.dart' show SongModel, AlbumModel, ArtistModel;
 
 class MultipleSearchModel {
   MultipleSearchModel({

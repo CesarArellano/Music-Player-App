@@ -1,6 +1,6 @@
 import 'dart:typed_data' show Uint8List;
 
-import 'package:on_audio_query/on_audio_query.dart';
+import 'package:music_query_selector/music_query_selector.dart';
 
 abstract interface class AudioRepository {
   Future<bool> requestPermissions();

@@ -2,7 +2,7 @@ import 'dart:io' show File;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:on_audio_query/on_audio_query.dart' show SongModel, ArtworkType;
+import 'package:music_query_selector/music_query_selector.dart' show SongModel, ArtworkType;
 
 import '../cubits/cubits.dart';
 import '../extensions/extensions.dart';

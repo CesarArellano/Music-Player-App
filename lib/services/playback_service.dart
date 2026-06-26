@@ -1,4 +1,4 @@
-import 'package:on_audio_query/on_audio_query.dart' show SongModel;
+import 'package:music_query_selector/music_query_selector.dart' show SongModel;
 
 abstract interface class PlaybackService {
   /// The effective (shuffled or sequential) index order exposed by the player.

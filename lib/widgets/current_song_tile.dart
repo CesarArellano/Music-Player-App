@@ -45,7 +45,7 @@ class _CurrentSongTileState extends State<CurrentSongTile>
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Divider(height: 0.20, color: Colors.white30),
+        const Divider(height: 0.5, color: Colors.white12),
         _SongInfoTile(playAnimation: _playAnimation),
         const _ProgressBar(),
       ],
@@ -68,7 +68,7 @@ class _SongInfoTile extends StatelessWidget {
     final imageFile = File('$appDirectory/${songPlayed.albumId}.jpg');
     final heroId = 'current-song-${songPlayed.id}';
 
-    return ColoredBox(
+    return Material(
       color: AppTheme.backgroundBase,
       child: ListTile(
       dense: true,
@@ -128,7 +128,7 @@ class _SongInfoTile extends StatelessWidget {
         songPlayed.title.value(),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 15),
+        style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
       ),
       subtitle: Text(
         '${songPlayed.artist.valueEmpty('No Artist')} • ${songPlayed.album}',
@@ -162,10 +162,19 @@ class _ProgressBar extends StatelessWidget {
 
     if (songDuration == null || songDuration == 0) return const SizedBox.shrink();
 
-    return Container(
-      height: 2,
-      width: width * (currentDuration.inMilliseconds / songDuration),
-      color: AppTheme.accentColor,
+    final progress = (currentDuration.inMilliseconds / songDuration).clamp(0.0, 1.0);
+    return Stack(
+      children: [
+        Container(height: 3, width: width, color: Colors.white10),
+        Container(
+          height: 3,
+          width: width * progress,
+          decoration: const BoxDecoration(
+            color: AppTheme.accentColor,
+            borderRadius: BorderRadius.horizontal(right: Radius.circular(2)),
+          ),
+        ),
+      ],
     );
   }
 }

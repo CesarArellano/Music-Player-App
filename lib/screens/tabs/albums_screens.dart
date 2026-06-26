@@ -2,7 +2,7 @@ import 'dart:io' show File;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:on_audio_query/on_audio_query.dart';
+import 'package:music_query_selector/music_query_selector.dart';
 
 import '../../cubits/cubits.dart';
 import '../../theme/app_theme.dart';
@@ -27,20 +27,19 @@ class _AlbumsScreenState extends State<AlbumsScreen>
     final libraryState = context.watch<LibraryCubit>().state;
     final albumList = libraryState.albumList;
 
-    return libraryState.isLoading
-        ? CustomLoader(isCreatingArtworks: libraryState.isCreatingArtworks)
+    return libraryState.isLoadingCatalogue
+        ? CustomLoader(isCreatingArtworks: false)
         : albumList.isNotEmpty
             ? Padding(
-                padding:
-                    const EdgeInsets.only(left: 8.0, right: 8.0, top: 8),
+                padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
                 child: OrientationBuilder(
                   builder: (_, orientation) => GridView.builder(
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount:
                           orientation == Orientation.landscape ? 4 : 2,
-                      mainAxisExtent: 240,
-                      mainAxisSpacing: 4,
-                      crossAxisSpacing: 4,
+                      mainAxisExtent: 230,
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
                     ),
                     itemCount: albumList.length,
                     itemBuilder: (_, int i) {
@@ -50,39 +49,48 @@ class _AlbumsScreenState extends State<AlbumsScreen>
                       );
 
                       return RippleTile(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ArtworkFileImage(
-                              artworkId: album.id,
-                              artworkType: ArtworkType.ALBUM,
-                              width: double.maxFinite,
-                              height: 190,
-                              imageFile: imageFile,
-                            ),
-                            const SizedBox(height: 6),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 4),
-                              child: Text(
-                                album.album,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w500),
+                        borderRadius: BorderRadius.circular(AppTheme.artworkRadius),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppTheme.surfaceColor,
+                            borderRadius: BorderRadius.circular(AppTheme.artworkRadius),
+                          ),
+                          clipBehavior: Clip.hardEdge,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ArtworkFileImage(
+                                artworkId: album.id,
+                                artworkType: ArtworkType.ALBUM,
+                                width: double.maxFinite,
+                                height: 174,
+                                imageFile: imageFile,
                               ),
-                            ),
-                            const SizedBox(height: 2),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 4),
-                              child: Text(
-                                '${album.numOfSongs} ${album.numOfSongs > 1 ? 'songs' : 'song'}',
-                                style: const TextStyle(
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(8, 8, 8, 2),
+                                child: Text(
+                                  album.album,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                                child: Text(
+                                  '${album.numOfSongs} ${album.numOfSongs > 1 ? 'songs' : 'song'}',
+                                  style: const TextStyle(
                                     color: AppTheme.lightTextColor,
-                                    fontSize: 12),
+                                    fontSize: 11,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         onTap: () => Navigator.push(
                           context,

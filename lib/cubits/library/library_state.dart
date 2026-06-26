@@ -1,4 +1,4 @@
-import 'package:on_audio_query/on_audio_query.dart';
+import 'package:music_query_selector/music_query_selector.dart';
 
 import '../../models/artist_content_model.dart';
 import '../../models/multiple_search_model.dart';
@@ -6,6 +6,7 @@ import '../../models/multiple_search_model.dart';
 class LibraryState {
   LibraryState({
     this.isLoading = false,
+    this.isLoadingCatalogue = false,
     this.isCreatingArtworks = false,
     this.appDirectory = '',
     this.songList = const [],
@@ -20,6 +21,7 @@ class LibraryState {
   });
 
   final bool isLoading;
+  final bool isLoadingCatalogue;
   final bool isCreatingArtworks;
   final String appDirectory;
   final List<SongModel> songList;
@@ -43,6 +45,7 @@ class LibraryState {
 
   LibraryState copyWith({
     bool? isLoading,
+    bool? isLoadingCatalogue,
     bool? isCreatingArtworks,
     String? appDirectory,
     List<SongModel>? songList,
@@ -57,6 +60,7 @@ class LibraryState {
   }) {
     return LibraryState(
       isLoading: isLoading ?? this.isLoading,
+      isLoadingCatalogue: isLoadingCatalogue ?? this.isLoadingCatalogue,
       isCreatingArtworks: isCreatingArtworks ?? this.isCreatingArtworks,
       appDirectory: appDirectory ?? this.appDirectory,
       songList: songList ?? this.songList,

@@ -2,7 +2,7 @@ import 'dart:io' show Platform, File;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:on_audio_query/on_audio_query.dart';
+import 'package:music_query_selector/music_query_selector.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../audio_player_handler.dart';
@@ -40,7 +40,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
   @override
   Widget build(BuildContext context) {
     final songPlayed = widget.song;
-    final onAudioQuery = audioPlayerHandler.get<OnAudioQuery>();
+    final onAudioQuery = audioPlayerHandler.get<MusicQuerySelector>();
     final playbackState = context.watch<PlaybackStateCubit>().state;
     final favoritesState = context.watch<FavoritesCubit>().state;
     final libraryState = context.watch<LibraryCubit>().state;
@@ -156,7 +156,8 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                     color: AppTheme.lightTextColor),
                 title: const Text('Share Audio'),
                 onTap: () async {
-                  final filesToShare = <XFile>[XFile(songPlayed.data)];
+                  if (songPlayed.data == null) return;
+                  final filesToShare = <XFile>[XFile(songPlayed.data!)];
                   if (await imageFile.exists()) {
                     filesToShare.add(XFile(imageFile.path));
                   }
@@ -210,8 +211,9 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                       }
                     }
 
-                    final isDeleted =
-                        await MusicActions.deleteFile(File(songPlayed.data));
+                    final isDeleted = songPlayed.data != null
+                        ? await MusicActions.deleteFile(File(songPlayed.data!))
+                        : false;
 
                     if (!context.mounted) return;
                     Navigator.pop(context);

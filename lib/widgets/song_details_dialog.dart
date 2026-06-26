@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:on_audio_query/on_audio_query.dart' show SongModel;
+import 'package:music_query_selector/music_query_selector.dart' show SongModel;
 
 import '../extensions/extensions.dart';
 import '../theme/app_theme.dart';
@@ -30,7 +30,7 @@ class SongDetailsDialog extends StatelessWidget {
           const SizedBox(height: 15),
           _RowLabel(label: 'File name: ', value: song.displayName),
           const SizedBox(height: 15),
-          _RowLabel(label: 'File path: ', value: song.data),
+          _RowLabel(label: 'File path: ', value: song.data ?? '-'),
           const SizedBox(height: 15),
           _RowLabel(label: 'Size: ', value: '${ (song.size / 1048576).round() } MB'),
           const SizedBox(height: 15),

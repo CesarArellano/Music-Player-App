@@ -2,10 +2,11 @@ import 'dart:io' show File;
 
 import 'package:flutter/material.dart';
 import 'package:focus_music_player/widgets/widgets.dart';
-import 'package:on_audio_query/on_audio_query.dart' show ArtworkType;
+import 'package:music_query_selector/music_query_selector.dart' show ArtworkType;
 
 import '../audio_player_handler.dart';
 import '../data/cache/file_image_cache.dart';
+import '../theme/app_theme.dart';
 
 class ArtworkFileImage extends StatelessWidget {
   const ArtworkFileImage({
@@ -15,7 +16,7 @@ class ArtworkFileImage extends StatelessWidget {
     this.artworkType = ArtworkType.AUDIO,
     this.width = 55,
     this.height = 55,
-    this.tag
+    this.tag,
   });
 
   final ArtworkType artworkType;
@@ -27,37 +28,37 @@ class ArtworkFileImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final radius = BorderRadius.circular(5);
+    final radius = BorderRadius.circular(AppTheme.artworkRadius);
 
-    return (imageFile ?? File('')).existsSync() 
-      ? tag != null
-        ? Hero(
-          tag: tag!,
-          child: _ImageWithBorder(
-            radius: radius,
-            imageFile: imageFile,
-            width: width, 
-            height: height,
+    return (imageFile ?? File('')).existsSync()
+        ? tag != null
+            ? Hero(
+                tag: tag!,
+                child: _ImageWithBorder(
+                  radius: radius,
+                  imageFile: imageFile,
+                  width: width,
+                  height: height,
+                  artworkId: artworkId,
+                  artworkType: artworkType,
+                ),
+              )
+            : _ImageWithBorder(
+                radius: radius,
+                imageFile: imageFile,
+                width: width,
+                height: height,
+                artworkId: artworkId,
+                artworkType: artworkType,
+              )
+        : ArtworkImage(
             artworkId: artworkId,
-            artworkType: artworkType
-          ),
-        )
-        : _ImageWithBorder(
-            radius: radius,
-            imageFile: imageFile,
-            width: width, 
+            type: artworkType,
+            width: width,
             height: height,
-            artworkId: artworkId,
-            artworkType: artworkType
-          )
-      : ArtworkImage(
-        artworkId: artworkId,
-        type: artworkType,
-        width: width,
-        height: height,
-        size: 250,
-        radius: radius,
-      );
+            size: 250,
+            radius: radius,
+          );
   }
 }
 
@@ -88,16 +89,14 @@ class _ImageWithBorder extends StatelessWidget {
         height: height,
         fit: BoxFit.cover,
         gaplessPlayback: true,
-        errorBuilder: (context, error, stackTrace) {
-          return ArtworkImage(
-            artworkId: artworkId,
-            type: artworkType,
-            width: width,
-            height: height,
-            size: 250,
-            radius: BorderRadius.circular(4),
-          );
-        },
+        errorBuilder: (_, _, _) => ArtworkImage(
+          artworkId: artworkId,
+          type: artworkType,
+          width: width,
+          height: height,
+          size: 250,
+          radius: radius,
+        ),
       ),
     );
   }

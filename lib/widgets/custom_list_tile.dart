@@ -2,7 +2,7 @@ import 'dart:io' show File;
 
 import 'package:flutter/material.dart';
 import 'package:focus_music_player/widgets/artwork_file_image.dart';
-import 'package:on_audio_query/on_audio_query.dart' show ArtworkType;
+import 'package:music_query_selector/music_query_selector.dart' show ArtworkType;
 
 import '../theme/app_theme.dart';
 

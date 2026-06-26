@@ -22,9 +22,13 @@ class UICubit extends Cubit<UIState> {
     required String? albumId,
     required String appDirectory,
   }) async {
-    final fileImage = FileImage(File('$appDirectory/$albumId.jpg'));
+    if (albumId == null) {
+      emit(state.copyWith(clearDominantColor: true));
+      return;
+    }
 
-    if (albumId == null || !fileImage.file.existsSync()) {
+    final file = File('$appDirectory/$albumId.jpg');
+    if (!file.existsSync()) {
       emit(state.copyWith(clearDominantColor: true));
       return;
     }
@@ -32,16 +36,21 @@ class UICubit extends Cubit<UIState> {
     if (state.dominantColorCollection.containsKey(albumId)) {
       final hex = state.dominantColorCollection[albumId];
       emit(state.copyWith(
-        currentDominantColor: hex != null ? Color(int.parse(hex, radix: 16)) : null,
+        currentDominantColor:
+            hex != null ? Color(int.parse(hex, radix: 16)) : null,
         clearDominantColor: hex == null,
       ));
       return;
     }
 
-    final color = (await PaletteGenerator.fromImageProvider(fileImage))
-            .dominantColor
-            ?.color ??
-        Colors.white;
+    // ResizeImage caps decoding at 112×112 (~50 K pixels).
+    // Flutter's codec pipeline decodes JPEG off the main thread;
+    // only the final pixel scan runs on it and takes <1 ms at this size.
+    final palette = await PaletteGenerator.fromImageProvider(
+      ResizeImage(FileImage(file), width: 112, height: 112),
+      maximumColorCount: 16,
+    );
+    final color = palette.dominantColor?.color ?? Colors.white;
     final hex = color.toARGB32().toRadixString(16);
 
     final updated = Map<String, String>.from(state.dominantColorCollection)
@@ -51,7 +60,7 @@ class UICubit extends Cubit<UIState> {
 
     emit(state.copyWith(
       dominantColorCollection: updated,
-      currentDominantColor: Color(int.parse(hex, radix: 16)),
+      currentDominantColor: color,
     ));
   }
 }

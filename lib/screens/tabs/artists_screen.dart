@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:on_audio_query/on_audio_query.dart';
+import 'package:music_query_selector/music_query_selector.dart';
 
 import '../../cubits/cubits.dart';
 import '../../extensions/extensions.dart';
@@ -25,8 +25,8 @@ class _ArtistScreenState extends State<ArtistScreen>
     final libraryState = context.watch<LibraryCubit>().state;
     final artistList = libraryState.artistList;
 
-    return libraryState.isLoading
-        ? CustomLoader(isCreatingArtworks: libraryState.isCreatingArtworks)
+    return libraryState.isLoadingCatalogue
+        ? CustomLoader(isCreatingArtworks: false)
         : artistList.isNotEmpty
             ? OrientationBuilder(
                 builder: (_, orientation) => GridView.builder(

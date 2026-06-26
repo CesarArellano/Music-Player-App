@@ -8,7 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:marqueer/marqueer.dart';
-import 'package:on_audio_query/on_audio_query.dart';
+import 'package:music_query_selector/music_query_selector.dart';
 
 import '../audio_player_handler.dart';
 import '../cubits/cubits.dart';
@@ -124,6 +124,7 @@ class _SongPlayedScreenState extends State<SongPlayedScreen>
                               image: DecorationImage(
                                 fit: BoxFit.cover,
                                 image: FileImage(imageFile),
+                                onError: (_, _) {},
                               ),
                             )
                           : null,
