@@ -73,7 +73,6 @@ class JustAudioPlaybackService implements PlaybackService {
     _prefs.lastSongId = song.id;
     _uiCubit.searchDominantColorByAlbumId(
       albumId: song.albumId.toString(),
-      appDirectory: appDirectory,
     );
 
     return Future.value();
@@ -126,7 +125,6 @@ class JustAudioPlaybackService implements PlaybackService {
       _prefs.lastSongId = song.id;
       _uiCubit.searchDominantColorByAlbumId(
         albumId: song.albumId.toString(),
-        appDirectory: _prefs.appDirectory,
       );
     });
   }

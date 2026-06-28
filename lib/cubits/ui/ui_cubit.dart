@@ -1,8 +1,6 @@
-import 'dart:io' show File;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:palette_generator/palette_generator.dart';
+import 'package:music_query_selector/music_query_selector.dart';
 
 import '../../share_prefs/user_preferences.dart';
 import 'ui_state.dart';
@@ -20,19 +18,13 @@ class UICubit extends Cubit<UIState> {
 
   Future<void> searchDominantColorByAlbumId({
     required String? albumId,
-    required String appDirectory,
   }) async {
     if (albumId == null) {
       emit(state.copyWith(clearDominantColor: true));
       return;
     }
 
-    final file = File('$appDirectory/$albumId.jpg');
-    if (!file.existsSync()) {
-      emit(state.copyWith(clearDominantColor: true));
-      return;
-    }
-
+    // Fast path: color already resolved (in-memory or rehydrated from prefs).
     if (state.dominantColorCollection.containsKey(albumId)) {
       final hex = state.dominantColorCollection[albumId];
       emit(state.copyWith(
@@ -43,15 +35,26 @@ class UICubit extends Cubit<UIState> {
       return;
     }
 
-    // ResizeImage caps decoding at 112×112 (~50 K pixels).
-    // Flutter's codec pipeline decodes JPEG off the main thread;
-    // only the final pixel scan runs on it and takes <1 ms at this size.
-    final palette = await PaletteGenerator.fromImageProvider(
-      ResizeImage(FileImage(file), width: 112, height: 112),
-      maximumColorCount: 16,
+    final id = int.tryParse(albumId);
+    if (id == null) {
+      emit(state.copyWith(clearDominantColor: true));
+      return;
+    }
+
+    // Computed natively from the already-decoded artwork (androidx.palette /
+    // Core Image), avoiding a second decode + palette pass on the Dart side.
+    final colorValue = await MusicQuerySelector().queryArtworkColor(
+      id,
+      ArtworkType.ALBUM,
     );
-    final color = palette.dominantColor?.color ?? Colors.white;
-    final hex = color.toARGB32().toRadixString(16);
+
+    if (colorValue == null) {
+      emit(state.copyWith(clearDominantColor: true));
+      return;
+    }
+
+    final color = Color(colorValue);
+    final hex = colorValue.toRadixString(16);
 
     final updated = Map<String, String>.from(state.dominantColorCollection)
       ..[albumId] = hex;

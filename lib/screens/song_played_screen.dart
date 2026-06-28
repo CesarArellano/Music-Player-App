@@ -575,7 +575,7 @@ class _MusicControlsState extends State<_MusicControls> {
             ),
             const SizedBox(width: 15),
             Listener(
-              onPointerDown: (_) {
+              onPointerDown: (_) async {
                 setState(() => _buttonPressed = true);
                 _whilePressed(
                   audioPlayer: audioPlayer,
