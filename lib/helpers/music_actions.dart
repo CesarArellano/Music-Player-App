@@ -10,6 +10,7 @@ import '../audio_player_handler.dart';
 import '../cubits/cubits.dart';
 import '../data/repositories/preferences_repository.dart';
 import '../extensions/extensions.dart';
+import 'helpers.dart';
 import '../screens/song_played_screen.dart';
 import '../services/playback_service.dart';
 import '../services/playlist_resolver.dart';
@@ -99,8 +100,8 @@ class MusicActions {
 
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => SongPlayedScreen(
+      Helpers.slideUpRoute(
+        SongPlayedScreen(
           playlistId: type == PlaylistType.playlist ? id : null,
           isPlaylist: type == PlaylistType.playlist,
         ),
