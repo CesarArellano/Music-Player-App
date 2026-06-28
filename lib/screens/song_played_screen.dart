@@ -517,7 +517,6 @@ class _MusicControlsState extends State<_MusicControls> {
                 setState(() => _buttonPressed = true);
                 _whilePressed(
                   audioPlayer: audioPlayer,
-                  currentDuration: audioControlState.currentDuration,
                   currentIndex: audioControlState.currentIndex,
                   songDurationSeconds: Duration(
                     milliseconds: playbackState.songPlayed.duration.value(),
@@ -579,7 +578,6 @@ class _MusicControlsState extends State<_MusicControls> {
                 setState(() => _buttonPressed = true);
                 _whilePressed(
                   audioPlayer: audioPlayer,
-                  currentDuration: audioControlState.currentDuration,
                   currentIndex: audioControlState.currentIndex,
                   songDurationSeconds: Duration(
                     milliseconds: playbackState.songPlayed.duration.value(),
@@ -635,7 +633,6 @@ class _MusicControlsState extends State<_MusicControls> {
 
   void _whilePressed({
     required AudioPlayer audioPlayer,
-    required Duration currentDuration,
     required int currentIndex,
     required int songDurationSeconds,
     required int goToSeconds,
@@ -643,17 +640,25 @@ class _MusicControlsState extends State<_MusicControls> {
     if (_loopActive) return;
     _loopActive = true;
 
-    while (_buttonPressed) {
-      final secondsResult = currentDuration.inSeconds + goToSeconds;
+    // Wait before the first seek so a quick tap (skip to next/previous song)
+    // doesn't trigger a scrub jump. Scrubbing only starts while held.
+    await Future.delayed(const Duration(milliseconds: 500));
 
+    while (_buttonPressed) {
       if (currentIndex != audioPlayer.currentIndex) {
         _buttonPressed = false;
         break;
       }
-      if (secondsResult <= 0) _buttonPressed = false;
+
+      // Read the live position so holding scrubs progressively.
+      final secondsResult = audioPlayer.position.inSeconds + goToSeconds;
+
+      if (secondsResult <= 0 || secondsResult >= songDurationSeconds) {
+        _buttonPressed = false;
+      }
 
       audioPlayer.seek(
-        Duration(seconds: secondsResult >= 0 ? secondsResult : 0),
+        Duration(seconds: secondsResult.clamp(0, songDurationSeconds)),
       );
       await Future.delayed(const Duration(milliseconds: 500));
     }

@@ -24,7 +24,8 @@ class MusicQuerySelectorRepository implements AudioRepository {
   }
 
   @override
-  Future<List<SongModel>> querySongs() => _query.querySongs();
+  Future<List<SongModel>> querySongs() =>
+      _query.querySongs(sortType: SongSortType.TITLE);
 
   @override
   Future<List<AlbumModel>> queryAlbums() => _query.queryAlbums();

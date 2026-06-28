@@ -102,6 +102,29 @@ class JustAudioPlaybackService implements PlaybackService {
       _player.setShuffleModeEnabled(enabled);
 
   @override
+  Future<void> removeFromQueue(SongModel song) async {
+    // Drop it from the cubit's queue first so UI stays in sync.
+    final updated = List<SongModel>.from(_playbackCubit.state.currentPlaylist)
+      ..removeWhere((s) => s.id == song.id);
+    _playbackCubit.updateCurrentPlaylist(updated);
+
+    // Match by the MediaItem tag id, since the player sequence skips songs
+    // without a file path and won't align with the playlist index.
+    final targetId = song.id.value().toString();
+    final index = _player.sequence.indexWhere(
+      (source) => (source.tag as MediaItem?)?.id == targetId,
+    );
+    if (index < 0) return;
+
+    if (updated.isEmpty) {
+      await _player.stop();
+    }
+
+    // Removing the current index makes just_audio advance to the next track.
+    await _player.removeAudioSourceAt(index);
+  }
+
+  @override
   Future<void> dispose() async {
     await _positionSub?.cancel();
     await _indexSub?.cancel();

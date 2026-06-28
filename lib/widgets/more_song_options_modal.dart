@@ -192,6 +192,8 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                   ),
                   onTap: () async {
                     final libraryCubit = context.read<LibraryCubit>();
+                    final playbackService =
+                        audioPlayerHandler<PlaybackService>();
                     final albumId = songPlayed.albumId;
                     final artistId = songPlayed.artistId;
 
@@ -203,39 +205,43 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                           force: true);
                     }
 
-                    if (albumId != null) {
-                      libraryCubit.searchByAlbumId(albumId);
-                      if (libraryState.albumCollection[albumId]?.length == 1 &&
-                          await imageFile.exists()) {
-                        MusicActions.deleteFile(imageFile);
-                      }
-                    }
+                    // Native MediaStore delete (system confirmation dialog) on
+                    // Android; legacy file delete elsewhere.
+                    final isDeleted = Platform.isAndroid
+                        ? await onAudioQuery.deleteSongs([songPlayed.id])
+                        : (songPlayed.data != null &&
+                            await MusicActions.deleteFile(
+                                File(songPlayed.data!)));
 
-                    final isDeleted = songPlayed.data != null
-                        ? await MusicActions.deleteFile(File(songPlayed.data!))
-                        : false;
-
-                    if (!context.mounted) return;
-                    Navigator.pop(context);
-
-                    if (isDeleted) {
-                      context.read<LibraryCubit>().getAllSongs();
-
-                      if (albumId != null) {
-                        libraryCubit.searchByAlbumId(albumId, force: true);
-                      }
-                      if (artistId != null) {
-                        libraryCubit.searchByArtistId(artistId, force: true);
-                      }
-
-                      SnackbarService.instance.showSnackbar(message: 'Successfully removed');
+                    if (!isDeleted) {
+                      SnackbarService.instance.showSnackbar(
+                        message: 'Error when deleting',
+                        backgroundColor: Colors.red,
+                      );
                       return;
                     }
 
-                    SnackbarService.instance.showSnackbar(
-                      message: 'Error when deleting',
-                      backgroundColor: Colors.red,
-                    );
+                    // Drop it from the live queue (advances to the next track)
+                    // and clean up the cached art if it was the album's last song.
+                    await playbackService.removeFromQueue(songPlayed);
+                    if (albumId != null &&
+                        libraryState.albumCollection[albumId]?.length == 1 &&
+                        await imageFile.exists()) {
+                      // App-owned cache file; delete directly (no permission).
+                      imageFile.delete();
+                    }
+
+                    libraryCubit.getAllSongs();
+                    if (albumId != null) {
+                      libraryCubit.searchByAlbumId(albumId, force: true);
+                    }
+                    if (artistId != null) {
+                      libraryCubit.searchByArtistId(artistId, force: true);
+                    }
+
+                    if (context.mounted) Navigator.pop(context);
+                    SnackbarService.instance
+                        .showSnackbar(message: 'Successfully removed');
                   },
                 ),
             ],

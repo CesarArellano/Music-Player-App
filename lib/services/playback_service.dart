@@ -17,5 +17,11 @@ abstract interface class PlaybackService {
   Future<void> stop();
   Future<void> seek(Duration position, {int? index});
   Future<void> setShuffleModeEnabled(bool enabled);
+
+  /// Removes [song] from the live queue. Removing the currently-playing song
+  /// makes playback advance to the next track seamlessly; removing the last
+  /// remaining song stops playback.
+  Future<void> removeFromQueue(SongModel song);
+
   Future<void> dispose();
 }
