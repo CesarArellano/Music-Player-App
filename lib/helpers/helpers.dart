@@ -12,8 +12,8 @@ class Helpers {
       // scaffolds, so an opaque route leaves the page below offstage and the
       // slide would reveal only the bare background instead of the home screen.
       opaque: false,
-      transitionDuration: const Duration(milliseconds: 250),
-      reverseTransitionDuration: const Duration(milliseconds: 250),
+      transitionDuration: const Duration(milliseconds: 350),
+      reverseTransitionDuration: const Duration(milliseconds: 350),
       pageBuilder: (context, animation, secondaryAnimation) => page,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         final curvedAnimation = CurvedAnimation(
@@ -26,7 +26,13 @@ class Helpers {
             begin: const Offset(0, 1),
             end: Offset.zero,
           ).animate(curvedAnimation),
-          child: child,
+          // Fade as well so the page below (kept painted by opaque:false) is
+          // revealed *through* this screen as it leaves — without the fade its
+          // opaque background just slides down and hides home until it clears.
+          child: FadeTransition(
+            opacity: curvedAnimation,
+            child: child,
+          ),
         );
       },
     );
