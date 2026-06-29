@@ -206,16 +206,18 @@ class _SongsScreenState extends State<SongsScreen>
                       );
                     },
                   ),
-                  Positioned(
-                    top: 12,
-                    bottom: 12,
-                    right: 4,
-                    child: AlphabetScrollbar(
-                      letters: _letters,
-                      onLetterSelected: (letter) => _jumpToLetter(
-                        letter,
-                        crossAxisCount,
-                        MediaQuery.of(context).size.width,
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 4),
+                      child: AlphabetScrollbar(
+                        letters: _letters,
+                        controller: _scrollController,
+                        onLetterSelected: (letter) => _jumpToLetter(
+                          letter,
+                          crossAxisCount,
+                          MediaQuery.of(context).size.width,
+                        ),
                       ),
                     ),
                   ),
