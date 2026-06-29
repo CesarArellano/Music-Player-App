@@ -263,6 +263,145 @@ class _AppBarTitle extends StatelessWidget {
   }
 }
 
+/// Swipeable artwork: each page is a song in the current queue. Swiping seeks
+/// the player to that song; external song changes (next/prev, auto-advance)
+/// animate the carousel back in sync.
+class _ArtworkCarousel extends StatefulWidget {
+  const _ArtworkCarousel({
+    required this.currentHeroId,
+    required this.height,
+  });
+
+  final String currentHeroId;
+  final double height;
+
+  @override
+  State<_ArtworkCarousel> createState() => _ArtworkCarouselState();
+}
+
+class _ArtworkCarouselState extends State<_ArtworkCarousel> {
+  late final PageController _controller;
+  late int _activeIndex;
+
+  // True while the user is dragging the carousel (so external sync won't fight
+  // them). [_userSwipe] latches a *user-initiated* page change so that
+  // programmatic animateToPage (external song changes / transient index emits
+  // from the player) never trigger a seek — that was causing the wrong song.
+  bool _isUserDragging = false;
+  bool _userSwipe = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _activeIndex = context.read<AudioControlCubit>().state.currentIndex;
+    _controller = PageController(initialPage: _activeIndex);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onPageChanged(int index) {
+    _activeIndex = index;
+
+    // Only a real swipe seeks. Programmatic moves leave [_userSwipe] false.
+    if (!_userSwipe) return;
+    _userSwipe = false;
+
+    final audioPlayer = audioPlayerHandler<AudioPlayer>();
+    if (index == audioPlayer.currentIndex) return;
+    audioPlayer.seek(Duration.zero, index: index);
+    audioPlayer.play();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final songs = context.select((PlaybackStateCubit c) => c.state.currentPlaylist);
+    final currentIndex = context.select((AudioControlCubit c) => c.state.currentIndex);
+    final appDirectory = context.select((LibraryCubit c) => c.state.appDirectory);
+
+    // Sync to an external song change (buttons / auto-advance) without fighting
+    // an in-progress user swipe. This move is programmatic, so clear the swipe
+    // latch to be sure its onPageChanged doesn't seek.
+    if (currentIndex != _activeIndex && !_isUserDragging) {
+      _activeIndex = currentIndex;
+      _userSwipe = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || _isUserDragging || !_controller.hasClients) return;
+        if (_controller.page?.round() != currentIndex) {
+          _controller.animateToPage(
+            currentIndex,
+            duration: const Duration(milliseconds: 350),
+            curve: Curves.easeOutCubic,
+          );
+        }
+      });
+    }
+
+    if (songs.isEmpty) return SizedBox(height: widget.height);
+
+    return SizedBox(
+      height: widget.height,
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          // A non-null dragDetails means the user is physically dragging;
+          // animateToPage produces notifications without it.
+          if (notification is ScrollStartNotification) {
+            _isUserDragging = true;
+            if (notification.dragDetails != null) _userSwipe = true;
+          } else if (notification is ScrollEndNotification) {
+            _isUserDragging = false;
+          }
+          return false;
+        },
+        child: PageView.builder(
+          controller: _controller,
+          itemCount: songs.length,
+          onPageChanged: _onPageChanged,
+          itemBuilder: (context, index) {
+            final song = songs[index];
+            final imageFile = File('$appDirectory/${song.albumId}.jpg');
+            final radius = BorderRadius.circular(15);
+
+            Widget image = ClipRRect(
+              borderRadius: radius,
+              child: Image.file(
+                imageFile,
+                width: double.infinity,
+                height: widget.height,
+                fit: BoxFit.cover,
+                filterQuality: FilterQuality.medium,
+                gaplessPlayback: true,
+                errorBuilder: (_, _, _) => ArtworkImage(
+                  artworkId: song.id,
+                  type: ArtworkType.AUDIO,
+                  width: double.infinity,
+                  height: widget.height,
+                  size: 500,
+                  radius: radius,
+                ),
+              ),
+            );
+
+            // Hero only on the active page so the open/close transition keeps
+            // flying the current artwork (a single tag stays on screen).
+            if (index == currentIndex) {
+              image = Hero(tag: widget.currentHeroId, child: image);
+            }
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: image,
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
 class _SongPlayedPortraitBody extends StatelessWidget {
   const _SongPlayedPortraitBody({
     required this.playAnimation,
@@ -292,27 +431,9 @@ class _SongPlayedPortraitBody extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 10),
-            Hero(
-              tag: currentHeroId,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(15),
-                child: Image.file(
-                  imageFile,
-                  width: double.infinity,
-                  height: 350,
-                  fit: BoxFit.cover,
-                  filterQuality: FilterQuality.medium,
-                  gaplessPlayback: true,
-                  errorBuilder: (_, _, _) => ArtworkImage(
-                    artworkId: songPlayed.id,
-                    type: ArtworkType.AUDIO,
-                    width: double.infinity,
-                    height: 350,
-                    size: 500,
-                    radius: BorderRadius.circular(15),
-                  ),
-                ),
-              ),
+            _ArtworkCarousel(
+              currentHeroId: currentHeroId,
+              height: 350,
             ),
             const SizedBox(height: 40),
             SizedBox(
@@ -733,27 +854,9 @@ class _SongPlayedLandscapeBody extends StatelessWidget {
               SizedBox(
                 height: size.height * 0.85,
                 width: size.width * 0.38,
-                child: Hero(
-                  tag: currentHeroId,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: Image.file(
-                      imageFile,
-                      width: double.maxFinite,
-                      height: 330,
-                      fit: BoxFit.cover,
-                      filterQuality: FilterQuality.medium,
-                      gaplessPlayback: true,
-                      errorBuilder: (_, _, _) => ArtworkImage(
-                        artworkId: songPlayed.id,
-                        type: ArtworkType.AUDIO,
-                        width: double.infinity,
-                        height: 350,
-                        size: 500,
-                        radius: BorderRadius.circular(15),
-                      ),
-                    ),
-                  ),
+                child: _ArtworkCarousel(
+                  currentHeroId: currentHeroId,
+                  height: 330,
                 ),
               ),
               const SizedBox(width: 15),
