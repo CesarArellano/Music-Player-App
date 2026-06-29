@@ -41,6 +41,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   album-art cache file is now deleted directly instead of via
   `manageExternalStorage`.
 
+- **Custom search screen** (`lib/search/music_search_screen.dart`). Replaced the
+  stock `SearchDelegate` subclass with a custom `StatefulWidget` (`MusicSearchScreen`)
+  that matches the Muzio Player reference: a rounded pill field with an inline
+  search icon and mic, an external "Cancel" button, and a transparent scaffold
+  so the global `AppBackground` shows through. Entry points in `HomeScreen`,
+  `AlbumSelectedScreen`, `ArtistSelectedScreen`, and `GenreSelectedScreen` all
+  updated from `showSearch(delegate: ...)` to `Navigator.push(MaterialPageRoute(...))`.
+  Old `search_delegate.dart` removed; file renamed to `music_search_screen.dart`.
+
 ### Fixed
 - **Skip buttons caused a seek jump.** Tapping skip-next/previous fired an
   immediate ±10s scrub before the tap was recognized. The press-and-hold scrub

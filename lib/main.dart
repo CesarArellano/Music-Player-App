@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
@@ -83,7 +84,13 @@ class MyApp extends StatelessWidget {
         theme: AppTheme.darkTheme,
         routes: AppRouter.routes,
         onGenerateRoute: AppRouter.onGenerateRoute,
-        builder: (context, child) => AppBackground(child: child!),
+        builder: (context, child) => AnnotatedRegion(
+          value: SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            systemNavigationBarColor: AppTheme.surfaceColor,
+          ),
+          child: AppBackground(child: child!),
+        ),
       ),
     );
   }

@@ -44,6 +44,7 @@ dependencies:
   just_audio: ^0.10.5
   just_audio_background: ^0.0.1-beta.17
   audio_video_progress_bar: ^2.0.3
+  speech_to_text: ^7.0.0
 
 
 dependency_overrides:

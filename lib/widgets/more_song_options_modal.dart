@@ -55,7 +55,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
 
     return AnnotatedRegion(
       value: SystemUiOverlayStyle(
-        systemNavigationBarColor: AppTheme.primaryColor,
+        systemNavigationBarColor: AppTheme.surfaceColor,
       ),
       child: OrientationBuilder(
         builder: (_, orientation) => Stack(

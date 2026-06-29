@@ -3,12 +3,14 @@ import 'dart:io' show File;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_query_selector/music_query_selector.dart' show SongModel, ArtworkType;
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 import '../cubits/cubits.dart';
 import '../extensions/extensions.dart';
 import '../helpers/music_actions.dart';
-import '../screens/album_selected_screen.dart';
-import '../screens/artist_selected_screen.dart';
+import 'album_selected_screen.dart';
+import 'artist_selected_screen.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
 
@@ -23,21 +25,55 @@ class MusicSearchScreen extends StatefulWidget {
 }
 
 class _MusicSearchScreenState extends State<MusicSearchScreen> {
+  final String localeId = 'es-MX';
   final TextEditingController _controller = TextEditingController();
+  final SpeechToText _speech = SpeechToText();
   String _query = '';
+  bool _speechEnabled = false;
 
   @override
   void initState() {
     super.initState();
+
     _controller.addListener(() {
       if (_controller.text != _query) {
         setState(() => _query = _controller.text);
       }
     });
+    _initSpeech();
+  }
+
+  Future<void> _initSpeech() async {
+    _speechEnabled = await _speech.initialize();
+    setState(() {});
+  }
+
+  Future<void> _toggleListening() async {
+    if (!_speechEnabled) return;
+    if (_speech.isNotListening) {
+      FocusScope.of(context).unfocus();
+      await _speech.listen(
+        onResult: _onSpeechResult,
+        listenOptions: SpeechListenOptions(
+          localeId: localeId,
+        ),
+      );
+    } else {
+      await _speech.stop();
+    }
+    setState(() {});
+  }
+
+  void _onSpeechResult(SpeechRecognitionResult result) {
+    _controller.value = _controller.value.copyWith(
+      text: result.recognizedWords,
+      selection: TextSelection.collapsed(offset: result.recognizedWords.length),
+    );
   }
 
   @override
   void dispose() {
+    _speech.cancel();
     _controller.dispose();
     super.dispose();
   }
@@ -52,8 +88,10 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
             _SearchField(
               controller: _controller,
               hasText: _query.isNotEmpty,
+              isListening: _speech.isListening,
               onClear: _controller.clear,
               onCancel: () => Navigator.pop(context),
+              onMicTap: _toggleListening,
             ),
             Expanded(child: _buildBody(context)),
           ],
@@ -188,14 +226,18 @@ class _SearchField extends StatelessWidget {
   const _SearchField({
     required this.controller,
     required this.hasText,
+    required this.isListening,
     required this.onClear,
     required this.onCancel,
+    required this.onMicTap,
   });
 
   final TextEditingController controller;
   final bool hasText;
+  final bool isListening;
   final VoidCallback onClear;
   final VoidCallback onCancel;
+  final VoidCallback onMicTap;
 
   @override
   Widget build(BuildContext context) {
@@ -218,7 +260,7 @@ class _SearchField extends StatelessWidget {
                 style: const TextStyle(color: Colors.white, fontSize: 16),
                 cursorColor: Colors.white,
                 decoration: InputDecoration(
-                  hintText: 'Search',
+                  hintText: isListening ? 'Listening...' : 'Search',
                   hintStyle: const TextStyle(color: hintColor, fontSize: 16),
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(vertical: 10),
@@ -229,7 +271,14 @@ class _SearchField extends StatelessWidget {
                           splashRadius: 20,
                           onPressed: onClear,
                         )
-                      : const Icon(Icons.mic, color: hintColor),
+                      : IconButton(
+                          icon: Icon(
+                            Icons.mic,
+                            color: isListening ? Colors.redAccent : hintColor,
+                          ),
+                          splashRadius: 20,
+                          onPressed: onMicTap,
+                        ),
                 ),
               ),
             ),

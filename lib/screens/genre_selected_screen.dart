@@ -8,7 +8,7 @@ import 'package:music_query_selector/music_query_selector.dart';
 import '../cubits/cubits.dart';
 import '../extensions/extensions.dart';
 import '../helpers/music_actions.dart';
-import '../search/search_delegate.dart';
+import 'music_search_screen.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
 

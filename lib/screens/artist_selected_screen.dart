@@ -9,7 +9,7 @@ import '../cubits/cubits.dart';
 import '../extensions/extensions.dart';
 import '../helpers/music_actions.dart';
 import '../models/artist_content_model.dart';
-import '../search/search_delegate.dart';
+import 'music_search_screen.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
 import 'album_selected_screen.dart';
