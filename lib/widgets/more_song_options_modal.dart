@@ -1,6 +1,7 @@
 import 'dart:io' show Platform, File;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_query_selector/music_query_selector.dart';
 import 'package:share_plus/share_plus.dart';
@@ -52,8 +53,12 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
     );
     final isFavoriteSong = favoritesState.isFavoriteSong(songPlayed.id);
 
-    return OrientationBuilder(
-      builder: (_, orientation) => Stack(
+    return AnnotatedRegion(
+      value: SystemUiOverlayStyle(
+        systemNavigationBarColor: AppTheme.primaryColor,
+      ),
+      child: OrientationBuilder(
+        builder: (_, orientation) => Stack(
         children: [
           ListView(
             shrinkWrap: true,
@@ -248,7 +253,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
           ),
           Container(
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.9),
+              color: AppTheme.primaryColor,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(30),
                 topRight: Radius.circular(30),
@@ -284,6 +289,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
           ),
         ],
       ),
+      )
     );
   }
 

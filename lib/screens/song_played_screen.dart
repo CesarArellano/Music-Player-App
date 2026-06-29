@@ -73,6 +73,7 @@ class _SongPlayedScreenState extends State<SongPlayedScreen>
         return AnnotatedRegion<SystemUiOverlayStyle>(
           value: SystemUiOverlayStyle(
             statusBarIconBrightness: songPlayedBrightness,
+            systemNavigationBarColor: uiState.dominantColor
           ),
           child: Theme(
             data: AppTheme.darkTheme.copyWith(

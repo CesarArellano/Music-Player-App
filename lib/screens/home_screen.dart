@@ -54,63 +54,68 @@ class _HomeScreenState extends State<HomeScreen>
     final libraryState = context.watch<LibraryCubit>().state;
     final playbackState = context.watch<PlaybackStateCubit>().state;
 
-    return PopScope(
-      onPopInvokedWithResult: (didPop, result) {
-        if (_isSnackbarActive) {
-          audioPlayerHandler<AudioPlayer>().stop();
-          audioPlayerHandler<AudioPlayer>().dispose();
-          SystemNavigator.pop();
-        }
-
-        _isSnackbarActive = true;
-
-        SnackbarService.instance.showSnackbar(
-          message: 'Please back again to exit',
-          snackBarAction: SnackBarAction(
-            label: 'EXIT',
-            textColor: AppTheme.accentColor,
-            onPressed: () {
-              audioPlayerHandler<AudioPlayer>().stop();
-              audioPlayerHandler<AudioPlayer>().dispose();
-              SystemNavigator.pop();
-            },
+    return AnnotatedRegion(
+      value: SystemUiOverlayStyle(
+        systemNavigationBarColor: AppTheme.surfaceColor,
+      ),
+      child: PopScope(
+        onPopInvokedWithResult: (didPop, result) {
+          if (_isSnackbarActive) {
+            audioPlayerHandler<AudioPlayer>().stop();
+            audioPlayerHandler<AudioPlayer>().dispose();
+            SystemNavigator.pop();
+          }
+      
+          _isSnackbarActive = true;
+      
+          SnackbarService.instance.showSnackbar(
+            message: 'Please back again to exit',
+            snackBarAction: SnackBarAction(
+              label: 'EXIT',
+              textColor: AppTheme.accentColor,
+              onPressed: () {
+                audioPlayerHandler<AudioPlayer>().stop();
+                audioPlayerHandler<AudioPlayer>().dispose();
+                SystemNavigator.pop();
+              },
+            ),
+          ).closed.then((_) => _isSnackbarActive = false);
+        },
+        child: Scaffold(
+          appBar: _CustomAppBar(tabController: _tabController),
+          body: TabBarView(
+            controller: _tabController,
+            children: <Widget>[
+              const SongsScreen(),
+              const AlbumsScreen(),
+              const ArtistScreen(),
+              if (Platform.isAndroid) const PlaylistsScreen(),
+              const FavoriteScreen(),
+              const GenresScreen(),
+            ],
           ),
-        ).closed.then((_) => _isSnackbarActive = false);
-      },
-      child: Scaffold(
-        appBar: _CustomAppBar(tabController: _tabController),
-        body: TabBarView(
-          controller: _tabController,
-          children: <Widget>[
-            const SongsScreen(),
-            const AlbumsScreen(),
-            const ArtistScreen(),
-            if (Platform.isAndroid) const PlaylistsScreen(),
-            const FavoriteScreen(),
-            const GenresScreen(),
-          ],
+          floatingActionButton: libraryState.songList.isEmpty
+              ? null
+              : FloatingActionButton(
+                  heroTag: 'fab',
+                  backgroundColor: AppTheme.accentColor,
+                  onPressed: libraryState.isCreatingArtworks
+                      ? null
+                      : _selectedIndex == 3
+                          ? () => _addPlaylist()
+                          : () => _shuffleAction(libraryState),
+                  child: libraryState.isCreatingArtworks
+                      ? const CircularProgressIndicator(color: Colors.black)
+                      : Icon(
+                          _selectedIndex == 3 ? Icons.add : Icons.shuffle,
+                          color: Colors.black,
+                        ),
+                ),
+          bottomNavigationBar:
+              (libraryState.isLoading || playbackState.songPlayed.id == 0)
+                  ? null
+                  : const CurrentSongTile(),
         ),
-        floatingActionButton: libraryState.songList.isEmpty
-            ? null
-            : FloatingActionButton(
-                heroTag: 'fab',
-                backgroundColor: AppTheme.accentColor,
-                onPressed: libraryState.isCreatingArtworks
-                    ? null
-                    : _selectedIndex == 3
-                        ? () => _addPlaylist()
-                        : () => _shuffleAction(libraryState),
-                child: libraryState.isCreatingArtworks
-                    ? const CircularProgressIndicator(color: Colors.black)
-                    : Icon(
-                        _selectedIndex == 3 ? Icons.add : Icons.shuffle,
-                        color: Colors.black,
-                      ),
-              ),
-        bottomNavigationBar:
-            (libraryState.isLoading || playbackState.songPlayed.id == 0)
-                ? null
-                : const CurrentSongTile(),
       ),
     );
   }
