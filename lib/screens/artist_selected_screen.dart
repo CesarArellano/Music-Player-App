@@ -87,8 +87,10 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
             splashRadius: 20,
             icon: const Icon(Icons.search),
             color: AppTheme.lightTextColor,
-            onPressed: () =>
-                showSearch(context: context, delegate: MusicSearchDelegate()),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const MusicSearchScreen()),
+            ),
           ),
         ],
       ),

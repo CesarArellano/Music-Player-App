@@ -2,6 +2,7 @@ import 'dart:io' show File;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:focus_music_player/routes/app_router.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:music_query_selector/music_query_selector.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -10,7 +11,6 @@ import '../audio_player_handler.dart';
 import '../cubits/cubits.dart';
 import '../data/repositories/preferences_repository.dart';
 import '../extensions/extensions.dart';
-import 'helpers.dart';
 import '../screens/song_played_screen.dart';
 import '../services/playback_service.dart';
 import '../services/playlist_resolver.dart';
@@ -100,7 +100,7 @@ class MusicActions {
 
     Navigator.push(
       context,
-      Helpers.slideUpRoute(
+      AppRouter.slideUpRoute(
         SongPlayedScreen(
           playlistId: type == PlaylistType.playlist ? id : null,
           isPlaylist: type == PlaylistType.playlist,

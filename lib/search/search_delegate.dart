@@ -12,49 +12,61 @@ import '../screens/artist_selected_screen.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
 
-class MusicSearchDelegate extends SearchDelegate {
+/// Full-screen search built to match the reference: a rounded pill field with
+/// an inline search icon and mic, plus an external "Cancel". The scaffold is
+/// transparent so the global AppBackground shows through, like the home screen.
+class MusicSearchScreen extends StatefulWidget {
+  const MusicSearchScreen({super.key});
+
   @override
-  ThemeData appBarTheme(BuildContext context) {
-    return Theme.of(context).copyWith(
-      colorScheme: const ColorScheme.dark(primary: Colors.white),
-      hintColor: Colors.white,
-      appBarTheme: const AppBarTheme(backgroundColor: AppTheme.primaryColor),
-      scaffoldBackgroundColor: AppTheme.primaryColor,
-    );
+  State<MusicSearchScreen> createState() => _MusicSearchScreenState();
+}
+
+class _MusicSearchScreenState extends State<MusicSearchScreen> {
+  final TextEditingController _controller = TextEditingController();
+  String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(() {
+      if (_controller.text != _query) {
+        setState(() => _query = _controller.text);
+      }
+    });
   }
 
   @override
-  String get searchFieldLabel => 'Buscar canción';
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
-  List<Widget>? buildActions(BuildContext context) {
-    return [
-      IconButton(
-        onPressed: () => query = '',
-        icon: const Icon(Icons.clear),
-        splashRadius: 22,
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _SearchField(
+              controller: _controller,
+              hasText: _query.isNotEmpty,
+              onClear: _controller.clear,
+              onCancel: () => Navigator.pop(context),
+            ),
+            Expanded(child: _buildBody(context)),
+          ],
+        ),
       ),
-    ];
-  }
-
-  @override
-  Widget? buildLeading(BuildContext context) {
-    return IconButton(
-      onPressed: () => close(context, null),
-      icon: const Icon(Icons.arrow_back),
-      splashRadius: 22,
     );
   }
 
-  @override
-  Widget buildResults(BuildContext context) => _emptyContainer();
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    if (query.isEmpty) return _emptyContainer();
+  Widget _buildBody(BuildContext context) {
+    if (_query.isEmpty) return _emptyContainer();
 
     final libraryState = context.watch<LibraryCubit>().state;
-    final result = libraryState.searchByQuery(query);
+    final result = libraryState.searchByQuery(_query);
     final songs = result.songs;
     final albums = result.albums;
     final artists = result.artists;
@@ -64,6 +76,7 @@ class MusicSearchDelegate extends SearchDelegate {
     }
 
     return CustomScrollView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       slivers: [
         if (songs.isNotEmpty) _SectionTitle(title: 'Songs', length: songs.length),
         SliverList(
@@ -126,13 +139,18 @@ class MusicSearchDelegate extends SearchDelegate {
             childCount: albums.length,
           ),
         ),
+        const SliverToBoxAdapter(child: SizedBox(height: 20)),
       ],
     );
   }
 
   Widget _emptyContainer() {
-    return const Center(
-      child: Icon(Icons.music_note, size: 130, color: Colors.white),
+    return Center(
+      child: Icon(
+        Icons.music_note,
+        size: 130,
+        color: Colors.white.withValues(alpha: 0.5),
+      ),
     );
   }
 
@@ -164,6 +182,71 @@ class MusicSearchDelegate extends SearchDelegate {
   }
 }
 
+/// The pill-shaped query field with an inline search icon + mic, and a trailing
+/// "Cancel" action outside the pill.
+class _SearchField extends StatelessWidget {
+  const _SearchField({
+    required this.controller,
+    required this.hasText,
+    required this.onClear,
+    required this.onCancel,
+  });
+
+  final TextEditingController controller;
+  final bool hasText;
+  final VoidCallback onClear;
+  final VoidCallback onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    const hintColor = Colors.white60;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: TextField(
+                controller: controller,
+                autofocus: true,
+                textInputAction: TextInputAction.search,
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+                cursorColor: Colors.white,
+                decoration: InputDecoration(
+                  hintText: 'Search',
+                  hintStyle: const TextStyle(color: hintColor, fontSize: 16),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                  prefixIcon: const Icon(Icons.search, color: hintColor),
+                  suffixIcon: hasText
+                      ? IconButton(
+                          icon: const Icon(Icons.close, color: hintColor),
+                          splashRadius: 20,
+                          onPressed: onClear,
+                        )
+                      : const Icon(Icons.mic, color: hintColor),
+                ),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: onCancel,
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: hintColor, fontWeight: FontWeight.w400),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _SectionTitle extends StatelessWidget {
   const _SectionTitle({required this.title, required this.length});
 
@@ -189,8 +272,7 @@ class _SectionTitle extends StatelessWidget {
                   ),
                   TextSpan(
                     text: ' ($length)',
-                    style:
-                        const TextStyle(color: AppTheme.lightTextColor),
+                    style: const TextStyle(color: AppTheme.lightTextColor),
                   ),
                 ],
               ),

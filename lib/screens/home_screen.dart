@@ -203,8 +203,10 @@ class _CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           splashRadius: 20,
           icon: const Icon(Icons.search),
           color: AppTheme.lightTextColor,
-          onPressed: () =>
-              showSearch(context: context, delegate: MusicSearchDelegate()),
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const MusicSearchScreen()),
+          ),
           tooltip: 'Search music',
         ),
         PopupMenuButton(

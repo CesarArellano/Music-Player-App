@@ -7,8 +7,8 @@ import 'package:just_audio/just_audio.dart';
 import '../audio_player_handler.dart';
 import '../cubits/cubits.dart';
 import '../extensions/extensions.dart';
-import '../helpers/helpers.dart';
 import '../helpers/music_actions.dart';
+import '../routes/app_router.dart';
 import '../screens/song_played_screen.dart';
 import '../theme/app_theme.dart';
 import 'widgets.dart';
@@ -141,7 +141,7 @@ class _SongInfoTile extends StatelessWidget {
         uiCubit.updateCurrentHeroId(heroId);
         Navigator.push(
           context,
-          Helpers.slideUpRoute(const SongPlayedScreen()),
+          AppRouter.slideUpRoute(const SongPlayedScreen()),
         );
       },
     ),
