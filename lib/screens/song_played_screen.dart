@@ -119,24 +119,27 @@ class _SongPlayedScreenState extends State<SongPlayedScreen>
                   const AppBackground(),
                   Transform.scale(
                     scale: 1.1,
-                    child: Container(
-                      decoration: imageFile.existsSync()
-                          ? BoxDecoration(
-                              image: DecorationImage(
-                                fit: BoxFit.cover,
-                                image: FileImage(imageFile),
-                                onError: (_, _) {},
-                              ),
-                            )
-                          : null,
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 50.0, sigmaY: 50.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: uiState.dominantColor.withValues(alpha: 0.8),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        if (imageFile.existsSync())
+                          // ImageFiltered blurs this image (its child) directly.
+                          // Unlike BackdropFilter it never samples the route
+                          // behind it, so the home screen isn't blurred during
+                          // the open/close slide transition.
+                          ImageFiltered(
+                            imageFilter:
+                                ImageFilter.blur(sigmaX: 50.0, sigmaY: 50.0),
+                            child: Image.file(
+                              imageFile,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                            ),
                           ),
+                        Container(
+                          color: uiState.dominantColor.withValues(alpha: 0.8),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                   if (orientation == Orientation.portrait)

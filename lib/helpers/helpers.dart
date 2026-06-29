@@ -7,8 +7,13 @@ class Helpers {
   /// slides it back down when popped.
   static Route<T> slideUpRoute<T>(Widget page) {
     return PageRouteBuilder<T>(
-      transitionDuration: const Duration(milliseconds: 350),
-      reverseTransitionDuration: const Duration(milliseconds: 350),
+      // Keep the route below painted for the whole transition. The app's
+      // background is global (behind the Navigator) with transparent
+      // scaffolds, so an opaque route leaves the page below offstage and the
+      // slide would reveal only the bare background instead of the home screen.
+      opaque: false,
+      transitionDuration: const Duration(milliseconds: 250),
+      reverseTransitionDuration: const Duration(milliseconds: 250),
       pageBuilder: (context, animation, secondaryAnimation) => page,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         final curvedAnimation = CurvedAnimation(
