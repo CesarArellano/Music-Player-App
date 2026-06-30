@@ -3,18 +3,15 @@ import 'dart:io' show File;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:focus_music_player/routes/app_router.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:music_query_selector/music_query_selector.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../audio_player_handler.dart';
 import '../cubits/cubits.dart';
 import '../data/repositories/preferences_repository.dart';
-import '../extensions/extensions.dart';
 import '../screens/song_played_screen.dart';
 import '../services/playback_service.dart';
 import '../services/playlist_resolver.dart';
-import '../theme/app_theme.dart';
 
 enum PlaylistType {
   songs,
@@ -105,45 +102,6 @@ class MusicActions {
           playlistId: type == PlaylistType.playlist ? id : null,
           isPlaylist: type == PlaylistType.playlist,
         ),
-      ),
-    );
-  }
-
-  static void showCurrentPlayList(BuildContext context) {
-    final audioPlayer = audioPlayerHandler<AudioPlayer>();
-    final playbackService = audioPlayerHandler<PlaybackService>();
-    final playbackCubit = context.read<PlaybackStateCubit>();
-
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) => ListView.builder(
-        shrinkWrap: true,
-        itemCount: playbackCubit.state.currentPlaylist.length,
-        itemBuilder: (_, int i) {
-          final effectiveIndices = playbackService.effectiveIndices;
-          final song = playbackCubit.state.currentPlaylist[
-              effectiveIndices != null ? effectiveIndices[i] : i];
-          final audio = SongModel({
-            '_id': song.id,
-            'title': song.title,
-            'artist': song.artist,
-          });
-          final isPlaying = playbackCubit.state.songPlayed.id == audio.id;
-          final color = isPlaying ? AppTheme.accentColor : Colors.white;
-
-          return ListTile(
-            leading: Icon(Icons.music_note, color: color),
-            title: Text(audio.title.value(), maxLines: 1,
-                style: TextStyle(color: color)),
-            subtitle: Text(audio.artist.valueEmpty('No Artists'), maxLines: 1,
-                style: TextStyle(color: color)),
-            onTap: () {
-              audioPlayer.seek(Duration.zero, index: i);
-              audioPlayer.play();
-              Navigator.pop(ctx);
-            },
-          );
-        },
       ),
     );
   }

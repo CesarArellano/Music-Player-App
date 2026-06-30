@@ -15,7 +15,6 @@ import 'package:volume_controller/volume_controller.dart';
 import '../audio_player_handler.dart';
 import '../cubits/cubits.dart';
 import '../extensions/extensions.dart';
-import '../helpers/music_actions.dart';
 import '../services/favorites_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_background.dart';
@@ -23,6 +22,7 @@ import '../widgets/bouncing_widget.dart';
 import '../widgets/widgets.dart';
 import 'album_selected_screen.dart';
 import 'artist_selected_screen.dart';
+import 'playing_queue_screen.dart';
 
 class SongPlayedScreen extends StatefulWidget {
   const SongPlayedScreen({
@@ -617,7 +617,11 @@ class _SongPlayedPortraitBody extends StatelessWidget {
                   const SizedBox(width: 5),
                   _CustomIconButton(
                     icon: Icons.playlist_play_rounded,
-                    onPressed: () => MusicActions.showCurrentPlayList(context),
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const PlayingQueueScreen()),
+                    ),
                   ),
                 ],
               ),
@@ -1052,8 +1056,11 @@ class _SongPlayedLandscapeBody extends StatelessWidget {
                           ),
                           IconButton(
                             padding: EdgeInsets.zero,
-                            onPressed: () =>
-                                MusicActions.showCurrentPlayList(context),
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const PlayingQueueScreen()),
+                            ),
                             icon: const Icon(Icons.playlist_play),
                           ),
                         ],

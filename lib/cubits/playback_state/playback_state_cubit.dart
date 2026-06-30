@@ -8,6 +8,9 @@ export 'playback_state.dart';
 class PlaybackStateCubit extends Cubit<PlaybackState> {
   PlaybackStateCubit() : super(PlaybackState());
 
+  void clearSongPlayed() =>
+      emit(PlaybackState(currentPlaylist: state.currentPlaylist, isShuffling: state.isShuffling));
+
   void updateSongPlayed(SongModel song) =>
       emit(state.copyWith(songPlayed: song));
 

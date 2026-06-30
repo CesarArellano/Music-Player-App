@@ -23,5 +23,9 @@ abstract interface class PlaybackService {
   /// remaining song stops playback.
   Future<void> removeFromQueue(SongModel song);
 
+  /// Moves the song at [oldIndex] to [newIndex] in the live queue without
+  /// reloading the playlist.
+  Future<void> moveInQueue(int oldIndex, int newIndex);
+
   Future<void> dispose();
 }

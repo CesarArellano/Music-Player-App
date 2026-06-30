@@ -8,3 +8,4 @@ export 'package:focus_music_player/screens/tabs/playlists_screen.dart';
 export 'package:focus_music_player/screens/song_played_screen.dart';
 export 'package:focus_music_player/screens/album_selected_screen.dart';
 export 'package:focus_music_player/screens/music_search_screen.dart';
+export 'package:focus_music_player/screens/playing_queue_screen.dart';

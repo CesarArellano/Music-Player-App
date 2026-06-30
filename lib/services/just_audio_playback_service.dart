@@ -125,6 +125,15 @@ class JustAudioPlaybackService implements PlaybackService {
   }
 
   @override
+  Future<void> moveInQueue(int oldIndex, int newIndex) async {
+    final list = List<SongModel>.from(_playbackCubit.state.currentPlaylist);
+    final song = list.removeAt(oldIndex);
+    list.insert(newIndex, song);
+    _playbackCubit.updateCurrentPlaylist(list);
+    await _player.moveAudioSource(oldIndex, newIndex);
+  }
+
+  @override
   Future<void> dispose() async {
     await _positionSub?.cancel();
     await _indexSub?.cancel();

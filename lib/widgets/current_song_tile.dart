@@ -7,8 +7,8 @@ import 'package:just_audio/just_audio.dart';
 import '../audio_player_handler.dart';
 import '../cubits/cubits.dart';
 import '../extensions/extensions.dart';
-import '../helpers/music_actions.dart';
 import '../routes/app_router.dart';
+import '../screens/playing_queue_screen.dart';
 import '../screens/song_played_screen.dart';
 import '../theme/app_theme.dart';
 import 'widgets.dart';
@@ -119,7 +119,11 @@ class _SongInfoTile extends StatelessWidget {
                 icon: const Icon(Icons.queue_music),
                 iconSize: 26,
                 color: Colors.white,
-                onPressed: () => MusicActions.showCurrentPlayList(context),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const PlayingQueueScreen()),
+                ),
               ),
             ],
           );
