@@ -1,7 +1,7 @@
 import 'package:music_query_selector/music_query_selector.dart' show SongModel;
 
 import '../cubits/library/library_state.dart';
-import '../helpers/music_actions.dart' show PlaylistType;
+import '../models/playlist_type.dart';
 import '../models/artist_content_model.dart';
 import '../extensions/extensions.dart';
 

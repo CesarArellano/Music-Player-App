@@ -9,7 +9,11 @@ import 'package:music_query_selector/music_query_selector.dart';
 
 import '../../cubits/cubits.dart';
 import '../../extensions/extensions.dart';
-import '../../helpers/music_actions.dart';
+import '../../audio_player_handler.dart';
+import '../../models/playlist_type.dart';
+import '../../routes/app_router.dart';
+import '../../services/music_orchestrator_service.dart';
+import '../song_played_screen.dart';
 import '../../share_prefs/user_preferences.dart';
 import '../../widgets/widgets.dart';
 
@@ -149,7 +153,7 @@ class _SongsScreenState extends State<SongsScreen>
     playbackCubit.updateSongPlayed(foundSong);
 
     if (foundSong.id == 0) return;
-    MusicActions.initSongs(context, foundSong, heroId: 'current-song-${foundSong.id}');
+    audioPlayerHandler<MusicOrchestratorService>().initSong(foundSong, heroId: 'current-song-${foundSong.id}');
   }
 
   @override
@@ -238,12 +242,10 @@ class _SongsScreenState extends State<SongsScreen>
                                     imageFile: imageFile,
                                     tag: heroId,
                                   ),
-                                  onTap: () => MusicActions.songPlayAndPause(
-                                    context,
-                                    song,
-                                    PlaylistType.songs,
-                                    heroId: heroId,
-                                  ),
+                                  onTap: () {
+                                    audioPlayerHandler<MusicOrchestratorService>().playSong(song, PlaylistType.songs, heroId: heroId);
+                                    Navigator.push(context, AppRouter.slideUpRoute(const SongPlayedScreen()));
+                                  },
                                   onLongPress: () => showModalBottomSheet(
                                     context: context,
                                     builder: (_) => MoreSongOptionsModal(song: song),

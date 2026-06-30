@@ -4,10 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_query_selector/music_query_selector.dart';
 
+import '../audio_player_handler.dart';
 import '../cubits/cubits.dart';
 import '../extensions/extensions.dart';
-import '../helpers/music_actions.dart';
+import '../models/playlist_type.dart';
+import '../routes/app_router.dart';
+import '../services/music_orchestrator_service.dart';
 import 'music_search_screen.dart';
+import 'song_played_screen.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
 
@@ -176,13 +180,15 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                             color: AppTheme.lightTextColor, fontSize: 12),
                       ),
                     ),
-                    onTap: () => MusicActions.songPlayAndPause(
-                      context,
-                      song,
-                      PlaylistType.album,
-                      id: widget.albumSelected.id,
-                      heroId: heroId,
-                    ),
+                    onTap: () {
+                      audioPlayerHandler<MusicOrchestratorService>().playSong(
+                        song,
+                        PlaylistType.album,
+                        id: widget.albumSelected.id,
+                        heroId: heroId,
+                      );
+                      Navigator.push(context, AppRouter.slideUpRoute(const SongPlayedScreen()));
+                    },
                     onLongPress: () => showModalBottomSheet(
                       context: context,
                       builder: (_) => MoreSongOptionsModal(song: song),

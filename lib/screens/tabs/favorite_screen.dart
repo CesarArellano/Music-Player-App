@@ -5,7 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../cubits/cubits.dart';
 import '../../extensions/extensions.dart';
-import '../../helpers/music_actions.dart';
+import '../../audio_player_handler.dart';
+import '../../models/playlist_type.dart';
+import '../../routes/app_router.dart';
+import '../../services/music_orchestrator_service.dart';
+import '../song_played_screen.dart';
 import '../../widgets/widgets.dart';
 
 class FavoriteScreen extends StatefulWidget {
@@ -46,12 +50,10 @@ class _FavoriteScreenState extends State<FavoriteScreen>
                     final heroId = 'favorite-song-${song.id}';
 
                     return RippleTile(
-                      onTap: () => MusicActions.songPlayAndPause(
-                        context,
-                        song,
-                        PlaylistType.favorites,
-                        heroId: heroId,
-                      ),
+                      onTap: () {
+                        audioPlayerHandler<MusicOrchestratorService>().playSong(song, PlaylistType.favorites, heroId: heroId);
+                        Navigator.push(context, AppRouter.slideUpRoute(const SongPlayedScreen()));
+                      },
                       onLongPress: () => showModalBottomSheet(
                         context: context,
                         builder: (_) => MoreSongOptionsModal(

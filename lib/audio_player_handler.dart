@@ -14,7 +14,9 @@ import 'data/repositories/preferences_repository.dart';
 import 'data/repositories/shared_preferences_repository.dart';
 import 'data/services/artwork_cache_service.dart';
 import 'services/favorites_service.dart';
+import 'services/file_management_service.dart';
 import 'services/just_audio_playback_service.dart';
+import 'services/music_orchestrator_service.dart';
 import 'services/playback_service.dart';
 import 'services/snackbar_service.dart';
 import 'share_prefs/user_preferences.dart';
@@ -40,6 +42,10 @@ void setupAudioHandlers() {
       audioRepository: audioPlayerHandler<AudioRepository>(),
       preferences: audioPlayerHandler<PreferencesRepository>(),
     ),
+  );
+
+  audioPlayerHandler.registerLazySingleton<FileManagementService>(
+    () => const FileManagementService(),
   );
 }
 
@@ -75,5 +81,9 @@ void setupServiceLayer({
       uiCubit: uiCubit,
       preferences: audioPlayerHandler<PreferencesRepository>(),
     ),
+  );
+
+  audioPlayerHandler.registerSingleton<MusicOrchestratorService>(
+    buildMusicOrchestratorService(),
   );
 }

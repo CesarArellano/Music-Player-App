@@ -6,10 +6,14 @@ import 'package:music_query_selector/music_query_selector.dart' show SongModel, 
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
+import '../audio_player_handler.dart';
 import '../cubits/cubits.dart';
 import '../extensions/extensions.dart';
-import '../helpers/music_actions.dart';
+import '../models/playlist_type.dart';
+import '../routes/app_router.dart';
+import '../services/music_orchestrator_service.dart';
 import 'album_selected_screen.dart';
+import 'song_played_screen.dart';
 import 'artist_selected_screen.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
@@ -210,8 +214,10 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
         artworkId: song.id,
         tag: heroId,
       ),
-      onTap: () =>
-          MusicActions.songPlayAndPause(context, song, PlaylistType.songs, heroId: heroId),
+      onTap: () {
+        audioPlayerHandler<MusicOrchestratorService>().playSong(song, PlaylistType.songs, heroId: heroId);
+        Navigator.push(context, AppRouter.slideUpRoute(const SongPlayedScreen()));
+      },
       onLongPress: () => showModalBottomSheet(
         context: context,
         builder: (_) => MoreSongOptionsModal(song: song),

@@ -9,8 +9,8 @@ import 'package:share_plus/share_plus.dart';
 import '../audio_player_handler.dart';
 import '../cubits/cubits.dart';
 import '../extensions/extensions.dart';
-import '../helpers/music_actions.dart';
 import '../services/favorites_service.dart';
+import '../services/file_management_service.dart';
 import '../services/playback_service.dart';
 import '../services/snackbar_service.dart';
 import '../theme/app_theme.dart';
@@ -215,8 +215,8 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                     final isDeleted = Platform.isAndroid
                         ? await onAudioQuery.deleteSongs([songPlayed.id])
                         : (songPlayed.data != null &&
-                            await MusicActions.deleteFile(
-                                File(songPlayed.data!)));
+                            await audioPlayerHandler<FileManagementService>()
+                                .deleteFile(File(songPlayed.data!)));
 
                     if (!isDeleted) {
                       SnackbarService.instance.showSnackbar(

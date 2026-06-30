@@ -11,7 +11,9 @@ import 'package:share_plus/share_plus.dart';
 import '../audio_player_handler.dart';
 import '../cubits/cubits.dart';
 import '../extensions/extensions.dart';
-import '../helpers/music_actions.dart';
+import '../models/playlist_type.dart';
+import '../routes/app_router.dart';
+import '../services/music_orchestrator_service.dart';
 import '../services/snackbar_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/create_playlist_dialog.dart';
@@ -141,13 +143,13 @@ class _HomeScreenState extends State<HomeScreen>
   void _shuffleAction(LibraryState libraryState) {
     final index = Random().nextInt(libraryState.songList.length);
     final song = libraryState.songList[index];
-    MusicActions.songPlayAndPause(
-      context,
+    audioPlayerHandler<MusicOrchestratorService>().playSong(
       song,
       PlaylistType.songs,
       heroId: 'songs-${song.id}',
       activateShuffle: true,
     );
+    Navigator.push(context, AppRouter.slideUpRoute(const SongPlayedScreen()));
   }
 
   void _handleTabSelection() {

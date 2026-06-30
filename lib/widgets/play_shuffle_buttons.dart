@@ -3,7 +3,11 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:music_query_selector/music_query_selector.dart';
 
-import '../helpers/music_actions.dart';
+import '../audio_player_handler.dart';
+import '../models/playlist_type.dart';
+import '../routes/app_router.dart';
+import '../screens/song_played_screen.dart';
+import '../services/music_orchestrator_service.dart';
 import 'custom_icon_text_button.dart';
 
 class PlayShuffleButtons extends StatelessWidget {
@@ -63,13 +67,19 @@ class PlayShuffleButtons extends StatelessWidget {
 
     final song = songList[index];
 
-    MusicActions.songPlayAndPause(
-      context,
+    audioPlayerHandler<MusicOrchestratorService>().playSong(
       song,
-      activateShuffle: activeShuffle,
       typePlaylist,
+      activateShuffle: activeShuffle,
       id: id,
-      heroId: '$heroId${ song.id }'
+      heroId: '$heroId${song.id}',
+    );
+    Navigator.push(
+      context,
+      AppRouter.slideUpRoute(SongPlayedScreen(
+        isPlaylist: typePlaylist == PlaylistType.playlist,
+        playlistId: typePlaylist == PlaylistType.playlist ? id : null,
+      )),
     );
   }
 }
