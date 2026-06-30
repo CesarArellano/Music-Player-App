@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show File;
 import 'dart:ui';
 
@@ -9,6 +10,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:marqueer/marqueer.dart';
 import 'package:music_query_selector/music_query_selector.dart';
+import 'package:volume_controller/volume_controller.dart';
 
 import '../audio_player_handler.dart';
 import '../cubits/cubits.dart';
@@ -133,6 +135,9 @@ class _SongPlayedScreenState extends State<SongPlayedScreen>
                             child: Image.file(
                               imageFile,
                               fit: BoxFit.cover,
+                              gaplessPlayback: true,
+                              filterQuality: FilterQuality.low,
+                              cacheWidth: 200,
                               errorBuilder: (_, _, _) => const SizedBox.shrink(),
                             ),
                           ),
@@ -289,17 +294,29 @@ class _ArtworkCarouselState extends State<_ArtworkCarousel> {
   // from the player) never trigger a seek — that was causing the wrong song.
   bool _isUserDragging = false;
   bool _userSwipe = false;
+  double _volume = 0.5;
+  bool _showVolumeSlider = false;
+  bool _isVolumeDragging = false;
+  Timer? _hideTimer;
 
   @override
   void initState() {
     super.initState();
     _activeIndex = context.read<AudioControlCubit>().state.currentIndex;
     _controller = PageController(initialPage: _activeIndex);
+    VolumeController.instance.showSystemUI = false;
+    VolumeController.instance.addListener(
+      (v) { if (mounted && !_isVolumeDragging) setState(() => _volume = v); },
+      fetchInitialVolume: true,
+    );
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    VolumeController.instance.removeListener();
+    VolumeController.instance.showSystemUI = true;
+    _hideTimer?.cancel();
     super.dispose();
   }
 
@@ -314,6 +331,72 @@ class _ArtworkCarouselState extends State<_ArtworkCarousel> {
     if (index == audioPlayer.currentIndex) return;
     audioPlayer.seek(Duration.zero, index: index);
     audioPlayer.play();
+  }
+
+  void _onVerticalDragUpdate(DragUpdateDetails details) {
+    final delta = -details.delta.dy / widget.height;
+    final newVol = (_volume + delta).clamp(0.0, 1.0);
+    VolumeController.instance.setVolume(newVol);
+    setState(() {
+      _volume = newVol;
+      _showVolumeSlider = true;
+    });
+  }
+
+  void _restartHideTimer() {
+    _hideTimer?.cancel();
+    _hideTimer = Timer(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _showVolumeSlider = false);
+    });
+  }
+
+  Widget _buildVolumeOverlay() {
+    final IconData icon = _volume == 0
+        ? Icons.volume_off_rounded
+        : _volume < 0.35
+            ? Icons.volume_down_rounded
+            : Icons.volume_up_rounded;
+
+    return Center(
+      child: Container(
+        width: 52,
+        height: widget.height * 0.55,
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(26),
+        ),
+        child: Column(
+          children: [
+            Text(
+              '${(_volume * 100).round()}',
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: RotatedBox(
+                quarterTurns: 3,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(3),
+                  child: LinearProgressIndicator(
+                    value: _volume,
+                    backgroundColor: Colors.black38,
+                    color: Colors.black,
+                    minHeight: 6,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Icon(icon, color: Colors.black, size: 22),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -344,59 +427,82 @@ class _ArtworkCarouselState extends State<_ArtworkCarousel> {
 
     return SizedBox(
       height: widget.height,
-      child: NotificationListener<ScrollNotification>(
-        onNotification: (notification) {
-          // A non-null dragDetails means the user is physically dragging;
-          // animateToPage produces notifications without it.
-          if (notification is ScrollStartNotification) {
-            _isUserDragging = true;
-            if (notification.dragDetails != null) _userSwipe = true;
-          } else if (notification is ScrollEndNotification) {
-            _isUserDragging = false;
-          }
-          return false;
-        },
-        child: PageView.builder(
-          controller: _controller,
-          itemCount: songs.length,
-          onPageChanged: _onPageChanged,
-          itemBuilder: (context, index) {
-            final song = songs[index];
-            final imageFile = File('$appDirectory/${song.albumId}.jpg');
-            final radius = BorderRadius.circular(15);
+      child: Stack(
+        children: [
+          GestureDetector(
+            onVerticalDragStart: (_) {
+              _isVolumeDragging = true;
+              _hideTimer?.cancel();
+              if (!_showVolumeSlider) setState(() => _showVolumeSlider = true);
+            },
+            onVerticalDragUpdate: _onVerticalDragUpdate,
+            onVerticalDragEnd: (_) {
+              _isVolumeDragging = false;
+              _restartHideTimer();
+            },
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (notification) {
+                // A non-null dragDetails means the user is physically dragging;
+                // animateToPage produces notifications without it.
+                if (notification is ScrollStartNotification) {
+                  _isUserDragging = true;
+                  if (notification.dragDetails != null) _userSwipe = true;
+                } else if (notification is ScrollEndNotification) {
+                  _isUserDragging = false;
+                }
+                return false;
+              },
+              child: PageView.builder(
+                controller: _controller,
+                itemCount: songs.length,
+                onPageChanged: _onPageChanged,
+                itemBuilder: (context, index) {
+                  final song = songs[index];
+                  final imageFile = File('$appDirectory/${song.albumId}.jpg');
+                  final radius = BorderRadius.circular(15);
 
-            Widget image = ClipRRect(
-              borderRadius: radius,
-              child: Image.file(
-                imageFile,
-                width: double.infinity,
-                height: widget.height,
-                fit: BoxFit.cover,
-                filterQuality: FilterQuality.medium,
-                gaplessPlayback: true,
-                errorBuilder: (_, _, _) => ArtworkImage(
-                  artworkId: song.id,
-                  type: ArtworkType.AUDIO,
-                  width: double.infinity,
-                  height: widget.height,
-                  size: 500,
-                  radius: radius,
-                ),
+                  Widget image = ClipRRect(
+                    borderRadius: radius,
+                    child: Image.file(
+                      imageFile,
+                      width: double.infinity,
+                      height: widget.height,
+                      fit: BoxFit.cover,
+                      filterQuality: FilterQuality.medium,
+                      gaplessPlayback: true,
+                      errorBuilder: (_, _, _) => ArtworkImage(
+                        artworkId: song.id,
+                        type: ArtworkType.AUDIO,
+                        width: double.infinity,
+                        height: widget.height,
+                        size: 500,
+                        radius: radius,
+                      ),
+                    ),
+                  );
+
+                  // Hero only on the active page so the open/close transition keeps
+                  // flying the current artwork (a single tag stays on screen).
+                  if (index == currentIndex) {
+                    image = Hero(tag: widget.currentHeroId, child: image);
+                  }
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: image,
+                  );
+                },
               ),
-            );
-
-            // Hero only on the active page so the open/close transition keeps
-            // flying the current artwork (a single tag stays on screen).
-            if (index == currentIndex) {
-              image = Hero(tag: widget.currentHeroId, child: image);
-            }
-
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: image,
-            );
-          },
-        ),
+            ),
+          ),
+          IgnorePointer(
+            child: AnimatedOpacity(
+              opacity: _showVolumeSlider ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 150),
+              child: _buildVolumeOverlay(),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -461,7 +567,7 @@ class _SongPlayedPortraitBody extends StatelessWidget {
                                     child: Text(
                                       songPlayed.title.value(),
                                       style: const TextStyle(
-                                        fontWeight: FontWeight.w400,
+                                        fontWeight: FontWeight.w600,
                                         fontSize: 18,
                                       ),
                                     ),
@@ -474,11 +580,11 @@ class _SongPlayedPortraitBody extends StatelessWidget {
                                     Text(
                                       songPlayed.title.value(),
                                       style: const TextStyle(
-                                        fontWeight: FontWeight.w400,
+                                        fontWeight: FontWeight.w600,
                                         fontSize: 18,
                                       ),
                                     ),
-                                    const SizedBox(height: 5),
+                                    const SizedBox(height: 2),
                                   ],
                                 ),
                         ),
@@ -495,7 +601,7 @@ class _SongPlayedPortraitBody extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontWeight: FontWeight.w400,
-                                fontSize: 16,
+                                fontSize: 13,
                               ).copyWith(
                                 color: Theme.of(context)
                                     .colorScheme
