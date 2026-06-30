@@ -72,13 +72,14 @@ class _PlayingQueueScreenState extends State<PlayingQueueScreen> {
         ),
         child: Scrollbar(
           controller: _scrollController,
+          interactive: true,
           child: CustomScrollView(
             controller: _scrollController,
             slivers: [
               SliverAppBar(
                 pinned: true,
                 backgroundColor: AppTheme.surfaceColor,
-                expandedHeight: 120,
+                expandedHeight: playlist.isEmpty ? 0 : 120,
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back,
                       color: AppTheme.lightTextColor),
@@ -140,6 +141,7 @@ class _PlayingQueueScreenState extends State<PlayingQueueScreen> {
                         context
                             .read<AudioControlCubit>()
                             .updateCurrentIndex(-1);
+                        audioPlayerHandler<AudioPlayer>().stop();
                       }
                     },
                     itemBuilder: (_) => const [
@@ -182,6 +184,7 @@ class _PlayingQueueScreenState extends State<PlayingQueueScreen> {
                     imageFile: imageFile,
                     heroId: heroId,
                     isPlaying: isPlaying,
+                    dragEnabled: !isShuffling,
                     onRemove: () => playbackService.removeFromQueue(song),
                     onTap: () {
                       audioPlayer.seek(Duration.zero,
@@ -208,6 +211,7 @@ class _QueueTile extends StatelessWidget {
     required this.imageFile,
     required this.heroId,
     required this.isPlaying,
+    required this.dragEnabled,
     required this.onRemove,
     required this.onTap,
   });
@@ -217,6 +221,7 @@ class _QueueTile extends StatelessWidget {
   final File imageFile;
   final String heroId;
   final bool isPlaying;
+  final bool dragEnabled;
   final VoidCallback onRemove;
   final VoidCallback onTap;
 
@@ -228,13 +233,19 @@ class _QueueTile extends StatelessWidget {
       color: Colors.transparent,
       child: Row(
       children: [
-        ReorderableDelayedDragStartListener(
-          index: index,
-          child: const Padding(
+        if (dragEnabled)
+          ReorderableDelayedDragStartListener(
+            index: index,
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: Icon(Icons.drag_handle, color: Colors.white54),
+            ),
+          )
+        else
+          const Padding(
             padding: EdgeInsets.symmetric(horizontal: 8),
-            child: Icon(Icons.drag_handle, color: Colors.white54),
+            child: Icon(Icons.drag_handle, color: Colors.white12),
           ),
-        ),
         Expanded(
           child: ListTile(
             leading: ArtworkFileImage(
