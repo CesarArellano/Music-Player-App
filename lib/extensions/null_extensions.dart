@@ -3,7 +3,7 @@ import 'package:music_query_selector/music_query_selector.dart' show SongModel;
 bool? nullExtensions;
 
 extension IntNullExtension on int? {
-  int value([int defaultValue = 0]) {
+  int nonNullValue([int defaultValue = 0]) {
     return this ?? defaultValue;
   }
 }

@@ -52,11 +52,11 @@ class JustAudioPlaybackService implements PlaybackService {
             (song) => AudioSource.file(
               song.data!,
               tag: MediaItem(
-                id: song.id.value().toString(),
+                id: song.id.nonNullValue().toString(),
                 title: song.title.value(),
                 album: song.album,
                 artist: song.artist,
-                duration: Duration(milliseconds: song.duration.value()),
+                duration: Duration(milliseconds: song.duration.nonNullValue()),
                 genre: song.genre,
                 artUri: Uri.file('$appDirectory/${song.albumId}.jpg'),
               ),
@@ -110,7 +110,7 @@ class JustAudioPlaybackService implements PlaybackService {
 
     // Match by the MediaItem tag id, since the player sequence skips songs
     // without a file path and won't align with the playlist index.
-    final targetId = song.id.value().toString();
+    final targetId = song.id.nonNullValue().toString();
     final index = _player.sequence.indexWhere(
       (source) => (source.tag as MediaItem?)?.id == targetId,
     );
@@ -141,7 +141,7 @@ class JustAudioPlaybackService implements PlaybackService {
   void _subscribeToCurrentIndex() {
     _indexSub = _player.currentIndexStream.listen((currentIndex) {
       if (_playbackCubit.state.currentPlaylist.isEmpty) return;
-      final index = currentIndex.value();
+      final index = currentIndex.nonNullValue();
       _audioCubit.updateCurrentIndex(index);
       final song = _playbackCubit.state.currentPlaylist[index];
       _playbackCubit.updateSongPlayed(song);

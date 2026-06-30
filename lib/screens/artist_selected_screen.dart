@@ -260,7 +260,7 @@ class _AlbumHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(15.0),
+      padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -271,30 +271,30 @@ class _AlbumHeader extends StatelessWidget {
             width: 175,
             height: 175,
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Flexible(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SizedBox(height: 4),
                 Text(
                   artistSelected.artist,
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400,height: 0),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 4),
                 Text(
                   '${artistSelected.numberOfAlbums} ${(artistSelected.numberOfAlbums ?? 1) > 1 ? 'Albums' : 'Album'} • ${artistSelected.numberOfTracks} ${((artistSelected.numberOfTracks ?? 1) > 1) ? 'Songs' : 'Song'}',
                   style: const TextStyle(
                       color: Colors.white54,
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w400),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 4),
                 Text(
                   artistContentModel.totalDuration,
                   style: const TextStyle(
                       color: Colors.white54,
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w400),
                 ),
               ],

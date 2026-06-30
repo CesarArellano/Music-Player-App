@@ -126,7 +126,7 @@ class LibraryCubit extends Cubit<LibraryState> {
 
     for (final song in artistSongs) {
       totalMs += song.duration ?? 0;
-      if (song.albumId.value() != 0) albumIds.add(song.albumId!);
+      if (song.albumId.nonNullValue() != 0) albumIds.add(song.albumId!);
     }
 
     final albums = albumIds

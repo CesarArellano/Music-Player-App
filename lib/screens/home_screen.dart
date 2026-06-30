@@ -172,8 +172,8 @@ class _CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: AppTheme.backgroundBase,
       title: const Text('Focus Music Player'),
-      shape: const Border(bottom: BorderSide(color: Colors.white24)),
       bottom: TabBar(
+        dividerColor: Colors.white10,
         controller: tabController,
         isScrollable: true,
         tabAlignment: TabAlignment.start,
@@ -181,7 +181,7 @@ class _CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         labelColor: Colors.white,
         labelStyle:
             const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-        unselectedLabelColor: AppTheme.lightTextColor,
+        unselectedLabelColor: Colors.white38,
         indicatorWeight: 3.0,
         tabs: <Widget>[
           const Tab(text: 'Songs'),

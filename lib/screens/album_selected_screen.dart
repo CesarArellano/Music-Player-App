@@ -96,65 +96,29 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
               controller: _scrollController,
               slivers: [
                 SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                    child: Column(
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Column(
+                    children: [
+                      _AlbumHeader(
+                        albumSelected: widget.albumSelected,
+                        imageFile: imageGeneralFile,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                        child: Column(
                           children: [
-                            ArtworkFileImage(
-                              artworkId: widget.albumSelected.id,
-                              artworkType: ArtworkType.ALBUM,
-                              imageFile: imageGeneralFile,
-                              width: 175,
-                              height: 175,
+                            PlayShuffleButtons(
+                              heroId: 'album-song-',
+                              id: widget.albumSelected.id,
+                              songList: libraryState
+                                      .albumCollection[widget.albumSelected.id] ??
+                                  [],
+                              typePlaylist: PlaylistType.album,
                             ),
-                            const SizedBox(width: 15),
-                            Flexible(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    widget.albumSelected.album,
-                                    style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    widget.albumSelected.artist
-                                        .valueEmpty('No Artist'),
-                                    style: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w400,
-                                        color: AppTheme.lightTextColor),
-                                  ),
-                                  const SizedBox(height: 5),
-                                  Text(
-                                    '${widget.albumSelected.getMap['minyear']} • ${widget.albumSelected.numOfSongs} ${widget.albumSelected.numOfSongs > 1 ? 'songs' : 'song'}',
-                                    style: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w400,
-                                        color: AppTheme.lightTextColor),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            const SizedBox(height: 5),
                           ],
                         ),
-                        const SizedBox(height: 10),
-                        PlayShuffleButtons(
-                          heroId: 'album-song-',
-                          id: widget.albumSelected.id,
-                          songList: libraryState
-                                  .albumCollection[widget.albumSelected.id] ??
-                              [],
-                          typePlaylist: PlaylistType.album,
-                        ),
-                        const SizedBox(height: 5),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
                 SliverList(
@@ -218,6 +182,64 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
               playbackState.songPlayed.title.value().isEmpty)
           ? null
           : const CurrentSongTile(),
+    );
+  }
+}
+
+class _AlbumHeader extends StatelessWidget {
+  const _AlbumHeader({
+    required this.albumSelected,
+    required this.imageFile,
+  });
+
+  final AlbumModel albumSelected;
+  final File imageFile;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ArtworkFileImage(
+            artworkId: albumSelected.id,
+            artworkType: ArtworkType.ALBUM,
+            imageFile: imageFile,
+            width: 175,
+            height: 175,
+          ),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Text(
+                  albumSelected.album,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400, height: 0),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  albumSelected.artist.valueEmpty('No Artist'),
+                  style: const TextStyle(
+                      color: Colors.white54,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${albumSelected.getMap['minyear']} • ${albumSelected.numOfSongs} ${albumSelected.numOfSongs > 1 ? 'songs' : 'song'}',
+                  style: const TextStyle(
+                      color: Colors.white54,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

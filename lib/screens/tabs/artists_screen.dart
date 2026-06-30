@@ -70,7 +70,7 @@ class _ArtistScreenState extends State<ArtistScreen>
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    '${artist.numberOfAlbums} ${artist.numberOfAlbums.value() > 1 ? 'Albums' : 'Album'} • ${artist.numberOfTracks} Songs',
+                                    '${artist.numberOfAlbums} ${artist.numberOfAlbums.nonNullValue() > 1 ? 'Albums' : 'Album'} • ${artist.numberOfTracks} Songs',
                                     style: const TextStyle(
                                         color: Colors.white54, fontSize: 13),
                                   ),

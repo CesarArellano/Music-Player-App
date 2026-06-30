@@ -111,7 +111,7 @@ class _SongPlayedScreenState extends State<SongPlayedScreen>
                         _MoreOptionsModal(
                           songPlayed: songPlayed,
                           isPlaylist: widget.isPlaylist,
-                          playlistId: widget.playlistId.value(),
+                          playlistId: widget.playlistId.nonNullValue(),
                         ),
                       ],
                     )
@@ -161,7 +161,7 @@ class _SongPlayedScreenState extends State<SongPlayedScreen>
                     _SongPlayedLandscapeBody(
                       playAnimation: _playAnimation,
                       isPlaylist: widget.isPlaylist,
-                      playlistId: widget.playlistId.value(),
+                      playlistId: widget.playlistId.nonNullValue(),
                       songPlayed: songPlayed,
                       imageFile: imageFile,
                       isFavoriteSong: favoritesState.isFavoriteSong(songPlayed.id),
@@ -232,7 +232,7 @@ class _AppBarTitle extends StatelessWidget {
     final albumList =
         context.select((LibraryCubit c) => c.state.albumList);
     final albumSelected = albumList.firstWhere(
-      (album) => album.id == songPlayed.albumId.value(),
+      (album) => album.id == songPlayed.albumId.nonNullValue(),
       orElse: () => AlbumModel({'_id': 0}),
     );
 
@@ -672,7 +672,7 @@ void _navigateToArtist(
   if (artistId == null || artistId == 0) return;
 
   final artist = libraryState.artistList.firstWhere(
-    (a) => a.id == artistId.value(),
+    (a) => a.id == artistId.nonNullValue(),
     orElse: () => ArtistModel({'_id': 0}),
   );
   if (artist.id == 0) return;
@@ -750,7 +750,7 @@ class _MusicControlsState extends State<_MusicControls> {
                   audioPlayer: audioPlayer,
                   currentIndex: audioControlState.currentIndex,
                   songDurationSeconds: Duration(
-                    milliseconds: playbackState.songPlayed.duration.value(),
+                    milliseconds: playbackState.songPlayed.duration.nonNullValue(),
                   ).inSeconds,
                   goToSeconds: -10,
                 );
@@ -811,7 +811,7 @@ class _MusicControlsState extends State<_MusicControls> {
                   audioPlayer: audioPlayer,
                   currentIndex: audioControlState.currentIndex,
                   songDurationSeconds: Duration(
-                    milliseconds: playbackState.songPlayed.duration.value(),
+                    milliseconds: playbackState.songPlayed.duration.nonNullValue(),
                   ).inSeconds,
                   goToSeconds: 10,
                 );
@@ -914,7 +914,7 @@ class _SongTimeline extends StatelessWidget {
       progress: audioControlState.currentDuration,
       total: Duration(milliseconds: songPlayed.duration!),
       onSeek: audioPlayer.seek,
-      timeLabelTextStyle: const TextStyle(fontWeight: FontWeight.w500)
+      timeLabelTextStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400)
           .copyWith(
         color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
       ),

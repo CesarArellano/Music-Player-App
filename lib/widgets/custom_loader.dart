@@ -10,16 +10,17 @@ class CustomLoader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const CircularProgressIndicator(),
-        if( isCreatingArtworks ) ...[
-          const SizedBox(height: 10),
-          const Text('Creating new artworks...')
-        ]
-      ],
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(),
+          if( isCreatingArtworks ) ...[
+            const SizedBox(height: 10),
+            const Text('Creating new artworks...')
+          ]
+        ],
+      )
     );
   }
 }

@@ -142,7 +142,7 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
                   artworkType: ArtworkType.ARTIST,
                   title: artist.artist,
                   subtitle:
-                      '${artist.numberOfAlbums} ${artist.numberOfAlbums.value() > 1 ? 'Albums' : 'Album'} • ${artist.numberOfTracks} Songs',
+                      '${artist.numberOfAlbums} ${artist.numberOfAlbums.nonNullValue() > 1 ? 'Albums' : 'Album'} • ${artist.numberOfTracks} Songs',
                 ),
               );
             },

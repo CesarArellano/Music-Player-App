@@ -135,97 +135,102 @@ class _SongsScreenState extends State<SongsScreen>
   Widget build(BuildContext context) {
     super.build(context);
 
-    return BlocListener<LibraryCubit, LibraryState>(
-      // Fires once when the loading completes (handles the still-loading case).
-      listenWhen: (prev, curr) => prev.isLoading && !curr.isLoading,
-      listener: (context, state) {
-        if (_initialized) return;
-        _initialized = true;
-        _initSong(context, state);
+    return RefreshIndicator(
+      onRefresh: () async {
+        await context.read<LibraryCubit>().getAllSongs();
       },
-      child: Builder(
-        builder: (context) {
-          final musicPlayerState = context.watch<LibraryCubit>().state;
-          final songList = musicPlayerState.songList;
-
-          if (musicPlayerState.isLoading) {
-            return CustomLoader(
-                isCreatingArtworks: musicPlayerState.isCreatingArtworks);
-          }
-
-          if (songList.isEmpty) {
-            return const Center(
-              child: Text(
-                'No Songs',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-            );
-          }
-
-          _buildIndex(songList);
-
-          return OrientationBuilder(
-            builder: (context, orientation) {
-              final crossAxisCount =
-                  orientation == Orientation.landscape ? 2 : 1;
-
-              return Stack(
-                children: [
-                  GridView.builder(
-                    controller: _scrollController,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      childAspectRatio: _kSongTileAspectRatio,
+      child: BlocListener<LibraryCubit, LibraryState>(
+        // Fires once when the loading completes (handles the still-loading case).
+        listenWhen: (prev, curr) => prev.isLoading && !curr.isLoading,
+        listener: (context, state) {
+          if (_initialized) return;
+          _initialized = true;
+          _initSong(context, state);
+        },
+        child: Builder(
+          builder: (context) {
+            final musicPlayerState = context.watch<LibraryCubit>().state;
+            final songList = musicPlayerState.songList;
+      
+            if (musicPlayerState.isLoading) {
+              return CustomLoader(
+                  isCreatingArtworks: musicPlayerState.isCreatingArtworks);
+            }
+      
+            if (songList.isEmpty) {
+              return const Center(
+                child: Text(
+                  'No Songs',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+              );
+            }
+      
+            _buildIndex(songList);
+      
+            return OrientationBuilder(
+              builder: (context, orientation) {
+                final crossAxisCount =
+                    orientation == Orientation.landscape ? 2 : 1;
+      
+                return Stack(
+                  children: [
+                    GridView.builder(
+                      controller: _scrollController,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        childAspectRatio: _kSongTileAspectRatio,
+                      ),
+                      itemCount: songList.length,
+                      itemBuilder: (_, int i) {
+                        final song = songList[i];
+                        final imageFile = File(
+                          '${musicPlayerState.appDirectory}/${song.albumId}.jpg',
+                        );
+                        final heroId = 'songs-${song.id}';
+      
+                        return RippleTile(
+                          child: CustomListTile(
+                            title: song.title.value(),
+                            subtitle: song.songSubtitleText,
+                            artworkId: song.id,
+                            imageFile: imageFile,
+                            tag: heroId,
+                          ),
+                          onTap: () => MusicActions.songPlayAndPause(
+                            context,
+                            song,
+                            PlaylistType.songs,
+                            heroId: heroId,
+                          ),
+                          onLongPress: () => showModalBottomSheet(
+                            context: context,
+                            builder: (_) => MoreSongOptionsModal(song: song),
+                          ),
+                        );
+                      },
                     ),
-                    itemCount: songList.length,
-                    itemBuilder: (_, int i) {
-                      final song = songList[i];
-                      final imageFile = File(
-                        '${musicPlayerState.appDirectory}/${song.albumId}.jpg',
-                      );
-                      final heroId = 'songs-${song.id}';
-
-                      return RippleTile(
-                        child: CustomListTile(
-                          title: song.title.value(),
-                          subtitle: song.artist.valueEmpty('No Artist'),
-                          artworkId: song.id,
-                          imageFile: imageFile,
-                          tag: heroId,
-                        ),
-                        onTap: () => MusicActions.songPlayAndPause(
-                          context,
-                          song,
-                          PlaylistType.songs,
-                          heroId: heroId,
-                        ),
-                        onLongPress: () => showModalBottomSheet(
-                          context: context,
-                          builder: (_) => MoreSongOptionsModal(song: song),
-                        ),
-                      );
-                    },
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 4),
-                      child: AlphabetScrollbar(
-                        letters: _letters,
-                        controller: _scrollController,
-                        onLetterSelected: (letter) => _jumpToLetter(
-                          letter,
-                          crossAxisCount,
-                          MediaQuery.of(context).size.width,
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 4),
+                        child: AlphabetScrollbar(
+                          letters: _letters,
+                          controller: _scrollController,
+                          onLetterSelected: (letter) => _jumpToLetter(
+                            letter,
+                            crossAxisCount,
+                            MediaQuery.of(context).size.width,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              );
-            },
-          );
-        },
+                  ],
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
