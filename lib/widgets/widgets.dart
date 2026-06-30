@@ -8,3 +8,5 @@ export 'package:focus_music_player/widgets/artwork_image.dart';
 export 'package:focus_music_player/widgets/song_details_dialog.dart';
 export 'package:focus_music_player/widgets/current_song_tile.dart';
 export 'package:focus_music_player/widgets/ripple_tile.dart';
+export 'package:focus_music_player/widgets/sticky_header_delegate.dart';
+export 'package:focus_music_player/widgets/collection_header.dart';

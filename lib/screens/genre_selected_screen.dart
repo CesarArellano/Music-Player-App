@@ -1,6 +1,5 @@
 import 'dart:io' show File;
 
-import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_query_selector/music_query_selector.dart';
@@ -23,26 +22,26 @@ class GenreSelectedScreen extends StatefulWidget {
 
 class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
   final ScrollController _scrollController = ScrollController();
-  String? appBarTitle;
+  // artwork (150) + bottom padding (16) — title appears exactly when header is gone
+  static const double _headerHeight = 166.0;
+  bool _collapsed = false;
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _getSongs();
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels < 40 && appBarTitle != null) {
-        setState(() => appBarTitle = null);
-      }
-      if (_scrollController.position.pixels >= 40 && appBarTitle == null) {
-        setState(() => appBarTitle = widget.genreSelected.genre);
-      }
-    });
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    final shouldCollapse = _scrollController.position.pixels >= _headerHeight;
+    if (shouldCollapse != _collapsed) setState(() => _collapsed = shouldCollapse);
   }
 
   @override
   void dispose() {
-    _scrollController.removeListener(() {});
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
   }
@@ -64,99 +63,77 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
   Widget build(BuildContext context) {
     final libraryState = context.watch<LibraryCubit>().state;
     final songPlayed = context.watch<PlaybackStateCubit>().state.songPlayed;
+    final songs = libraryState.genreCollection[widget.genreSelected.id] ?? [];
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.lightTextColor),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: appBarTitle == null
-            ? null
-            : FadeInUp(
-                duration: const Duration(milliseconds: 350),
-                child: Text(appBarTitle!,
-                    maxLines: 1, overflow: TextOverflow.ellipsis),
-              ),
-        actions: <Widget>[
-          IconButton(
-            splashRadius: 20,
-            icon: const Icon(Icons.search, color: AppTheme.lightTextColor),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const MusicSearchScreen()),
-            ),
-          ),
-        ],
-      ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : CustomScrollView(
               controller: _scrollController,
               slivers: [
+                SliverAppBar(
+                  pinned: true,
+                  backgroundColor: AppTheme.surfaceColor,
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back,
+                        color: AppTheme.lightTextColor),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  title: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 300),
+                    opacity: _collapsed ? 1.0 : 0.0,
+                    curve: Curves.easeInOut,
+                    child: Text(
+                      widget.genreSelected.genre,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  actions: <Widget>[
+                    IconButton(
+                      splashRadius: 20,
+                      icon: const Icon(Icons.search,
+                          color: AppTheme.lightTextColor),
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const MusicSearchScreen()),
+                      ),
+                    ),
+                  ],
+                ),
                 SliverToBoxAdapter(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ArtworkImage(
-                              artworkId: widget.genreSelected.id,
-                              type: ArtworkType.GENRE,
-                              width: 150,
-                              height: 150,
-                              size: 600,
-                              radius: BorderRadius.circular(4),
-                            ),
-                            const SizedBox(width: 10),
-                            Flexible(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    widget.genreSelected.genre,
-                                    style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    '${widget.genreSelected.numOfSongs} ${widget.genreSelected.numOfSongs > 1 ? 'Songs' : 'Song'}',
-                                    style: const TextStyle(
-                                        color: Colors.white54,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w400),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                  child: CollectionHeader(
+                    artworkId: widget.genreSelected.id,
+                    imageFile: File(
+                      '${libraryState.appDirectory}/${widget.genreSelected.id}.jpg',
+                    ),
+                    artworkType: ArtworkType.GENRE,
+                    title: widget.genreSelected.genre,
+                    subtitle1:
+                        '${widget.genreSelected.numOfSongs} ${widget.genreSelected.numOfSongs > 1 ? 'Songs' : 'Song'}',
+                    subtitle2: '',
+                  ),
+                ),
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: StickyHeaderDelegate(
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6),
+                      child: PlayShuffleButtons(
+                        heroId: 'genre-song-',
+                        id: widget.genreSelected.id,
+                        songList: songs,
+                        typePlaylist: PlaylistType.genre,
                       ),
-                      const SizedBox(height: 10),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                        child: PlayShuffleButtons(
-                          heroId: 'genre-song-',
-                          id: widget.genreSelected.id,
-                          songList: libraryState
-                                  .genreCollection[widget.genreSelected.id] ??
-                              [],
-                          typePlaylist: PlaylistType.genre,
-                        ),
-                      ),
-                      const SizedBox(height: 5),
-                    ],
+                    ),
                   ),
                 ),
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, i) {
-                      final song = libraryState
-                          .genreCollection[widget.genreSelected.id]![i];
+                      final song = songs[i];
                       final imageFile = File(
                         '${libraryState.appDirectory}/${song.albumId}.jpg',
                       );
@@ -186,10 +163,7 @@ class _GenreSelectedScreenState extends State<GenreSelectedScreen> {
                         ),
                       );
                     },
-                    childCount: (libraryState
-                                .genreCollection[widget.genreSelected.id] ??
-                            [])
-                        .length,
+                    childCount: songs.length,
                   ),
                 ),
               ],

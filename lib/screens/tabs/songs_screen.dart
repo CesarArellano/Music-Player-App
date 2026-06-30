@@ -1,7 +1,10 @@
 import 'dart:io' show File;
 
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:focus_music_player/theme/app_theme.dart';
 import 'package:music_query_selector/music_query_selector.dart';
 
 import '../../cubits/cubits.dart';
@@ -27,18 +30,45 @@ class _SongsScreenState extends State<SongsScreen>
 
   final ScrollController _scrollController = ScrollController();
 
+  bool isScrollTopButtonVisible = false;
+
+  final _headerKey = GlobalKey();
+
   // Memoized alphabet index, recomputed only when the song list changes.
   List<SongModel>? _indexedFor;
   List<String> _letters = const [];
   Map<String, int> _letterToIndex = const {};
+  
 
   @override
   bool get wantKeepAlive => true;
+  
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    // Handle the case where songs are already loaded before the first frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _initialized) return;
+      final state = context.read<LibraryCubit>().state;
+      if (!state.isLoading) {
+        _initialized = true;
+        _initSong(context, state);
+      }
+    });
+  }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    final visible = _scrollController.position.userScrollDirection == ScrollDirection.forward && _scrollController.position.pixels > 50;
+    if (visible == isScrollTopButtonVisible) return;
+    setState(() => isScrollTopButtonVisible = visible);
   }
 
   /// Builds (and caches) the letter rail and the first-index per letter.
@@ -83,29 +113,20 @@ class _SongsScreenState extends State<SongsScreen>
     'Ñ': 'N', 'Ç': 'C',
   };
 
+  double get _headerExtent {
+    final box = _headerKey.currentContext?.findRenderObject() as RenderBox?;
+    return box?.size.height ?? 0.0;
+  }
+
   void _jumpToLetter(String letter, int crossAxisCount, double viewportWidth) {
     final index = _letterToIndex[letter];
     if (index == null || !_scrollController.hasClients) return;
 
     final rowExtent =
         (viewportWidth / crossAxisCount) / _kSongTileAspectRatio;
-    final offset = (index ~/ crossAxisCount) * rowExtent;
+    final offset = _headerExtent + (index ~/ crossAxisCount) * rowExtent;
     final max = _scrollController.position.maxScrollExtent;
     _scrollController.jumpTo(offset.clamp(0.0, max));
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // Handle the case where songs are already loaded before the first frame.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || _initialized) return;
-      final state = context.read<LibraryCubit>().state;
-      if (!state.isLoading) {
-        _initialized = true;
-        _initSong(context, state);
-      }
-    });
   }
 
   void _initSong(BuildContext context, LibraryState state) {
@@ -175,40 +196,65 @@ class _SongsScreenState extends State<SongsScreen>
       
                 return Stack(
                   children: [
-                    GridView.builder(
-                      controller: _scrollController,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        childAspectRatio: _kSongTileAspectRatio,
+                    FadeIn(
+                      duration: const Duration(milliseconds: 500),
+                      delay: const Duration(milliseconds: 100),
+                      child: CustomScrollView(
+                        controller: _scrollController,
+                        slivers: [
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              key: _headerKey,
+                              padding: const EdgeInsets.only(
+                                left: 16.0,
+                                right: 16.0,
+                                top: 12.0,
+                                bottom: 8.0,
+                              ),
+                              child: Text(
+                                "${songList.length} Songs",
+                                style: TextStyle(color: Colors.white54, fontWeight: FontWeight.w400),
+                              ),
+                            ),
+                          ),
+                          SliverGrid(
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: crossAxisCount,
+                              childAspectRatio: _kSongTileAspectRatio,
+                            ),
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final song = songList[index];
+                                final imageFile = File(
+                                  '${musicPlayerState.appDirectory}/${song.albumId}.jpg',
+                                );
+                                final heroId = 'songs-${song.id}';
+                                
+                                return RippleTile(
+                                  child: CustomListTile(
+                                    title: song.title.value(),
+                                    subtitle: song.songSubtitleText,
+                                    artworkId: song.id,
+                                    imageFile: imageFile,
+                                    tag: heroId,
+                                  ),
+                                  onTap: () => MusicActions.songPlayAndPause(
+                                    context,
+                                    song,
+                                    PlaylistType.songs,
+                                    heroId: heroId,
+                                  ),
+                                  onLongPress: () => showModalBottomSheet(
+                                    context: context,
+                                    builder: (_) => MoreSongOptionsModal(song: song),
+                                  ),
+                                );
+                              },
+                              childCount: songList.length,
+                            ),
+                          ),
+                        ],
                       ),
-                      itemCount: songList.length,
-                      itemBuilder: (_, int i) {
-                        final song = songList[i];
-                        final imageFile = File(
-                          '${musicPlayerState.appDirectory}/${song.albumId}.jpg',
-                        );
-                        final heroId = 'songs-${song.id}';
-      
-                        return RippleTile(
-                          child: CustomListTile(
-                            title: song.title.value(),
-                            subtitle: song.songSubtitleText,
-                            artworkId: song.id,
-                            imageFile: imageFile,
-                            tag: heroId,
-                          ),
-                          onTap: () => MusicActions.songPlayAndPause(
-                            context,
-                            song,
-                            PlaylistType.songs,
-                            heroId: heroId,
-                          ),
-                          onLongPress: () => showModalBottomSheet(
-                            context: context,
-                            builder: (_) => MoreSongOptionsModal(song: song),
-                          ),
-                        );
-                      },
                     ),
                     Align(
                       alignment: Alignment.centerRight,
@@ -225,6 +271,30 @@ class _SongsScreenState extends State<SongsScreen>
                         ),
                       ),
                     ),
+
+                    AnimatedOpacity(
+                      opacity: isScrollTopButtonVisible ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 200),
+                      child: IgnorePointer(
+                        ignoring: !isScrollTopButtonVisible,
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: IconButton(
+                            style: IconButton.styleFrom(
+                              backgroundColor:
+                                  AppTheme.black.withValues(alpha: 0.5),
+                            ),
+                            color: AppTheme.white,
+                            icon: const Icon(Icons.arrow_upward_rounded),
+                            onPressed: () => _scrollController.animateTo(
+                              0,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
                   ],
                 );
               },

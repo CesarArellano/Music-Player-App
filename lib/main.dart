@@ -87,7 +87,7 @@ class MyApp extends StatelessWidget {
         builder: (context, child) => AnnotatedRegion(
           value: SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
-            systemNavigationBarColor: AppTheme.surfaceColor,
+            systemNavigationBarColor: AppTheme.backgroundBase,
           ),
           child: AppBackground(child: child!),
         ),

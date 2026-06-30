@@ -42,7 +42,7 @@ class _ArtistScreenState extends State<ArtistScreen>
                     return RippleTile(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 15.0, vertical: 8),
+                            horizontal: 16.0, vertical: 8),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [

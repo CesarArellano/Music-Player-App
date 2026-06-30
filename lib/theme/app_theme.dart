@@ -6,6 +6,8 @@ class AppTheme {
   static const Color surfaceColor = Color(0xFF112240);
   static const Color accentColor = Colors.amber;
   static const Color lightTextColor = Colors.white54;
+  static const Color white = Colors.white;
+  static const Color black = Colors.black;
 
   static const double artworkRadius = 10.0;
 

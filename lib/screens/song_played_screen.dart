@@ -908,7 +908,7 @@ class _SongTimeline extends StatelessWidget {
     final songPlayed = context.read<PlaybackStateCubit>().state.songPlayed;
 
     return ProgressBar(
-      thumbGlowRadius: 15.0,
+      thumbGlowRadius: 16.0,
       thumbRadius: 8.0,
       barHeight: 3.0,
       progress: audioControlState.currentDuration,

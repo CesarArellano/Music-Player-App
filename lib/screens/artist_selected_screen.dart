@@ -1,6 +1,5 @@
 import 'dart:io' show File;
 
-import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_query_selector/music_query_selector.dart';
@@ -25,26 +24,28 @@ class ArtistSelectedScreen extends StatefulWidget {
 
 class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
   final ScrollController _scrollController = ScrollController();
-  String? appBarTitle;
+  
+  // artwork (175) + bottom padding (16) — title appears exactly when header is gone
+  static const double _headerHeight = 191.0;
+  
+  bool _collapsed = false;
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels < 40 && appBarTitle != null) {
-        setState(() => appBarTitle = null);
-      }
-      if (_scrollController.position.pixels >= 40 && appBarTitle == null) {
-        setState(() => appBarTitle = widget.artistSelected.artist);
-      }
-    });
+    _scrollController.addListener(_onScroll);
     _getSongs();
+  }
+
+  void _onScroll() {
+    final shouldCollapse = _scrollController.position.pixels >= _headerHeight;
+    if (shouldCollapse != _collapsed) setState(() => _collapsed = shouldCollapse);
   }
 
   @override
   void dispose() {
-    _scrollController.removeListener(() {});
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
   }
@@ -68,60 +69,75 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
     final artistContentModel =
         libraryState.artistCollection[widget.artistSelected.id] ??
             ArtistContentModel();
+    final albums = widget.artistSelected.numberOfAlbums ?? 1;
+    final tracks = widget.artistSelected.numberOfTracks ?? 1;
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.lightTextColor),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: appBarTitle == null
-            ? null
-            : FadeInUp(
-                duration: const Duration(milliseconds: 350),
-                child: Text(appBarTitle!,
-                    maxLines: 1, overflow: TextOverflow.ellipsis),
-              ),
-        actions: <Widget>[
-          IconButton(
-            splashRadius: 20,
-            icon: const Icon(Icons.search),
-            color: AppTheme.lightTextColor,
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const MusicSearchScreen()),
-            ),
-          ),
-        ],
-      ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : CustomScrollView(
               controller: _scrollController,
               slivers: [
+                SliverAppBar(
+                  pinned: true,
+                  backgroundColor: AppTheme.surfaceColor,
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: AppTheme.lightTextColor),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  title: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 200),
+                    opacity: _collapsed ? 1.0 : 0.0,
+                    child: Text(
+                      widget.artistSelected.artist,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  actions: <Widget>[
+                    IconButton(
+                      splashRadius: 20,
+                      icon: const Icon(Icons.search, color: AppTheme.lightTextColor),
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const MusicSearchScreen()),
+                      ),
+                    ),
+                  ],
+                ),
+                SliverToBoxAdapter(
+                  child: CollectionHeader(
+                    artworkId: widget.artistSelected.id,
+                    imageFile: File(
+                      '${libraryState.appDirectory}/${artistContentModel.songs.first.albumId}.jpg',
+                    ),
+                    artworkType: ArtworkType.ARTIST,
+                    title: widget.artistSelected.artist,
+                    subtitle1:
+                        '$albums ${albums > 1 ? 'Albums' : 'Album'} • $tracks ${tracks > 1 ? 'Songs' : 'Song'}',
+                    subtitle2: artistContentModel.totalDuration,
+                  ),
+                ),
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: StickyHeaderDelegate(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6),
+                      child: PlayShuffleButtons(
+                        heroId: 'artist-song-',
+                        id: widget.artistSelected.id,
+                        songList: artistContentModel.songs,
+                        typePlaylist: PlaylistType.artist,
+                      ),
+                    ),
+                  ),
+                ),
                 SliverToBoxAdapter(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _AlbumHeader(
-                        artistSelected: widget.artistSelected,
-                        artistContentModel: artistContentModel,
-                        artistImageFile: File(
-                          '${libraryState.appDirectory}/${artistContentModel.songs.first.albumId}.jpg',
-                        ),
-                      ),
-                      Padding(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 15.0),
-                        child: PlayShuffleButtons(
-                          heroId: 'artist-song-',
-                          id: widget.artistSelected.id,
-                          songList: artistContentModel.songs,
-                          typePlaylist: PlaylistType.artist,
-                        ),
-                      ),
                       const Padding(
-                        padding: EdgeInsets.only(left: 15.0, top: 15),
+                        padding: EdgeInsets.only(left: 16.0, top: 15),
                         child: Text('Albums', style: TextStyle(fontSize: 16)),
                       ),
                       _AlbumList(
@@ -129,44 +145,16 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
                         appDirectory: libraryState.appDirectory,
                       ),
                       const Padding(
-                        padding: EdgeInsets.only(left: 15.0, bottom: 5),
+                        padding: EdgeInsets.only(left: 16.0, bottom: 5),
                         child: Text('Songs', style: TextStyle(fontSize: 16)),
                       ),
                     ],
                   ),
                 ),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, i) {
-                      final song = artistContentModel.songs[i];
-                      final imageFile = File(
-                        '${libraryState.appDirectory}/${song.albumId}.jpg',
-                      );
-                      final heroId = 'artist-song-${song.id}';
-
-                      return RippleTile(
-                        child: CustomListTile(
-                          imageFile: imageFile,
-                          title: song.title.value(),
-                          subtitle: song.artist.valueEmpty('No Artist'),
-                          artworkId: song.id,
-                          tag: heroId,
-                        ),
-                        onTap: () => MusicActions.songPlayAndPause(
-                          context,
-                          song,
-                          PlaylistType.artist,
-                          id: widget.artistSelected.id,
-                          heroId: heroId,
-                        ),
-                        onLongPress: () => showModalBottomSheet(
-                          context: context,
-                          builder: (_) => MoreSongOptionsModal(song: song),
-                        ),
-                      );
-                    },
-                    childCount: artistContentModel.songs.length,
-                  ),
+                _SongList(
+                  artistContentModel: artistContentModel,
+                  libraryState: libraryState,
+                  widget: widget,
                 ),
               ],
             ),
@@ -174,6 +162,55 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
               playbackState.songPlayed.title.value().isEmpty)
           ? null
           : const CurrentSongTile(),
+    );
+  }
+}
+
+class _SongList extends StatelessWidget {
+  const _SongList({
+    required this.artistContentModel,
+    required this.libraryState,
+    required this.widget,
+  });
+
+  final ArtistContentModel artistContentModel;
+  final LibraryState libraryState;
+  final ArtistSelectedScreen widget;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, i) {
+          final song = artistContentModel.songs[i];
+          final imageFile = File(
+            '${libraryState.appDirectory}/${song.albumId}.jpg',
+          );
+          final heroId = 'artist-song-${song.id}';
+    
+          return RippleTile(
+            child: CustomListTile(
+              imageFile: imageFile,
+              title: song.title.value(),
+              subtitle: song.artist.valueEmpty('No Artist'),
+              artworkId: song.id,
+              tag: heroId,
+            ),
+            onTap: () => MusicActions.songPlayAndPause(
+              context,
+              song,
+              PlaylistType.artist,
+              id: widget.artistSelected.id,
+              heroId: heroId,
+            ),
+            onLongPress: () => showModalBottomSheet(
+              context: context,
+              builder: (_) => MoreSongOptionsModal(song: song),
+            ),
+          );
+        },
+        childCount: artistContentModel.songs.length,
+      ),
     );
   }
 }
@@ -241,66 +278,6 @@ class _AlbumList extends StatelessWidget {
             ],
           );
         },
-      ),
-    );
-  }
-}
-
-class _AlbumHeader extends StatelessWidget {
-  const _AlbumHeader({
-    required this.artistSelected,
-    required this.artistContentModel,
-    required this.artistImageFile,
-  });
-
-  final ArtistModel artistSelected;
-  final ArtistContentModel artistContentModel;
-  final File artistImageFile;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ArtworkFileImage(
-            artworkId: artistSelected.id,
-            imageFile: artistImageFile,
-            artworkType: ArtworkType.ARTIST,
-            width: 175,
-            height: 175,
-          ),
-          const SizedBox(width: 12),
-          Flexible(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 4),
-                Text(
-                  artistSelected.artist,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400,height: 0),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${artistSelected.numberOfAlbums} ${(artistSelected.numberOfAlbums ?? 1) > 1 ? 'Albums' : 'Album'} • ${artistSelected.numberOfTracks} ${((artistSelected.numberOfTracks ?? 1) > 1) ? 'Songs' : 'Song'}',
-                  style: const TextStyle(
-                      color: Colors.white54,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  artistContentModel.totalDuration,
-                  style: const TextStyle(
-                      color: Colors.white54,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

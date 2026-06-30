@@ -58,6 +58,18 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
     setState(() => isLoading = false);
   }
 
+  static String _formatSongListDuration(List<SongModel> songs) {
+    final totalMs = songs.fold<int>(0, (sum, s) => sum + (s.duration ?? 0));
+    final totalSec = totalMs ~/ 1000;
+    final h = totalSec ~/ 3600;
+    final m = (totalSec % 3600) ~/ 60;
+    final s = totalSec % 60;
+    if (h > 0) {
+      return '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+    }
+    return '$m:${s.toString().padLeft(2, '0')}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final libraryState = context.watch<LibraryCubit>().state;
@@ -65,6 +77,8 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
     final imageGeneralFile = File(
       '${libraryState.appDirectory}/${widget.albumSelected.id}.jpg',
     );
+    final songs = libraryState.albumCollection[widget.albumSelected.id] ?? [];
+    final n = widget.albumSelected.numOfSongs;
 
     return Scaffold(
       body: CustomScrollView(
@@ -103,21 +117,25 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
             )
           else ...[
             SliverToBoxAdapter(
-              child: _AlbumHeader(
-                albumSelected: widget.albumSelected,
+              child: CollectionHeader(
+                artworkId: widget.albumSelected.id,
                 imageFile: imageGeneralFile,
-                songs: libraryState.albumCollection[widget.albumSelected.id] ?? [],
+                title: widget.albumSelected.album,
+                subtitle1: widget.albumSelected.artist.valueEmpty('No Artist'),
+                subtitle2:
+                    '${widget.albumSelected.getMap['minyear']} • $n ${n > 1 ? 'Songs' : 'Song'} • ${_formatSongListDuration(songs)}',
               ),
             ),
             SliverPersistentHeader(
               pinned: true,
-              delegate: _StickyButtonsDelegate(
+              delegate: StickyHeaderDelegate(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 6),
                   child: PlayShuffleButtons(
                     heroId: 'album-song-',
                     id: widget.albumSelected.id,
-                    songList: libraryState.albumCollection[widget.albumSelected.id] ?? [],
+                    songList: songs,
                     typePlaylist: PlaylistType.album,
                   ),
                 ),
@@ -126,8 +144,7 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
             SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, i) {
-                  final song = libraryState
-                      .albumCollection[widget.albumSelected.id]![i];
+                  final song = songs[i];
                   final imageFile = File(
                     '${libraryState.appDirectory}/${song.albumId}.jpg',
                   );
@@ -172,10 +189,7 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
                     ),
                   );
                 },
-                childCount: (libraryState
-                            .albumCollection[widget.albumSelected.id] ??
-                        [])
-                    .length,
+                childCount: songs.length,
               ),
             ),
           ],
@@ -187,99 +201,4 @@ class _AlbumSelectedScreenState extends State<AlbumSelectedScreen> {
           : const CurrentSongTile(),
     );
   }
-}
-
-class _AlbumHeader extends StatelessWidget {
-  const _AlbumHeader({
-    required this.albumSelected,
-    required this.imageFile,
-    required this.songs,
-  });
-
-  final AlbumModel albumSelected;
-  final File imageFile;
-  final List<SongModel> songs;
-
-  String get _totalDuration {
-    final totalMs = songs.fold<int>(0, (sum, s) => sum + (s.duration ?? 0));
-    final totalSec = totalMs ~/ 1000;
-    final h = totalSec ~/ 3600;
-    final m = (totalSec % 3600) ~/ 60;
-    final s = totalSec % 60;
-    if (h > 0) {
-      return '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
-    }
-    return '$m:${s.toString().padLeft(2, '0')}';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final n = albumSelected.numOfSongs;
-    return Padding(
-      padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ArtworkFileImage(
-            artworkId: albumSelected.id,
-            artworkType: ArtworkType.ALBUM,
-            imageFile: imageFile,
-            width: 175,
-            height: 175,
-          ),
-          const SizedBox(width: 12),
-          Flexible(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 4),
-                Text(
-                  albumSelected.album,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400, height: 0),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  albumSelected.artist.valueEmpty('No Artist'),
-                  style: const TextStyle(
-                      color: Colors.white54,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${albumSelected.getMap['minyear']} • $n ${n > 1 ? 'Songs' : 'Song'} • $_totalDuration',
-                  style: const TextStyle(
-                      color: Colors.white54,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StickyButtonsDelegate extends SliverPersistentHeaderDelegate {
-  const _StickyButtonsDelegate({required this.child});
-
-  final Widget child;
-
-  static const double height = 57.0;
-
-  @override
-  double get minExtent => height;
-
-  @override
-  double get maxExtent => height;
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return child;
-  }
-
-  @override
-  bool shouldRebuild(_StickyButtonsDelegate old) => child != old.child;
 }
