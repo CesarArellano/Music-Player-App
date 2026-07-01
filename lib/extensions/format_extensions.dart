@@ -17,11 +17,23 @@ extension Format on Duration {
 extension SongFormat on SongModel {
   String get songSubtitleText {
     String value = 'No Artist';
-    
+
     if ((artist.value()).isNotEmpty) {
       value = '$artist';
     }
 
     return '$value • ${Duration(milliseconds: duration?.nonNullValue() ?? 0).getTimeString()}';
   }
+}
+
+extension SongListDurationFormat on List<SongModel> {
+  String totalDurationString() {
+    final totalDurationMs = fold<int>(0, (acc, song) => acc + (song.duration ?? 0));
+    return Duration(milliseconds: totalDurationMs).getTimeString();
+  }
+}
+
+extension MillisecondsDurationFormat on int? {
+  String toDurationString() =>
+      Duration(milliseconds: this ?? 0).getTimeString();
 }

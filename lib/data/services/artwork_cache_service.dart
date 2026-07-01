@@ -3,17 +3,17 @@ import 'dart:io' show File;
 import 'package:music_query_selector/music_query_selector.dart' show SongModel;
 import 'package:path_provider/path_provider.dart' show getApplicationDocumentsDirectory;
 
-import '../repositories/audio_repository.dart';
+import '../repositories/artwork_repository.dart';
 import '../repositories/preferences_repository.dart';
 
 class ArtworkCacheService {
   ArtworkCacheService({
-    required AudioRepository audioRepository,
+    required ArtworkRepository artworkRepository,
     required PreferencesRepository preferences,
-  })  : _audio = audioRepository,
+  })  : _artwork = artworkRepository,
         _prefs = preferences;
 
-  final AudioRepository _audio;
+  final ArtworkRepository _artwork;
   final PreferencesRepository _prefs;
 
   Future<String> resolveAppDirectory() async {
@@ -38,7 +38,7 @@ class ArtworkCacheService {
 
       final file = File('$appDirectory/${song.albumId}.jpg');
       if (file.existsSync()) continue;
-      final bytes = await _audio.queryArtwork(song.id);
+      final bytes = await _artwork.queryArtwork(song.id);
       if (bytes != null) {
         try {
           await file.writeAsBytes(bytes);
@@ -51,7 +51,7 @@ class ArtworkCacheService {
 
   Future<bool> createSingleArtwork(File target, int songId) async {
     try {
-      final bytes = await _audio.queryArtwork(songId);
+      final bytes = await _artwork.queryArtwork(songId);
       if (bytes == null) return false;
       await target.writeAsBytes(bytes);
       return true;
@@ -60,13 +60,4 @@ class ArtworkCacheService {
     }
   }
 
-  Future<bool> deleteFile(File file) async {
-    try {
-      if (!file.existsSync()) return false;
-      await file.delete();
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
 }

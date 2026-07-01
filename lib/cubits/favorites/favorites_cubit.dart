@@ -1,15 +1,14 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_query_selector/music_query_selector.dart';
 
-import '../../audio_player_handler.dart';
 import '../../data/repositories/preferences_repository.dart';
 import 'favorites_state.dart';
 
 export 'favorites_state.dart';
 
 class FavoritesCubit extends Cubit<FavoritesState> {
-  FavoritesCubit({PreferencesRepository? preferences})
-      : _prefs = preferences ?? audioPlayerHandler<PreferencesRepository>(),
+  FavoritesCubit({required PreferencesRepository preferences})
+      : _prefs = preferences,
         super(const FavoritesState());
 
   final PreferencesRepository _prefs;

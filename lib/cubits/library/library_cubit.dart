@@ -3,7 +3,6 @@ import 'dart:io' show Platform;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_query_selector/music_query_selector.dart';
 
-import '../../audio_player_handler.dart';
 import '../../data/repositories/audio_repository.dart';
 import '../../data/repositories/preferences_repository.dart';
 import '../../data/services/artwork_cache_service.dart';
@@ -15,13 +14,13 @@ export 'library_state.dart';
 
 class LibraryCubit extends Cubit<LibraryState> {
   LibraryCubit({
-    AudioRepository? audioRepository,
-    ArtworkCacheService? artworkCacheService,
-    PreferencesRepository? preferences,
+    required AudioRepository audioRepository,
+    required ArtworkCacheService artworkCacheService,
+    required PreferencesRepository preferences,
     this.onSongsLoaded,
-  })  : _audio = audioRepository ?? audioPlayerHandler<AudioRepository>(),
-        _artwork = artworkCacheService ?? audioPlayerHandler<ArtworkCacheService>(),
-        _prefs = preferences ?? audioPlayerHandler<PreferencesRepository>(),
+  })  : _audio = audioRepository,
+        _artwork = artworkCacheService,
+        _prefs = preferences,
         super(LibraryState()) {
     getAllSongs();
   }

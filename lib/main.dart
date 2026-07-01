@@ -5,6 +5,10 @@ import 'package:just_audio_background/just_audio_background.dart';
 
 import 'audio_player_handler.dart';
 import 'cubits/cubits.dart';
+import 'data/repositories/audio_repository.dart';
+import 'data/repositories/artwork_repository.dart';
+import 'data/repositories/preferences_repository.dart';
+import 'data/services/artwork_cache_service.dart';
 import 'routes/app_router.dart';
 import 'services/snackbar_service.dart';
 import 'widgets/app_background.dart';
@@ -23,12 +27,21 @@ void main() async {
 
   final audioControlCubit = AudioControlCubit();
   final playbackStateCubit = PlaybackStateCubit();
-  final favoritesCubit = FavoritesCubit();
-  final uiCubit = UICubit();
+  final favoritesCubit = FavoritesCubit(
+    preferences: audioPlayerHandler<PreferencesRepository>(),
+  );
+  final uiCubit = UICubit(
+    artworkRepository: audioPlayerHandler<ArtworkRepository>(),
+    preferences: audioPlayerHandler<PreferencesRepository>(),
+    playbackStateCubit: playbackStateCubit,
+  );
 
   // LibraryCubit starts loading songs immediately in its constructor.
   // onSongsLoaded wires FavoritesCubit so it can decode persisted IDs.
   final libraryCubit = LibraryCubit(
+    audioRepository: audioPlayerHandler<AudioRepository>(),
+    artworkCacheService: audioPlayerHandler<ArtworkCacheService>(),
+    preferences: audioPlayerHandler<PreferencesRepository>(),
     onSongsLoaded: favoritesCubit.initFavorites,
   );
 

@@ -9,6 +9,7 @@ import 'cubits/playback_state/playback_state_cubit.dart';
 import 'cubits/ui/ui_cubit.dart';
 import 'data/cache/file_image_cache.dart';
 import 'data/repositories/audio_repository.dart';
+import 'data/repositories/artwork_repository.dart';
 import 'data/repositories/on_audio_query_repository.dart';
 import 'data/repositories/preferences_repository.dart';
 import 'data/repositories/shared_preferences_repository.dart';
@@ -37,9 +38,13 @@ void setupAudioHandlers() {
     () => MusicQuerySelectorRepository(audioPlayerHandler<MusicQuerySelector>()),
   );
 
+  audioPlayerHandler.registerLazySingleton<ArtworkRepository>(
+    () => audioPlayerHandler<AudioRepository>() as ArtworkRepository,
+  );
+
   audioPlayerHandler.registerLazySingleton<ArtworkCacheService>(
     () => ArtworkCacheService(
-      audioRepository: audioPlayerHandler<AudioRepository>(),
+      artworkRepository: audioPlayerHandler<ArtworkRepository>(),
       preferences: audioPlayerHandler<PreferencesRepository>(),
     ),
   );
@@ -78,7 +83,6 @@ void setupServiceLayer({
       audioPlayer: audioPlayerHandler<AudioPlayer>(),
       playbackStateCubit: playbackStateCubit,
       audioControlCubit: audioControlCubit,
-      uiCubit: uiCubit,
       preferences: audioPlayerHandler<PreferencesRepository>(),
     ),
   );

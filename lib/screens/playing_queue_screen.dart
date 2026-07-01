@@ -12,25 +12,6 @@ import '../services/playback_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
 
-String _fmtDuration(List<SongModel> songs) {
-  final totalMs = songs.fold<int>(0, (sum, s) => sum + (s.duration ?? 0));
-  final totalSec = totalMs ~/ 1000;
-  final h = totalSec ~/ 3600;
-  final m = (totalSec % 3600) ~/ 60;
-  final s = totalSec % 60;
-  if (h > 0) {
-    return '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
-  }
-  return '$m:${s.toString().padLeft(2, '0')}';
-}
-
-String _fmtMs(int? ms) {
-  if (ms == null) return '0:00';
-  final totalSec = ms ~/ 1000;
-  final m = totalSec ~/ 60;
-  final s = totalSec % 60;
-  return '$m:${s.toString().padLeft(2, '0')}';
-}
 
 class PlayingQueueScreen extends StatefulWidget {
   const PlayingQueueScreen({super.key});
@@ -159,7 +140,7 @@ class _PlayingQueueScreenState extends State<PlayingQueueScreen> {
                 child: Padding(
                   padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
                   child: Text(
-                    'Up next  •  ${currentIndex + 1}/${playlist.length}  •  ${_fmtDuration(playlist)}',
+                    'Up next  •  ${currentIndex + 1}/${playlist.length}  •  ${playlist.totalDurationString()}',
                     style:
                         const TextStyle(color: Colors.white54, fontSize: 13),
                   ),
@@ -262,7 +243,7 @@ class _QueueTile extends StatelessWidget {
               style: TextStyle(color: titleColor),
             ),
             subtitle: Text(
-              '${_fmtMs(song.duration)} • ${song.artist.valueEmpty('No Artist')}',
+              '${song.duration.toDurationString()} • ${song.artist.valueEmpty('No Artist')}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(

@@ -6,7 +6,6 @@ import 'package:music_query_selector/music_query_selector.dart' show SongModel;
 
 import '../cubits/audio_control/audio_control_cubit.dart';
 import '../cubits/playback_state/playback_state_cubit.dart';
-import '../cubits/ui/ui_cubit.dart';
 import '../data/repositories/preferences_repository.dart';
 import '../extensions/extensions.dart';
 import 'playback_service.dart';
@@ -16,7 +15,6 @@ class JustAudioPlaybackService implements PlaybackService {
     required AudioPlayer audioPlayer,
     required PlaybackStateCubit playbackStateCubit,
     required AudioControlCubit audioControlCubit,
-    required this._uiCubit,
     required PreferencesRepository preferences,
   })  : _player = audioPlayer,
         _playbackCubit = playbackStateCubit,
@@ -29,7 +27,6 @@ class JustAudioPlaybackService implements PlaybackService {
   final AudioPlayer _player;
   final PlaybackStateCubit _playbackCubit;
   final AudioControlCubit _audioCubit;
-  final UICubit _uiCubit;
   final PreferencesRepository _prefs;
 
   StreamSubscription<Duration>? _positionSub;
@@ -71,9 +68,6 @@ class JustAudioPlaybackService implements PlaybackService {
     final song = songs[initialIndex];
     _playbackCubit.updateSongPlayed(song);
     _prefs.lastSongId = song.id;
-    _uiCubit.searchDominantColorByAlbumId(
-      albumId: song.albumId.toString(),
-    );
 
     return Future.value();
   }
@@ -155,9 +149,6 @@ class JustAudioPlaybackService implements PlaybackService {
       final song = _playbackCubit.state.currentPlaylist[index];
       _playbackCubit.updateSongPlayed(song);
       _prefs.lastSongId = song.id;
-      _uiCubit.searchDominantColorByAlbumId(
-        albumId: song.albumId.toString(),
-      );
     });
   }
 }

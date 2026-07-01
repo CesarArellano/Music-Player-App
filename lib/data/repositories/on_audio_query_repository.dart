@@ -3,8 +3,9 @@ import 'dart:typed_data' show Uint8List;
 import 'package:music_query_selector/music_query_selector.dart';
 
 import 'audio_repository.dart';
+import 'artwork_repository.dart';
 
-class MusicQuerySelectorRepository implements AudioRepository {
+class MusicQuerySelectorRepository implements AudioRepository, ArtworkRepository {
   MusicQuerySelectorRepository(this._query);
 
   final MusicQuerySelector _query;
@@ -50,6 +51,10 @@ class MusicQuerySelectorRepository implements AudioRepository {
   @override
   Future<Uint8List?> queryArtwork(int songId, {int size = 500}) =>
       _query.queryArtwork(songId, ArtworkType.AUDIO, size: size);
+
+  @override
+  Future<int?> queryArtworkColor(int albumId) =>
+      _query.queryArtworkColor(albumId, ArtworkType.ALBUM);
 
   @override
   Future<bool> createPlaylist(String name) => _query.createPlaylist(name);
