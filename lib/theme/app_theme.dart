@@ -84,7 +84,7 @@ class AppTheme {
     ),
 
     bottomSheetTheme: const BottomSheetThemeData(
-      backgroundColor: primaryColor,
+      backgroundColor: surfaceColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
