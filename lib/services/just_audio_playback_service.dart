@@ -22,6 +22,7 @@ class JustAudioPlaybackService implements PlaybackService {
         _prefs = preferences {
     _subscribeToPosition();
     _subscribeToCurrentIndex();
+    _subscribeToPlaying();
   }
 
   final AudioPlayer _player;
@@ -31,6 +32,7 @@ class JustAudioPlaybackService implements PlaybackService {
 
   StreamSubscription<Duration>? _positionSub;
   StreamSubscription<int?>? _indexSub;
+  StreamSubscription<bool>? _playingSub;
 
   @override
   List<int>? get effectiveIndices => _player.effectiveIndices;
@@ -131,6 +133,7 @@ class JustAudioPlaybackService implements PlaybackService {
   Future<void> dispose() async {
     await _positionSub?.cancel();
     await _indexSub?.cancel();
+    await _playingSub?.cancel();
     await _player.dispose();
   }
 
@@ -138,6 +141,12 @@ class JustAudioPlaybackService implements PlaybackService {
     _positionSub = _player.positionStream.listen((duration) {
       _audioCubit.updateCurrentDuration(duration);
       // lastSongDuration is written on pause()/stop() only, not on every tick.
+    });
+  }
+
+  void _subscribeToPlaying() {
+    _playingSub = _player.playingStream.listen((isPlaying) {
+      _playbackCubit.updateIsPlaying(isPlaying);
     });
   }
 

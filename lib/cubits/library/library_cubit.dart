@@ -138,7 +138,7 @@ class LibraryCubit extends Cubit<LibraryState> {
       ..[artistId] = ArtistContentModel(
         songs: artistSongs,
         albums: albums,
-        totalDuration: Duration(milliseconds: totalMs).getTimeString(),
+        totalDuration: Duration(milliseconds: totalMs).timeString,
       );
     emit(state.copyWith(artistCollection: updated));
   }

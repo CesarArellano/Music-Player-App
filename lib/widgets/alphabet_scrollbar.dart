@@ -117,6 +117,10 @@ class _AlphabetScrollbarState extends State<AlphabetScrollbar> {
 
   @override
   Widget build(BuildContext context) {
+    Orientation orientation = MediaQuery.of(context).orientation;
+    if (orientation == Orientation.landscape) {
+      return const SizedBox.shrink();
+    }
     if (widget.letters.isEmpty) return const SizedBox.shrink();
 
     return ValueListenableBuilder<bool>(

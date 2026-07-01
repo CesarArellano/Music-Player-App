@@ -266,7 +266,7 @@ class _MoreSongOptionsModalState extends State<MoreSongOptionsModal> {
                   artworkId: songPlayed.id,
                   title: songPlayed.title.value(),
                   subtitle:
-                      '${songPlayed.artist.valueEmpty('No Artist')} • ${duration.getTimeString()}',
+                      '${songPlayed.artist.valueEmpty('No Artist')} • ${duration.timeString}',
                   imageFile: imageFile,
                   trailing: IconButton(
                     onPressed: () {

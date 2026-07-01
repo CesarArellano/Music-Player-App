@@ -36,7 +36,7 @@ class SongDetailsDialog extends StatelessWidget {
           const SizedBox(height: 15),
           _RowLabel(label: 'Format: ', value: song.fileExtension),
           const SizedBox(height: 15),
-          _RowLabel(label: 'Length: ', value: duration.getTimeString()),
+          _RowLabel(label: 'Length: ', value: duration.timeString),
         ],
       ),
       actionsPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),

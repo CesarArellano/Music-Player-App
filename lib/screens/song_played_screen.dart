@@ -564,6 +564,7 @@ class _SongPlayedPortraitBody extends StatelessWidget {
                                   height: 40,
                                   child: Marqueer(
                                     pps: 45.0,
+                                    separatorBuilder: (context, index) => const SizedBox(width: 52),
                                     child: Text(
                                       songPlayed.title.value(),
                                       style: const TextStyle(
@@ -1009,6 +1010,7 @@ class _SongPlayedLandscapeBody extends StatelessWidget {
                                   child: songPlayed.title.value().length > 25
                                       ? Marqueer(
                                           pps: 50.0,
+                                          separatorBuilder: (context, index) => const SizedBox(width: 52),
                                           child: Text(
                                             songPlayed.title.value(),
                                             style: const TextStyle(

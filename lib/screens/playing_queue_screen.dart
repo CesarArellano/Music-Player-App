@@ -23,6 +23,49 @@ class PlayingQueueScreen extends StatefulWidget {
 class _PlayingQueueScreenState extends State<PlayingQueueScreen> {
   final ScrollController _scrollController = ScrollController();
 
+  // Heights derived from the sliver layout:
+  //   SliverAppBar expandedHeight(120) - kToolbarHeight(56) = 64
+  //   SliverToBoxAdapter "Up next" row: top(8) + text(~18) + bottom(8) = 34
+  //   Each _QueueTile (ListTile with subtitle + 55px image) = 72
+  static const double _appBarScrollRange = 64.0;
+  static const double _headerHeight = 34.0;
+  static const double _itemHeight = 72.0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrentSong());
+  }
+
+  Future<void> _scrollToCurrentSong() async {
+    if (!_scrollController.hasClients) return;
+    final playbackState = context.read<PlaybackStateCubit>().state;
+    final effectiveIndices = audioPlayerHandler<PlaybackService>().effectiveIndices;
+    final playlist = playbackState.currentPlaylist;
+    final songPlayed = playbackState.songPlayed;
+
+    if (playlist.isEmpty) return;
+
+    int displayIndex = -1;
+    for (int i = 0; i < playlist.length; i++) {
+      if (playlist[effectiveIndices?[i] ?? i].id == songPlayed.id) {
+        displayIndex = i;
+        break;
+      }
+    }
+
+    if (displayIndex <= 0) return;
+
+    final offset = (_appBarScrollRange + _headerHeight + displayIndex * _itemHeight)
+        .clamp(0.0, _scrollController.position.maxScrollExtent);
+
+    _scrollController.animateTo(
+      offset,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -46,6 +89,9 @@ class _PlayingQueueScreenState extends State<PlayingQueueScreen> {
     return Scaffold(
       body: ScrollbarTheme(
         data: ScrollbarThemeData(
+          radius: Radius.circular(12),
+          trackBorderColor: WidgetStateProperty.all(Colors.transparent),
+          thickness: WidgetStateProperty.all(8),
           thumbColor: WidgetStateProperty.all(AppTheme.accentColor),
           trackColor: WidgetStateProperty.all(Colors.white12),
           thumbVisibility: WidgetStateProperty.all(true),
@@ -132,7 +178,9 @@ class _PlayingQueueScreenState extends State<PlayingQueueScreen> {
                   ),
                 ],
                 flexibleSpace: const FlexibleSpaceBar(
-                  title: Text('Playing queue'),
+                  title: Text('Playing queue',
+                      style:
+                          TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
                   titlePadding: EdgeInsets.only(left: 50, bottom: 12),
                 ),
               ),
@@ -179,7 +227,9 @@ class _PlayingQueueScreenState extends State<PlayingQueueScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: songPlayed.id == 0 ? null : const CurrentSongTile(),
+      bottomNavigationBar: songPlayed.id == 0
+          ? null
+          : CurrentSongTile(onQueueTap: _scrollToCurrentSong),
     );
   }
 }
@@ -218,13 +268,13 @@ class _QueueTile extends StatelessWidget {
           ReorderableDelayedDragStartListener(
             index: index,
             child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
+              padding: EdgeInsets.only(left: 8),
               child: Icon(Icons.drag_handle, color: Colors.white54),
             ),
           )
         else
           const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8),
+            padding: EdgeInsets.only(left: 8),
             child: Icon(Icons.drag_handle, color: Colors.white12),
           ),
         Expanded(

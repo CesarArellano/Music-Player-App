@@ -14,7 +14,9 @@ import '../theme/app_theme.dart';
 import 'widgets.dart';
 
 class CurrentSongTile extends StatefulWidget {
-  const CurrentSongTile({super.key});
+  const CurrentSongTile({super.key, this.onQueueTap});
+
+  final VoidCallback? onQueueTap;
 
   @override
   State<CurrentSongTile> createState() => _CurrentSongTileState();
@@ -47,7 +49,10 @@ class _CurrentSongTileState extends State<CurrentSongTile>
       mainAxisSize: MainAxisSize.min,
       children: [
         const Divider(height: 0.5, color: Colors.white12),
-        _SongInfoTile(playAnimation: _playAnimation),
+        _SongInfoTile(
+          playAnimation: _playAnimation,
+          onQueueTap: widget.onQueueTap,
+        ),
         const _ProgressBar(),
       ],
     );
@@ -56,9 +61,10 @@ class _CurrentSongTileState extends State<CurrentSongTile>
 
 // Rebuilds only when the playing song changes.
 class _SongInfoTile extends StatelessWidget {
-  const _SongInfoTile({required this.playAnimation});
+  const _SongInfoTile({required this.playAnimation, this.onQueueTap});
 
   final AnimationController playAnimation;
+  final VoidCallback? onQueueTap;
 
   @override
   Widget build(BuildContext context) {
@@ -116,14 +122,15 @@ class _SongInfoTile extends StatelessWidget {
               ),
               IconButton(
                 splashRadius: 24,
-                icon: const Icon(Icons.queue_music),
+                icon: Icon(onQueueTap != null ? Icons.my_location_rounded : Icons.queue_music),
                 iconSize: 26,
                 color: Colors.white,
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => const PlayingQueueScreen()),
-                ),
+                onPressed: onQueueTap ??
+                    () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const PlayingQueueScreen()),
+                        ),
               ),
             ],
           );

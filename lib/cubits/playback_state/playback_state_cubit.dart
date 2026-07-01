@@ -19,4 +19,7 @@ class PlaybackStateCubit extends Cubit<PlaybackState> {
 
   void updateIsShuffling(bool value) =>
       emit(state.copyWith(isShuffling: value));
+
+  void updateIsPlaying(bool value) =>
+      emit(state.copyWith(isPlaying: value));
 }

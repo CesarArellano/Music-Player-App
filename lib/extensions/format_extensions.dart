@@ -2,7 +2,7 @@ import 'package:focus_music_player/extensions/extensions.dart';
 import 'package:music_query_selector/music_query_selector.dart';
 
 extension Format on Duration {
-  String getTimeString() {
+  String get timeString {
     final minutes = inMinutes.remainder(Duration.minutesPerHour).toString();
     final seconds = inSeconds
       .remainder(Duration.secondsPerMinute)
@@ -22,18 +22,18 @@ extension SongFormat on SongModel {
       value = '$artist';
     }
 
-    return '$value • ${Duration(milliseconds: duration?.nonNullValue() ?? 0).getTimeString()}';
+    return '$value • ${Duration(milliseconds: duration?.nonNullValue() ?? 0).timeString}';
   }
 }
 
 extension SongListDurationFormat on List<SongModel> {
   String totalDurationString() {
     final totalDurationMs = fold<int>(0, (acc, song) => acc + (song.duration ?? 0));
-    return Duration(milliseconds: totalDurationMs).getTimeString();
+    return Duration(milliseconds: totalDurationMs).timeString;
   }
 }
 
 extension MillisecondsDurationFormat on int? {
   String toDurationString() =>
-      Duration(milliseconds: this ?? 0).getTimeString();
+      Duration(milliseconds: this ?? 0).timeString;
 }
