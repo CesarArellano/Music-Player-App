@@ -2,6 +2,9 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        // Android-compatible JAudioTagger fork (Adonai) used by
+        // music_query_selector_android for tag editing.
+        maven { url = uri("https://jitpack.io") }
     }
 }
 

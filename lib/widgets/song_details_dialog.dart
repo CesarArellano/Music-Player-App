@@ -8,17 +8,30 @@ import '../cubits/cubits.dart';
 import '../extensions/extensions.dart';
 import '../theme/app_theme.dart';
 import 'artwork_file_image.dart';
+import 'tag_editor_dialog.dart';
 
-class SongDetailsDialog extends StatelessWidget {
+class SongDetailsDialog extends StatefulWidget {
   const SongDetailsDialog({super.key, required this.song});
 
   final SongModel song;
 
   @override
+  State<SongDetailsDialog> createState() => _SongDetailsDialogState();
+}
+
+class _SongDetailsDialogState extends State<SongDetailsDialog> {
+  void _onEditTap() {
+    showDialog(
+      context: context,
+      builder: (_) => TagEditorDialog(song: widget.song),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final appDirectory = context.read<LibraryCubit>().state.appDirectory;
-    final imageFile = File('$appDirectory/${song.albumId}.jpg');
-    final duration = Duration(milliseconds: song.duration ?? 0);
+    final imageFile = File('$appDirectory/${widget.song.albumId}.jpg');
+    final duration = Duration(milliseconds: widget.song.duration ?? 0);
 
     return AlertDialog(
       backgroundColor: AppTheme.surfaceColor,
@@ -35,7 +48,7 @@ class SongDetailsDialog extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: ArtworkFileImage(
-                    artworkId: song.id,
+                    artworkId: widget.song.id,
                     imageFile: imageFile,
                     height: 170,
                     width: 170,
@@ -43,23 +56,23 @@ class SongDetailsDialog extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              _DetailRow('Title', song.title.value()),
-              _DetailRow('File name', song.displayName),
-              _DetailRow('File path', song.data ?? '-'),
-              _DetailRow('Format', song.audioFormatName),
-              _DetailRow('Track number', '${song.track ?? '-'}'),
-              _DetailRow('Size', '${(song.size / 1048576).round()} MB'),
+              _DetailRow('Title', widget.song.title.value()),
+              _DetailRow('File name', widget.song.displayName),
+              _DetailRow('File path', widget.song.data ?? '-'),
+              _DetailRow('Format', widget.song.audioFormatName),
+              _DetailRow('Track number', '${widget.song.track ?? '-'}'),
+              _DetailRow('Size', '${(widget.song.size / 1048576).round()} MB'),
               _DetailRow('Length', duration.timeString),
-              _DetailRow('Album', song.album ?? '-'),
-              _DetailRow('Artist', song.artist.valueEmpty('-')),
-              if (song.composer?.isNotEmpty == true)
-                _DetailRow('Composer', song.composer!),
-              if (song.genre?.isNotEmpty == true)
-                _DetailRow('Genre', song.genre!),
-              if (song.dateAdded != null)
-                _DetailRow('Date added', song.dateAdded!.toTimestampString()),
-              if (song.dateModified != null)
-                _DetailRow('Date modified', song.dateModified!.toTimestampString()),
+              _DetailRow('Album', widget.song.album ?? '-'),
+              _DetailRow('Artist', widget.song.artist.valueEmpty('-')),
+              if (widget.song.composer?.isNotEmpty == true)
+                _DetailRow('Composer', widget.song.composer!),
+              if (widget.song.genre?.isNotEmpty == true)
+                _DetailRow('Genre', widget.song.genre!),
+              if (widget.song.dateAdded != null)
+                _DetailRow('Date added', widget.song.dateAdded!.toTimestampString()),
+              if (widget.song.dateModified != null)
+                _DetailRow('Date modified', widget.song.dateModified!.toTimestampString()),
               const SizedBox(height: 8),
             ],
           ),
@@ -67,24 +80,27 @@ class SongDetailsDialog extends StatelessWidget {
       ),
       actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Edit', style: TextStyle(color: AppTheme.lightTextColor)),
-        ),
-        Expanded(
-          child: FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        Row(
+          children: [
+            TextButton(
+              onPressed: _onEditTap,
+              child: const Text('Edit', style: TextStyle(color: AppTheme.lightTextColor)),
             ),
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Done'),
-          ),
+            Expanded(
+              child: FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppTheme.primaryColor,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Done'),
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
-
 }
 
 class _DetailRow extends StatelessWidget {
