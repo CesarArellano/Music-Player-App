@@ -82,4 +82,8 @@ class UserPreferences {
   set dominantColorCollection(Map<String, String> value) {
     _prefs.setString('dominantColorCollection', json.encode(value));
   }
+
+  void setRawDominantColor(String encoded) {
+    _prefs.setString('dominantColorCollection', encoded);
+  }
 }

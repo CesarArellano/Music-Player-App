@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show File;
 
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:speech_to_text/speech_to_text.dart';
 import '../audio_player_handler.dart';
 import '../cubits/cubits.dart';
 import '../extensions/extensions.dart';
+import '../models/multiple_search_model.dart';
 import '../models/playlist_type.dart';
 import '../routes/app_router.dart';
 import '../services/music_orchestrator_service.dart';
@@ -34,15 +36,26 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
   final SpeechToText _speech = SpeechToText();
   String _query = '';
   bool _speechEnabled = false;
+  MultipleSearchModel? _searchResult;
+  Timer? _debounceTimer;
 
   @override
   void initState() {
     super.initState();
 
     _controller.addListener(() {
-      if (_controller.text != _query) {
-        setState(() => _query = _controller.text);
+      final text = _controller.text;
+      if (text == _query) return;
+      _debounceTimer?.cancel();
+      if (text.isEmpty) {
+        setState(() {
+          _query = text;
+          _searchResult = null;
+        });
+        return;
       }
+      setState(() => _query = text);
+      _debounceTimer = Timer(const Duration(milliseconds: 150), () => _runSearch(text));
     });
     _initSpeech();
   }
@@ -75,8 +88,21 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
     );
   }
 
+  Future<void> _runSearch(String query) async {
+    final libraryState = context.read<LibraryCubit>().state;
+    final result = await LibraryState.searchAsync(
+      query: query,
+      songList: libraryState.songList,
+      albumList: libraryState.albumList,
+      artistList: libraryState.artistList,
+    );
+    if (!mounted || query != _query) return;
+    setState(() => _searchResult = result);
+  }
+
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _speech.cancel();
     _controller.dispose();
     super.dispose();
@@ -108,7 +134,10 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
     if (_query.isEmpty) return _emptyContainer();
 
     final libraryState = context.watch<LibraryCubit>().state;
-    final result = libraryState.searchByQuery(_query);
+    final result = _searchResult;
+
+    if (result == null) return _emptyContainer();
+
     final songs = result.songs;
     final albums = result.albums;
     final artists = result.artists;

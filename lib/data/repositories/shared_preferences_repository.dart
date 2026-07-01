@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:isolate';
+
 import '../../share_prefs/user_preferences.dart';
 import 'preferences_repository.dart';
 
@@ -36,9 +39,16 @@ class SharedPreferencesRepository implements PreferencesRepository {
   @override
   set favoriteSongList(List<String> value) => _prefs.favoriteSongList = value;
 
+  Map<String, String>? _colorCache;
+
   @override
-  Map<String, String> get dominantColorCollection => _prefs.dominantColorCollection;
+  Map<String, String> get dominantColorCollection =>
+      _colorCache ??= _prefs.dominantColorCollection;
+
   @override
-  set dominantColorCollection(Map<String, String> value) =>
-      _prefs.dominantColorCollection = value;
+  set dominantColorCollection(Map<String, String> value) {
+    _colorCache = value;
+    Isolate.run(() => json.encode(value))
+        .then((encoded) => _prefs.setRawDominantColor(encoded));
+  }
 }

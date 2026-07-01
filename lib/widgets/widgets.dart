@@ -10,3 +10,4 @@ export 'package:focus_music_player/widgets/current_song_tile.dart';
 export 'package:focus_music_player/widgets/ripple_tile.dart';
 export 'package:focus_music_player/widgets/sticky_header_delegate.dart';
 export 'package:focus_music_player/widgets/collection_header.dart';
+export 'package:focus_music_player/widgets/scroll_to_top_button.dart';

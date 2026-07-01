@@ -1,3 +1,5 @@
+import 'dart:isolate';
+
 import 'package:music_query_selector/music_query_selector.dart';
 
 import '../../models/artist_content_model.dart';
@@ -41,6 +43,20 @@ class LibraryState {
       albums: albumList.where((a) => a.album.toLowerCase().contains(q)).toList(),
       artists: artistList.where((a) => a.artist.toLowerCase().contains(q)).toList(),
     );
+  }
+
+  static Future<MultipleSearchModel> searchAsync({
+    required String query,
+    required List<SongModel> songList,
+    required List<AlbumModel> albumList,
+    required List<ArtistModel> artistList,
+  }) {
+    final q = query.toLowerCase();
+    return Isolate.run(() => MultipleSearchModel(
+      songs: songList.where((s) => s.title.toLowerCase().contains(q)).toList(),
+      albums: albumList.where((a) => a.album.toLowerCase().contains(q)).toList(),
+      artists: artistList.where((a) => a.artist.toLowerCase().contains(q)).toList(),
+    ));
   }
 
   LibraryState copyWith({

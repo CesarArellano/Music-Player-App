@@ -12,6 +12,15 @@ class AppTheme {
   static const double artworkRadius = 10.0;
 
   static ThemeData darkTheme = ThemeData.dark().copyWith(
+    scrollbarTheme: ScrollbarThemeData(
+      radius: Radius.circular(12),
+      trackBorderColor: WidgetStateProperty.all(Colors.transparent),
+      thickness: WidgetStateProperty.all(8),
+      thumbColor: WidgetStateProperty.all(accentColor),
+      trackColor: WidgetStateProperty.all(Colors.white12),
+      thumbVisibility: WidgetStateProperty.all(true),
+      trackVisibility: WidgetStateProperty.all(true),
+    ),
     splashFactory: InkSparkle.constantTurbulenceSeedSplashFactory,
     scaffoldBackgroundColor: Colors.transparent,
 

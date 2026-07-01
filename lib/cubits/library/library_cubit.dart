@@ -1,4 +1,5 @@
 import 'dart:io' show Platform;
+import 'dart:isolate';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_query_selector/music_query_selector.dart';
@@ -31,7 +32,7 @@ class LibraryCubit extends Cubit<LibraryState> {
 
   /// Called once after the initial song list loads, so FavoritesCubit can
   /// decode persisted favourite IDs into SongModel instances.
-  final void Function(List<SongModel>)? onSongsLoaded;
+  final Future<void> Function(List<SongModel>)? onSongsLoaded;
 
   Future<void> getAllSongs({bool forceCreatingArtworks = false}) async {
     bool createArtworks = forceCreatingArtworks;
@@ -70,7 +71,7 @@ class LibraryCubit extends Cubit<LibraryState> {
 
     final songList = await songsFuture;
     emit(state.copyWith(songList: songList, isLoading: false));
-    onSongsLoaded?.call(songList);
+    await onSongsLoaded?.call(songList);
 
     // Pick up catalogue results — all already in-flight from above.
     final (albumList, genreList, artistList) = await (
@@ -116,29 +117,34 @@ class LibraryCubit extends Cubit<LibraryState> {
     emit(state.copyWith(albumCollection: updated));
   }
 
-  void searchByArtistId(int artistId, {bool force = false}) {
+  Future<void> searchByArtistId(int artistId, {bool force = false}) async {
     if (state.artistCollection.containsKey(artistId) && !force) return;
 
-    final artistSongs = [...state.songList.where((s) => s.artistId == artistId)];
-    int totalMs = 0;
-    final albumIds = <int>{};
+    final allSongs = state.songList;
+    final allAlbums = state.albumList;
 
-    for (final song in artistSongs) {
-      totalMs += song.duration ?? 0;
-      if (song.albumId.nonNullValue() != 0) albumIds.add(song.albumId!);
-    }
-
-    final albums = albumIds
-        .map((id) => state.albumList.firstWhere((a) => a.id == id))
-        .toList();
-
-    artistSongs.sort((a, b) => a.id.compareTo(b.id));
+    final result = await Isolate.run(() {
+      final artistSongs = allSongs.where((s) => s.artistId == artistId).toList();
+      int totalMs = 0;
+      final albumIds = <int>{};
+      for (final song in artistSongs) {
+        totalMs += song.duration ?? 0;
+        if ((song.albumId ?? 0) != 0) albumIds.add(song.albumId!);
+      }
+      final albumById = {for (final a in allAlbums) a.id: a};
+      final albums = albumIds
+          .map((id) => albumById[id])
+          .whereType<AlbumModel>()
+          .toList();
+      artistSongs.sort((a, b) => a.id.compareTo(b.id));
+      return (songs: artistSongs, albums: albums, totalMs: totalMs);
+    });
 
     final updated = Map<int, ArtistContentModel>.from(state.artistCollection)
       ..[artistId] = ArtistContentModel(
-        songs: artistSongs,
-        albums: albums,
-        totalDuration: Duration(milliseconds: totalMs).timeString,
+        songs: result.songs,
+        albums: result.albums,
+        totalDuration: Duration(milliseconds: result.totalMs).timeString,
       );
     emit(state.copyWith(artistCollection: updated));
   }

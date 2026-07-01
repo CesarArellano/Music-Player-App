@@ -54,16 +54,16 @@ class _ArtistSelectedScreenState extends State<ArtistSelectedScreen> {
     super.dispose();
   }
 
-  void _getSongs() {
+  Future<void> _getSongs() async {
     final cubit = context.read<LibraryCubit>();
     final artistSongs =
         cubit.state.artistCollection[widget.artistSelected.id]?.songs.length ??
             0;
-    cubit.searchByArtistId(
+    await cubit.searchByArtistId(
       widget.artistSelected.id,
       force: artistSongs != widget.artistSelected.numberOfTracks,
     );
-    setState(() => isLoading = false);
+    if (mounted) setState(() => isLoading = false);
   }
 
   @override

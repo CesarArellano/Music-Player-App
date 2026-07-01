@@ -1,6 +1,7 @@
 import 'dart:io' show File;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollDirection;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:music_query_selector/music_query_selector.dart';
@@ -31,10 +32,21 @@ class _PlayingQueueScreenState extends State<PlayingQueueScreen> {
   static const double _headerHeight = 34.0;
   static const double _itemHeight = 72.0;
 
+  bool _isScrollTopButtonVisible = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrentSong());
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    final position = _scrollController.position;
+    final isVisible = position.pixels > 100 && position.userScrollDirection == ScrollDirection.forward;
+    if (_isScrollTopButtonVisible != isVisible) {
+      setState(() => _isScrollTopButtonVisible = isVisible);
+    }
   }
 
   Future<void> _scrollToCurrentSong() async {
@@ -85,147 +97,151 @@ class _PlayingQueueScreenState extends State<PlayingQueueScreen> {
     final currentIndex = audioControlState.currentIndex;
     final songPlayed = playbackState.songPlayed;
     final isShuffling = playbackState.isShuffling;
+    final displayPosition = isShuffling && effectiveIndices != null
+        ? effectiveIndices.indexOf(currentIndex) + 1
+        : currentIndex + 1;
 
     return Scaffold(
-      body: ScrollbarTheme(
-        data: ScrollbarThemeData(
-          radius: Radius.circular(12),
-          trackBorderColor: WidgetStateProperty.all(Colors.transparent),
-          thickness: WidgetStateProperty.all(8),
-          thumbColor: WidgetStateProperty.all(AppTheme.accentColor),
-          trackColor: WidgetStateProperty.all(Colors.white12),
-          thumbVisibility: WidgetStateProperty.all(true),
-          trackVisibility: WidgetStateProperty.all(true),
-        ),
-        child: Scrollbar(
-          controller: _scrollController,
-          interactive: true,
-          child: CustomScrollView(
+      body: Stack(
+        children: [
+          Scrollbar(
             controller: _scrollController,
-            slivers: [
-              SliverAppBar(
-                pinned: true,
-                backgroundColor: AppTheme.surfaceColor,
-                expandedHeight: playlist.isEmpty ? 0 : 120,
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back,
-                      color: AppTheme.lightTextColor),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                actions: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.shuffle,
-                      color: isShuffling
-                          ? AppTheme.accentColor
-                          : AppTheme.lightTextColor,
-                    ),
-                    onPressed: () {
-                      playbackService.setShuffleModeEnabled(!isShuffling);
-                      context
-                          .read<PlaybackStateCubit>()
-                          .updateIsShuffling(!isShuffling);
-                    },
-                  ),
-                  StreamBuilder<LoopMode>(
-                    stream: audioPlayer.loopModeStream,
-                    builder: (context, snapshot) {
-                      final loopMode = snapshot.data ?? LoopMode.off;
-                      final IconData icon;
-                      final Color color;
-                      final LoopMode next;
-                      switch (loopMode) {
-                        case LoopMode.off:
-                          icon = Icons.repeat;
-                          color = Colors.white54;
-                          next = LoopMode.one;
-                        case LoopMode.one:
-                          icon = Icons.repeat_one;
-                          color = AppTheme.accentColor;
-                          next = LoopMode.all;
-                        case LoopMode.all:
-                          icon = Icons.repeat;
-                          color = AppTheme.accentColor;
-                          next = LoopMode.off;
-                      }
-                      return IconButton(
-                        icon: Icon(icon, color: color),
-                        onPressed: () => audioPlayer.setLoopMode(next),
-                      );
-                    },
-                  ),
-                  PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert,
+            interactive: true,
+            child: CustomScrollView(
+              controller: _scrollController,
+              slivers: [
+                SliverAppBar(
+                  pinned: true,
+                  backgroundColor: AppTheme.surfaceColor,
+                  expandedHeight: playlist.isEmpty ? 0 : 120,
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back,
                         color: AppTheme.lightTextColor),
-                    onSelected: (value) {
-                      if (value == 'clear') {
-                        context
-                            .read<PlaybackStateCubit>()
-                            .updateCurrentPlaylist([]);
-                        context
-                            .read<PlaybackStateCubit>()
-                            .clearSongPlayed();
-                        context
-                            .read<AudioControlCubit>()
-                            .updateCurrentIndex(-1);
-                        audioPlayerHandler<AudioPlayer>().stop();
-                      }
-                    },
-                    itemBuilder: (_) => const [
-                      PopupMenuItem(
-                          value: 'clear', child: Text('Clear queue')),
-                    ],
+                    onPressed: () => Navigator.pop(context),
                   ),
-                ],
-                flexibleSpace: const FlexibleSpaceBar(
-                  title: Text('Playing queue',
+                  actions: [
+                    IconButton(
+                      icon: Icon(
+                        Icons.shuffle,
+                        color: isShuffling
+                            ? AppTheme.accentColor
+                            : AppTheme.lightTextColor,
+                      ),
+                      onPressed: () {
+                        playbackService.setShuffleModeEnabled(!isShuffling);
+                        context
+                            .read<PlaybackStateCubit>()
+                            .updateIsShuffling(!isShuffling);
+                      },
+                    ),
+                    StreamBuilder<LoopMode>(
+                      stream: audioPlayer.loopModeStream,
+                      builder: (context, snapshot) {
+                        final loopMode = snapshot.data ?? LoopMode.off;
+                        final IconData icon;
+                        final Color color;
+                        final LoopMode next;
+                        switch (loopMode) {
+                          case LoopMode.off:
+                            icon = Icons.repeat;
+                            color = Colors.white54;
+                            next = LoopMode.one;
+                          case LoopMode.one:
+                            icon = Icons.repeat_one;
+                            color = AppTheme.accentColor;
+                            next = LoopMode.all;
+                          case LoopMode.all:
+                            icon = Icons.repeat;
+                            color = AppTheme.accentColor;
+                            next = LoopMode.off;
+                        }
+                        return IconButton(
+                          icon: Icon(icon, color: color),
+                          onPressed: () => audioPlayer.setLoopMode(next),
+                        );
+                      },
+                    ),
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert,
+                          color: AppTheme.lightTextColor),
+                      onSelected: (value) {
+                        if (value == 'clear') {
+                          context
+                              .read<PlaybackStateCubit>()
+                              .updateCurrentPlaylist([]);
+                          context
+                              .read<PlaybackStateCubit>()
+                              .clearSongPlayed();
+                          context
+                              .read<AudioControlCubit>()
+                              .updateCurrentIndex(-1);
+                          audioPlayerHandler<AudioPlayer>().stop();
+                        }
+                      },
+                      itemBuilder: (_) => const [
+                        PopupMenuItem(
+                            value: 'clear', child: Text('Clear queue')),
+                      ],
+                    ),
+                  ],
+                  flexibleSpace: const FlexibleSpaceBar(
+                    title: Text('Playing queue',
+                        style:
+                            TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+                    titlePadding: EdgeInsets.only(left: 50, bottom: 12),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
+                    child: Text(
+                      'Up next  •  $displayPosition/${playlist.length}  •  ${playlist.totalDurationString()}',
                       style:
-                          TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
-                  titlePadding: EdgeInsets.only(left: 50, bottom: 12),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
-                  child: Text(
-                    'Up next  •  ${currentIndex + 1}/${playlist.length}  •  ${playlist.totalDurationString()}',
-                    style:
-                        const TextStyle(color: Colors.white54, fontSize: 13),
+                          const TextStyle(color: Colors.white54, fontSize: 13),
+                    ),
                   ),
                 ),
-              ),
-              SliverReorderableList(
-                itemCount: playlist.length,
-                onReorderItem: (oldIndex, newIndex) =>
-                    playbackService.moveInQueue(oldIndex, newIndex),
-                itemBuilder: (context, i) {
-                  final song = playlist[effectiveIndices?[i] ?? i];
-                  final imageFile = File(
-                    '${libraryState.appDirectory}/${song.albumId}.jpg',
-                  );
-                  final heroId = 'queue-${song.id}';
-                  final isPlaying = songPlayed.id == song.id;
-
-                  return _QueueTile(
-                    key: ValueKey(song.id),
-                    song: song,
-                    index: i,
-                    imageFile: imageFile,
-                    heroId: heroId,
-                    isPlaying: isPlaying,
-                    dragEnabled: !isShuffling,
-                    onRemove: () => playbackService.removeFromQueue(song),
-                    onTap: () {
-                      audioPlayer.seek(Duration.zero,
-                          index: effectiveIndices?[i] ?? i);
-                      audioPlayer.play();
-                    },
-                  );
-                },
-              ),
-            ],
+                SliverReorderableList(
+                  itemCount: playlist.length,
+                  onReorderItem: (oldIndex, newIndex) =>
+                      playbackService.moveInQueue(oldIndex, newIndex),
+                  itemBuilder: (context, i) {
+                    final song = playlist[effectiveIndices?[i] ?? i];
+                    final imageFile = File(
+                      '${libraryState.appDirectory}/${song.albumId}.jpg',
+                    );
+                    final heroId = 'queue-${song.id}';
+                    final isPlaying = songPlayed.id == song.id;
+          
+                    return _QueueTile(
+                      key: ValueKey(song.id),
+                      song: song,
+                      index: i,
+                      imageFile: imageFile,
+                      heroId: heroId,
+                      isPlaying: isPlaying,
+                      dragEnabled: !isShuffling,
+                      onRemove: () => playbackService.removeFromQueue(song),
+                      onTap: () {
+                        audioPlayer.seek(Duration.zero,
+                            index: effectiveIndices?[i] ?? i);
+                        audioPlayer.play();
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
+          ScrollToTopButton(
+            isVisible: _isScrollTopButtonVisible,
+            onPressed: () => _scrollController.animateTo(
+              0,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: songPlayed.id == 0
           ? null

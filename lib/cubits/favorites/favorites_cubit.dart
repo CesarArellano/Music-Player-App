@@ -1,3 +1,5 @@
+import 'dart:isolate';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_query_selector/music_query_selector.dart';
 
@@ -14,18 +16,18 @@ class FavoritesCubit extends Cubit<FavoritesState> {
   final PreferencesRepository _prefs;
 
   /// Called once after the song library loads to decode persisted IDs.
-  void initFavorites(List<SongModel> allSongs) {
-    final favoriteSongList = _prefs.favoriteSongList;
-    final favorites = <SongModel>[];
-
-    for (final id in favoriteSongList) {
-      final index = allSongs.indexWhere((s) => s.id == int.tryParse(id));
-      if (index != -1) favorites.add(allSongs[index]);
-    }
-
+  Future<void> initFavorites(List<SongModel> allSongs) async {
+    final ids = _prefs.favoriteSongList;
+    final favorites = await Isolate.run(() {
+      final byId = {for (final s in allSongs) s.id: s};
+      return ids
+          .map((id) => byId[int.tryParse(id)])
+          .whereType<SongModel>()
+          .toList();
+    });
     emit(FavoritesState(
       favoriteList: favorites,
-      favoriteSongList: favoriteSongList,
+      favoriteSongList: ids,
     ));
   }
 

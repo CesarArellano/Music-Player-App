@@ -4,7 +4,6 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:focus_music_player/theme/app_theme.dart';
 import 'package:music_query_selector/music_query_selector.dart';
 
 import '../../cubits/cubits.dart';
@@ -273,30 +272,14 @@ class _SongsScreenState extends State<SongsScreen>
                         ),
                       ),
                     ),
-
-                    AnimatedOpacity(
-                      opacity: isScrollTopButtonVisible ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 200),
-                      child: IgnorePointer(
-                        ignoring: !isScrollTopButtonVisible,
-                        child: Align(
-                          alignment: Alignment.bottomCenter,
-                          child: IconButton(
-                            style: IconButton.styleFrom(
-                              backgroundColor:
-                                  AppTheme.black.withValues(alpha: 0.5),
-                            ),
-                            color: AppTheme.white,
-                            icon: const Icon(Icons.arrow_upward_rounded),
-                            onPressed: () => _scrollController.animateTo(
-                              0,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            ),
-                          ),
-                        ),
+                    ScrollToTopButton(
+                      isVisible: isScrollTopButtonVisible,
+                      onPressed: () => _scrollController.animateTo(
+                        0,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
                       ),
-                    )
+                    ),
                   ],
                 );
               },
