@@ -240,6 +240,14 @@ class _SongsScreenState extends State<SongsScreen>
                                     artworkId: song.id,
                                     imageFile: imageFile,
                                     tag: heroId,
+                                    trailing: IconButton(
+                                      color: Colors.white54,
+                                      icon: const Icon(Icons.more_vert),
+                                      onPressed: () => showModalBottomSheet(
+                                        context: context,
+                                        builder: (_) => MoreSongOptionsModal(song: song),
+                                      ),
+                                    ),
                                   ),
                                   onTap: () {
                                     audioPlayerHandler<MusicOrchestratorService>().playSong(song, PlaylistType.songs, heroId: heroId);

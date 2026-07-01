@@ -52,7 +52,6 @@ class _AlbumsScreenState extends State<AlbumsScreen>
                         borderRadius: BorderRadius.circular(AppTheme.artworkRadius),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: AppTheme.surfaceColor,
                             borderRadius: BorderRadius.circular(AppTheme.artworkRadius),
                           ),
                           clipBehavior: Clip.hardEdge,

@@ -37,7 +37,7 @@ class _PlayingQueueScreenState extends State<PlayingQueueScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrentSong());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrentSong(animated: false));
     _scrollController.addListener(_onScroll);
   }
 
@@ -49,8 +49,8 @@ class _PlayingQueueScreenState extends State<PlayingQueueScreen> {
     }
   }
 
-  Future<void> _scrollToCurrentSong() async {
-    if (!_scrollController.hasClients) return;
+  Future<void> _scrollToCurrentSong({bool animated = true}) async {
+    if (!mounted || !_scrollController.hasClients) return;
     final playbackState = context.read<PlaybackStateCubit>().state;
     final effectiveIndices = audioPlayerHandler<PlaybackService>().effectiveIndices;
     final playlist = playbackState.currentPlaylist;
@@ -71,11 +71,15 @@ class _PlayingQueueScreenState extends State<PlayingQueueScreen> {
     final offset = (_appBarScrollRange + _headerHeight + displayIndex * _itemHeight)
         .clamp(0.0, _scrollController.position.maxScrollExtent);
 
-    _scrollController.animateTo(
-      offset,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+    if (animated) {
+      _scrollController.animateTo(
+        offset,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      _scrollController.jumpTo(offset);
+    }
   }
 
   @override
